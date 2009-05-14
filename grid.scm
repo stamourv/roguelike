@@ -1,5 +1,5 @@
 ;; vector of vectors of cells
-(define-type grid ;; TODO maybe put in utilities, since it's reather general ?
+(define-type grid
   rows)
 (define (empty-grid height
 		    #!optional (width height)
@@ -39,7 +39,7 @@
 (define (new-unknown-cell) (make-unknown-cell (lambda () #\?)))
 
 (define-type-of-cell walkable-cell
-  extender: define-type-of-walkable-cell) ;; TODO for now, cells with objects are new kinds of cells, maybe go back to the the old way, where an object was an attribute of the cell (or, if we want to drop multiple objects on the same cell, a list in an attribute ?)
+  extender: define-type-of-walkable-cell)
 (define (new-walkable-cell) (make-walkable-cell (lambda () #\space)))
 
 (define-type-of-cell wall-cell
@@ -52,13 +52,11 @@
 (define (new-horizontal-wall-cell) (make-horizontal-wall-cell (lambda () #\-)))
 (define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
 
-(define-type player ;; TODO maybe make it a subtype of objects that can move ? or have hp, or something
-  name) ;; TODO add more
+(define-type player
+  name)
 (define-type-of-cell player-cell
   player)
 (define (new-player-cell player) (make-player-cell (lambda () #\@) player))
 
-(define-type-of-cell treasure-cell) ;; TODO have kinds of treasure
+(define-type-of-cell treasure-cell)
 (define (new-treasure-cell) (make-treasure-cell (lambda () #\T)))
-
-;; TODO use "tile" instead of "cell"?

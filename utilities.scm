@@ -47,3 +47,6 @@
 	  (loop (- n 1)
 		(remove-at-index l i)
 		(cons (list-ref l i) r))))))
+
+(define (random-element l)
+  (list-ref l (random-integer (length l))))

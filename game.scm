@@ -1,19 +1,18 @@
-;; simple roguelike game
-
-(load "utilities.scm")
-(load "grid.scm")
-(load "maze.scm")
+(include "utilities.scm")
+(include "grid.scm")
+(include "maze.scm")
+(include "names.scm")
 
 (random-source-randomize! default-random-source)
 
-(define (maze h w player-name maze-name treasure-name) ;; TODO have random name generators
+(define (maze h w player-name maze-name treasure-name)
   ;; simple maze game, start at the top left, and get to the bottom right
   (let* ((maze  (generate-maze h w))
 	 (known (empty-grid (grid-height maze) (grid-width maze))))
     ;; treasure at the bottom corner
     (grid-set! maze (- (grid-height maze) 1) (- (grid-width maze) 1)
 	       (new-treasure-cell))
-    (let loop ((posx 0) (posy 0)) ;; TODO have a 2d-point type, and use it everywhere
+    (let loop ((posx 0) (posy 0))
       (define (move x y)
 	(if (and (inside-grid?   maze x y)
 		 (walkable-cell? (grid-get maze x y)))
@@ -31,19 +30,21 @@
 		      (- posy 1) posy       (+ posy 1)
 		      (- posy 1) posy       (+ posy 1)))
       (show-grid known)
-      (let ((newposx posx) ;; TODO ugly
+      (let ((newposx posx)
 	    (newposy posy))
-	(case (read-char) ;; TODO having to press enter sucks, and counts as 2 commands, find a better way
+	(case (read-char)
 	  ((#\w) (set! newposx (- posx 1)))
 	  ((#\a) (set! newposy (- posy 1)))
 	  ((#\s) (set! newposx (+ posx 1)))
 	  ((#\d) (set! newposy (+ posy 1))))
 	(move newposx newposy)
-	(if (treasure-cell? (grid-get maze newposx newposy))
-	    (display (string-append player-name " has recovered the "
-				    treasure-name " from the " maze-name "\n"))
+	(if (and (inside-grid? maze newposx newposy)
+		 (treasure-cell? (grid-get maze newposx newposy)))
+	    (display (string-append player-name " has recovered "
+				    treasure-name " from " maze-name "\n"))
 	    (loop posx posy))))))
 
-(maze 5 5 "Bob" "Maze of Doom" "box of kittens")
-;; TODO maze generators won't generate rooms, so might not be interesting, try other algorithms, there probably are some for that
-;; TODO maybe start with the maze (or at least, the same kind of wall outline), then open rooms
+(maze 5 5
+      (random-element character-names) 
+      (random-element dungeon-names)
+      (random-element object-names))
