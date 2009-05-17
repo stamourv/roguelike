@@ -82,12 +82,15 @@
 		    (- posy 1) posy       (+ posy 1)))))
 
 (define (move g pos new-pos)
-  ;; moves the object at pos to new-pos, and returns the position of the object
+  ;; moves the occupant of pos to new-pos, and returns the position of the
+  ;; occupant (the new one or the original, if the move fails)
   (if (and (inside-grid?   g new-pos)
 	   (walkable-cell? (grid-get g new-pos)))
-      (let ((to-move (grid-get g pos)))
-	(grid-set! g pos     (new-walkable-cell)) ;; TODO change that when we have terrain, and the player is just something on top
-	(grid-set! g new-pos to-move)
+      (let* ((cell     (grid-get g pos))
+	     (new-cell (grid-get g new-pos))
+	     (to-move  (walkable-cell-occupant cell)))
+	(walkable-cell-occupant-set! cell     #f)
+	(walkable-cell-occupant-set! new-cell to-move)
 	new-pos)
       pos)) ; move failed
 
@@ -97,8 +100,37 @@
   extender: define-type-of-cell)
 
 (define-type-of-cell walkable-cell
+  object ;; TODO have a list instead
+  occupant ; player, monster, ...
   extender: define-type-of-walkable-cell)
-(define (new-walkable-cell) (make-walkable-cell (lambda () #\space)))
+(define (new-walkable-cell)
+  (let ((cell (make-walkable-cell #f #f #f)))
+    (cell-printer-set! cell (lambda ()
+			      (cond ((walkable-cell-occupant cell)
+				     => (lambda (o) ((occupant-printer o))))
+				    ((walkable-cell-object cell)
+				     => (lambda (o) ((object-printer o))))
+				    (else #\space))))
+    cell))
+
+(define-type object
+  printer
+  extender: define-type-of-object)
+(define-type-of-object treasure
+  name) ;; TODO more
+(define (new-treasure) (make-treasure (lambda () #\T)
+				      (random-element object-names)))
+
+(define-type occupant
+  printer
+  extender: define-type-of-occupant)
+(define-type-of-occupant player
+  name
+  pos)
+(define (new-player name pos)
+  (make-player (lambda () #\@)
+	       name
+	       pos))
 
 (define-type-of-cell wall-cell
   extender: define-type-of-wall-cell)
@@ -109,14 +141,3 @@
 (define (new-vertical-wall-cell)   (make-vertical-wall-cell   (lambda () #\|)))
 (define (new-horizontal-wall-cell) (make-horizontal-wall-cell (lambda () #\-)))
 (define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
-
-(define-type player
-  name
-  pos)
-(define new-player make-player) ; for consistency
-(define-type-of-cell player-cell ;; TODO not have as a cell, this is not terrain
-  player)
-(define (new-player-cell player) (make-player-cell (lambda () #\@) player))
-
-(define-type-of-walkable-cell treasure-cell)
-(define (new-treasure-cell) (make-treasure-cell (lambda () #\T)))
