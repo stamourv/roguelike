@@ -1,8 +1,14 @@
 (define (read-command player)
   (let* ((pos   (player-pos player))
+	 (grid  (player-map player))
 	 (x     (point-x pos))
-	 (y     (point-y pos)))
-    (case (read-char)
+	 (y     (point-y pos))
+	 (char  (read-char)))
+
+    ;; clear the help line
+    (clear-line)
+
+    (case char
       ;; movement
       ((#\w) (point-x-set! pos (- x 1)))
       ((#\a) (point-y-set! pos (- y 1)))
@@ -15,6 +21,6 @@
 
       ;; help
       ((#\?) (show-help))
-      ((#\i) (info pos))
-      ((#\l) (look pos))
+      ((#\i) (info grid pos))
+      ((#\l) (look grid pos))
       )))

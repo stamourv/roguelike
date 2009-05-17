@@ -51,7 +51,7 @@
 (define (random-element l)
   (list-ref l (random-integer (length l))))
 
-(define (terminal-command command)
+(define (terminal-command command) ;; TODO when I get enough, put in terminal.scm
   (display (string-append (list->string (list (integer->char #x1b))) command)))
 (define (terminal-print text #!key (bg 'black) (fg 'white))
   (terminal-command (string-append "[" (case bg
@@ -67,3 +67,4 @@
 				   "m"))
   (display text) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc)
   (terminal-command "[0m")) ; reset
+(define (clear-line) (terminal-command "[K"))

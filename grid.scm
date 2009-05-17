@@ -58,29 +58,6 @@
    (iota (grid-height g)))
   (draw-border-line))
 
-(define (update-visibility player)
-  ;; set the fog of war
-  (let ((view (player-view player))
-	(pos  (player-pos  player))
-	(g    (player-map  player)))
-    (for-each (lambda (x)
-		(for-each (lambda (y)
-			    (if (eq? (grid-get view (new-point x y)) 'visible)
-				(grid-set! view (new-point x y) 'visited)))
-			  (iota (grid-width view))))
-	      (iota (grid-height view)))
-    ;; set visible area TODO have something better, maybe see until we see a wall, in each direction + sides to see rooms, if complex enough, put in its own file
-    (let ((posx (point-x pos))
-	  (posy (point-y pos)))
-      (for-each (lambda (x y) (if (inside-grid? g (new-point x y))
-				  (grid-set! view (new-point x y) 'visible)))
-		(list (- posx 1) (- posx 1) (- posx 1)
-		      posx       posx       posx
-		      (+ posx 1) (+ posx 1) (+ posx 1))
-		(list (- posy 1) posy       (+ posy 1)
-		      (- posy 1) posy       (+ posy 1)
-		      (- posy 1) posy       (+ posy 1))))))
-
 (define (move g pos new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
   ;; occupant (the new one or the original, if the move fails)
@@ -113,38 +90,38 @@
 				    (else #\space))))
     cell))
 (define (get-object cell)
-  (walkable-cell-object cell)) ;; TODO change with multiple objects
+  (if (walkable-cell? cell)
+      (walkable-cell-object cell)
+      #f)) ;; TODO change with multiple objects
 (define (add-object cell object)
-  (walkable-cell-object-set! cell object)) ;; TODO change it when we have multiple objects
+  (if (walkable-cell? cell)
+      (walkable-cell-object-set! cell object)
+      #f)) ;; TODO change it when we have multiple objects
 (define (remove-object cell object)
-  (walkable-cell-object-set! cell #f)) ;; TODO change with multiple objects
+  (if (walkable-cell? cell)
+      (walkable-cell-object-set! cell #f)
+      #f)) ;; TODO change with multiple objects
 (define (get-occupant cell)
-  (walkable-call-occupant cell))
-(define (occupant-set! cell occupant) ;; TODO add a check to see if it's a walkable cell ?
-  (walkable-cell-occupant-set! cell occupant))
+  (if (walkable-cell? cell)
+      (walkable-cell-occupant cell)
+      #f))
+(define (occupant-set! cell occupant)
+  (if (walkable-cell? cell)
+      (walkable-cell-occupant-set! cell occupant)
+      #f))
 
 (define-type object
+  name
   printer
   extender: define-type-of-object)
-(define-type-of-object treasure
-  name) ;; TODO more
-(define (new-treasure) (make-treasure (lambda () #\T)
-				      (random-element object-names)))
+(define-type-of-object treasure) ;; TODO more
+(define (new-treasure) (make-treasure (random-element object-names)
+				      (lambda () #\T)))
 
 (define-type occupant
+  name
   printer
   extender: define-type-of-occupant)
-(define-type-of-occupant player
-  name
-  map
-  pos
-  view)
-(define (new-player name map pos view)
-  (make-player (lambda () #\@)
-	       name
-	       map
-	       pos
-	       view))
 
 (define-type-of-cell wall-cell
   extender: define-type-of-wall-cell)
