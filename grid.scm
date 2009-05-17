@@ -17,13 +17,13 @@
 				     (iota width))))
 		   (iota height)))))
 ;; in all cases, x is the row, y is the column
-(define (grid-get  g pos)   (vector-ref  (vector-ref (grid-rows g) ;; TODO is this point-based interface clean ?
-						     (point-x pos))
-					 (point-y pos)))
-(define (grid-set! g pos v) (vector-set! (vector-ref (grid-rows g)
-						     (point-x pos))
-					 (point-y pos)
-					 v))
+(define (grid-get  g pos)
+  (vector-ref (vector-ref (grid-rows g) (point-x pos))
+	      (point-y pos)))
+(define (grid-set! g pos v)
+  (vector-set! (vector-ref (grid-rows g) (point-x pos))
+	       (point-y pos)
+	       v))
 (define (grid-height g) (vector-length (grid-rows g)))
 (define (grid-width  g) (vector-length (vector-ref (grid-rows g) 0)))
 (define (inside-grid? g pos)
@@ -51,7 +51,7 @@
 	      (visibility (if view (grid-get view (new-point x y)) 'visible)))
 	  (case visibility
 	    ((visible)
-	     (terminal-print ((cell-printer cell)) bg: 'white fg: 'black)) ;; TODO have the visibility as a parameter to the printer ?
+	     (terminal-print ((cell-printer cell)) bg: 'white fg: 'black)) ;; TODO have the visibility as a parameter to the printer ? if not, we can't have colored objects, since they absolutely have to return a char, maybe have them return a string, which could contain vt100 commands ?
 	    ((visited)
 	     (terminal-print ((cell-printer cell)) bg: 'black fg: 'white))
 	    ((unknown)
@@ -59,7 +59,7 @@
       (iota (grid-width g)))
      (display "|\n"))
    (iota (grid-height g)))
-  (draw-border-line)) ;; TODO this draws the terrain, now have another loop that draws the objects inside, including the player
+  (draw-border-line))
 
 (define (update-visibility view pos g)
   ;; set the fog of war
@@ -112,6 +112,16 @@
 				     => (lambda (o) ((object-printer o))))
 				    (else #\space))))
     cell))
+(define (get-object cell)
+  (walkable-cell-object cell)) ;; TODO change with multiple objects
+(define (add-object cell object)
+  (walkable-cell-object-set! cell object)) ;; TODO change it when we have multiple objects
+(define (remove-object cell object)
+  (walkable-cell-object-set! cell #f)) ;; TODO change with multiple objects
+(define (get-occupant cell)
+  (walkable-call-occupant cell))
+(define (occupant-set! cell occupant) ;; TODO add a check to see if it's a walkable cell ?
+  (walkable-cell-occupant-set! cell occupant))
 
 (define-type object
   printer
