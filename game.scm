@@ -41,7 +41,7 @@
 		    ;; where we were
 		    (player-pos-set! player
 				     (move maze pos (player-pos player)))
-		    (loop)))))))
+		    (loop))))))) ;; TODO clear help text after a command
 
 (if (not debug) (maze 5 5 (random-element character-names)))
 
