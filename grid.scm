@@ -2,6 +2,7 @@
   x
   y)
 (define new-point make-point) ; for consistency
+(define (copy-point p) (new-point (point-x p) (point-y p)))
 
 ;; vector of vectors of cells
 (define-type grid
@@ -58,7 +59,7 @@
       (iota (grid-width g)))
      (display "|\n"))
    (iota (grid-height g)))
-  (draw-border-line))
+  (draw-border-line)) ;; TODO this draws the terrain, now have another loop that draws the objects inside, including the player
 
 (define (update-visibility view pos g)
   ;; set the fog of war
@@ -81,14 +82,14 @@
 		    (- posy 1) posy       (+ posy 1)))))
 
 (define (move g pos new-pos)
-  ;; moves the object at pos to new-pos, and returns new-pos if it succeeds
+  ;; moves the object at pos to new-pos, and returns the position of the object
   (if (and (inside-grid?   g new-pos)
 	   (walkable-cell? (grid-get g new-pos)))
       (let ((to-move (grid-get g pos)))
 	(grid-set! g pos     (new-walkable-cell)) ;; TODO change that when we have terrain, and the player is just something on top
 	(grid-set! g new-pos to-move)
 	new-pos)
-      #f)) ; move failed
+      pos)) ; move failed
 
 
 (define-type cell
@@ -110,10 +111,12 @@
 (define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
 
 (define-type player
-  name)
+  name
+  pos)
+(define new-player make-player) ; for consistency
 (define-type-of-cell player-cell ;; TODO not have as a cell, this is not terrain
   player)
 (define (new-player-cell player) (make-player-cell (lambda () #\@) player))
 
-(define-type-of-cell treasure-cell)
+(define-type-of-walkable-cell treasure-cell)
 (define (new-treasure-cell) (make-treasure-cell (lambda () #\T)))

@@ -12,24 +12,29 @@
 
 (define (maze h w player-name maze-name treasure-name)
   ;; simple maze game, start at the top left, and get to the bottom right
-  (let* ((maze (generate-maze h w))
-	 (view (empty-grid (grid-height maze) (grid-width maze)
-			    cell-fun: (lambda (pos) 'unknown))))
+  (let* ((maze   (generate-maze h w)) ;; TODO players and treasures really need not to be kinds of tiles
+	 (view   (empty-grid (grid-height maze) (grid-width maze)
+			     cell-fun: (lambda (pos) 'unknown)))
+	 (player (new-player player-name (new-point 0 0))))
     ;; player at the top left
-    (grid-set! maze (new-point 0 0) (new-player-cell player-name)) ;; TODO have the player in a variable, not reasonable to always create a new one
+    (grid-set! maze (new-point 0 0) (new-player-cell player))
     ;; treasure at the bottom right
     (grid-set! maze (new-point (- (grid-height maze) 1)
 			       (- (grid-width maze) 1))
 	       (new-treasure-cell))
-    (let loop ((pos (new-point 0 0))) ;; TODO use player-pos, or something
-      (if (treasure-cell? (grid-get maze pos))
-	  (display (string-append player-name " has recovered "
-				  treasure-name " from " maze-name "\n"))
-	  (begin (update-visibility view pos maze)
-		 (show-grid maze view)
-		 (cond ((move maze pos (read-command pos)) ;; TODO once read-command takes and side-effects the player structure, put it on the line before
-			=> (lambda (new-pos) (loop new-pos)))
-		       (else (loop pos))))))))
+    (let loop ()
+      (let ((pos (player-pos player)))
+	(if (treasure-cell? (grid-get maze pos)) ;; TODO oops, the treasure gets overwritten by the player...
+	    (display (string-append player-name " has recovered "
+				    treasure-name " from " maze-name "\n"))
+	    (let ((old-pos (copy-point pos))) ;; TODO once we don't consider players as terrain, should not be necessary anymore ;; TODO even now, pos should do the trick
+	      (update-visibility view pos maze)
+	      (show-grid maze view)
+	      (read-command player) ; side-effects the position of the player
+	      ;; tries to move to the new position, if it fails, return where
+	      ;; we were
+	      (player-pos-set! player (move maze old-pos (player-pos player)))
+	      (loop)))))))
 
 (if (not debug)
     (maze 5 5
