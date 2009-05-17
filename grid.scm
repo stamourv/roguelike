@@ -4,7 +4,7 @@
 (define (empty-grid height
 		    #!optional (width height)
 		    ;; function that takes the x and y, and returns the content
-		    #!key (cell-fun (lambda (x y) (new-unknown-cell))))
+		    #!key (cell-fun (lambda (x y) (new-walkable-cell))))
   (make-grid (list->vector
 	      (map (lambda (x) (list->vector
 				(map (lambda (y) (cell-fun x y))
@@ -17,26 +17,41 @@
 (define (grid-width  g) (vector-length (vector-ref (grid-rows g) 0)))
 (define (inside-grid? g x y) (and (>= x 0) (< x (grid-height g))
 				  (>= y 0) (< y (grid-width  g))))
-(define (show-grid g)
+(define (show-grid g #!optional (view #f)) ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   (define (draw-border-line)
     (display "+")
     (for-each (lambda (x) (display "-")) (iota (grid-width g)))
     (display "+\n"))
+  ;; clear the screen. ugly, but the clear code does not seem to be supported
+  ;; by gambit
+  (for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
+  (terminal-command "[H") ; go home
   (draw-border-line)
-  (for-each (lambda (row)
+  (for-each (lambda (x)
 	      (display "|")
-	      (for-each (lambda (cell) (display ((cell-printer cell))))
-			(vector->list row))
+	      (for-each (lambda (y)
+			  (let ((cell       (grid-get g x y))
+				(visibility (if view
+						(grid-get view x y)
+						'visible)))
+			    (case visibility
+			      ((visible)
+			       (terminal-print ((cell-printer cell))
+					       bg: 'white fg: 'black)) ;; TODO actually have the visibility as a parameter to the printer ?
+			      ((visited)
+			       (terminal-print ((cell-printer cell))
+					       bg: 'black fg: 'white))
+			      ((unknown)
+			       (terminal-print "?")))))
+			(iota (grid-width g)))
 	      (display "|\n"))
-	    (vector->list (grid-rows g)))
+	    (iota (grid-height g)))
   (draw-border-line))
 
 
 (define-type cell
-  printer ; thunk that returns a character
+  printer    ; thunk that returns a character
   extender: define-type-of-cell)
-(define-type-of-cell unknown-cell)
-(define (new-unknown-cell) (make-unknown-cell (lambda () #\?)))
 
 (define-type-of-cell walkable-cell
   extender: define-type-of-walkable-cell)
@@ -54,7 +69,7 @@
 
 (define-type player
   name)
-(define-type-of-cell player-cell
+(define-type-of-cell player-cell ;; TODO not have as a cell, this is not terrain
   player)
 (define (new-player-cell player) (make-player-cell (lambda () #\@) player))
 
