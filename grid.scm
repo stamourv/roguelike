@@ -37,9 +37,6 @@
     (display "+")
     (for-each (lambda (x) (display "-")) (iota (grid-width g)))
     (display "+\n"))
-  ;; clear the screen. ugly, but the clear code does not seem to be supported
-  ;; by gambit
-  (for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
   (terminal-command "[H") ; go home
   (draw-border-line)
   (for-each
@@ -61,25 +58,28 @@
    (iota (grid-height g)))
   (draw-border-line))
 
-(define (update-visibility view pos g)
+(define (update-visibility player)
   ;; set the fog of war
-  (for-each (lambda (x)
-	      (for-each (lambda (y)
-			  (if (eq? (grid-get view (new-point x y)) 'visible)
-			      (grid-set! view (new-point x y) 'visited)))
-			(iota (grid-width view))))
-	    (iota (grid-height view)))
-  ;; set visible area TODO have something better, maybe see until we see a wall, in each direction + sides to see rooms, if complex enough, put in its own file
-  (let ((posx (point-x pos))
-	(posy (point-y pos)))
-    (for-each (lambda (x y) (if (inside-grid? g (new-point x y))
-				(grid-set! view (new-point x y) 'visible)))
-	      (list (- posx 1) (- posx 1) (- posx 1)
-		    posx       posx       posx
-		    (+ posx 1) (+ posx 1) (+ posx 1))
-	      (list (- posy 1) posy       (+ posy 1)
-		    (- posy 1) posy       (+ posy 1)
-		    (- posy 1) posy       (+ posy 1)))))
+  (let ((view (player-view player))
+	(pos  (player-pos  player))
+	(g    (player-map  player)))
+    (for-each (lambda (x)
+		(for-each (lambda (y)
+			    (if (eq? (grid-get view (new-point x y)) 'visible)
+				(grid-set! view (new-point x y) 'visited)))
+			  (iota (grid-width view))))
+	      (iota (grid-height view)))
+    ;; set visible area TODO have something better, maybe see until we see a wall, in each direction + sides to see rooms, if complex enough, put in its own file
+    (let ((posx (point-x pos))
+	  (posy (point-y pos)))
+      (for-each (lambda (x y) (if (inside-grid? g (new-point x y))
+				  (grid-set! view (new-point x y) 'visible)))
+		(list (- posx 1) (- posx 1) (- posx 1)
+		      posx       posx       posx
+		      (+ posx 1) (+ posx 1) (+ posx 1))
+		(list (- posy 1) posy       (+ posy 1)
+		      (- posy 1) posy       (+ posy 1)
+		      (- posy 1) posy       (+ posy 1))))))
 
 (define (move g pos new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
@@ -136,11 +136,15 @@
   extender: define-type-of-occupant)
 (define-type-of-occupant player
   name
-  pos)
-(define (new-player name pos)
+  map
+  pos
+  view)
+(define (new-player name map pos view)
   (make-player (lambda () #\@)
 	       name
-	       pos))
+	       map
+	       pos
+	       view))
 
 (define-type-of-cell wall-cell
   extender: define-type-of-wall-cell)
