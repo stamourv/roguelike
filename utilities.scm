@@ -2,6 +2,11 @@
   (let loop ((n (- n 1)) (l '()))
     (if (< n 0) l (loop (- n 1) (cons n l)))))
 
+(define (foldl f base lst)
+  (if (null? lst)
+      base
+      (foldl f (f base (car lst)) (cdr lst))))
+
 
 ;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 (define-type set
