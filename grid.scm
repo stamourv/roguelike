@@ -35,13 +35,19 @@
     (and (>= x 0) (< x (grid-height g))
 	 (>= y 0) (< y (grid-width  g)))))
 
-(define (four-directions pos)
-  ;; generates a list of the points in the 4 directions fron pos
-  ;; they might NOT be inside a grid
+;; these functions return a list of points in the given directions from pos
+;; these points might NOT be inside the grid
+;; the order of the points is important, some functions depend on it
+(define (up-down pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
-    (list (new-point (- x 1) y) (new-point (+ x 1) y)
-	  (new-point x (- y 1)) (new-point x (+ y 1)))))
+    (list (new-point (- x 1) y) (new-point (+ x 1) y))))
+(define (left-right pos)
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    (list (new-point x (- y 1)) (new-point x (+ y 1)))))
+(define (four-directions pos)
+  (append (up-down pos) (left-right pos)))
 (define (eight-directions pos)
   ;; same, but with diagonals
   (append (four-directions pos)
@@ -49,6 +55,10 @@
 		(y (point-y pos)))
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
+
+(define (random-position g)
+  (new-point (random-integer (grid-height g))
+	     (random-integer (grid-width g))))
 
 (define (show-grid g #!key (print-fun (lambda (pos) display)))
   (define (draw-border-line)
@@ -128,7 +138,7 @@
 
 
 (define-type cell
-  printer    ; thunk that returns a character
+  printer    ; thunk that returns a character ;; TODO maybe not a thunk, but a function that receives bg and fg color ?
   extender: define-type-of-cell)
 
 (define-type-of-cell walkable-cell
