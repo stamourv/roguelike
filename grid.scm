@@ -17,7 +17,7 @@
 				     (iota width))))
 		   (iota height)))))
 ;; in all cases, x is the row, y is the column
-(define (grid-get  g pos)
+(define (grid-get  g pos) ;; TODO call grid-ref ?
   (vector-ref (vector-ref (grid-rows g) (point-x pos))
 	      (point-y pos)))
 (define (grid-set! g pos v)
@@ -140,3 +140,5 @@
 (define (new-vertical-wall-cell)   (make-vertical-wall-cell   (lambda () #\|)))
 (define (new-horizontal-wall-cell) (make-horizontal-wall-cell (lambda () #\-)))
 (define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
+
+(define (opaque-cell? cell) (wall-cell? cell)) ;; TODO add as other opaque cell types are added
