@@ -1,4 +1,4 @@
-(define (read-command player) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one
+(define (read-command player) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
   (let* ((pos   (player-pos player))
 	 (grid  (player-map player))
 	 (x     (point-x pos))

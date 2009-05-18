@@ -2,6 +2,7 @@
 (include "grid.scm")
 (include "player.scm")
 (include "maze.scm")
+(include "terminal.scm")
 (include "input.scm")
 (include "names.scm")
 (include "help.scm")

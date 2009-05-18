@@ -37,7 +37,7 @@
     (display "+")
     (for-each (lambda (x) (display "-")) (iota (grid-width g)))
     (display "+\n"))
-  (terminal-command "[H") ; go home
+  (cursor-home)
   (draw-border-line)
   (for-each
    (lambda (x)
@@ -70,6 +70,14 @@
 	(walkable-cell-occupant-set! new-cell to-move)
 	new-pos)
       pos)) ; move failed
+
+(define (set-cursor-on-grid grid pos)
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    ;; we have to account for the borders
+    (if (inside-grid? grid pos)
+	(cursor-position-set! (+ x 2) (+ y 2))
+	#f)))
 
 
 (define-type cell
