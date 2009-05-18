@@ -39,6 +39,13 @@
 	(y (point-y pos)))
     (list (new-point (- x 1) y) (new-point (+ x 1) y)
 	  (new-point x (- y 1)) (new-point x (+ y 1)))))
+(define (eight-directions pos)
+  ;; same, but with diagonals
+  (append (four-directions pos)
+	  (let ((x (point-x pos))
+		(y (point-y pos)))
+	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
+		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
 (define (show-grid g #!optional (view #f)) ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   (define (draw-border-line)

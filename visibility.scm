@@ -37,7 +37,8 @@
 
 (define (update-visibility player) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
   ;; set the fog of war
-  (let ((view (player-view player)))
+  (let ((view (player-view player))
+	(pos   (player-pos player)))
     (for-each (lambda (x)
 		(for-each (lambda (y)
 			    (if (eq? (grid-get view (new-point x y)) 'visible)
@@ -48,7 +49,6 @@
     ;; field of vision using shadow casting (spiral path FOV)
     ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
     (let* ((g     (player-map player))
-	   (pos   (player-pos player))
 	   (x     (point-x    pos))
 	   (y     (point-y    pos)))
       (let loop ((queue (list pos)))
@@ -85,6 +85,11 @@
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
+      ;; mark our immediate surroundings as visible, in case the previous
+      ;; algorithm didn't
+      (for-each (lambda (pos) (if (inside-grid? view pos)
+				  (grid-set! view pos 'visible)))
+		(eight-directions pos))
       ;; one last pass to solve the problem case of walls that are surrounded
       ;; by four walls, which would normally make them invisible and give ugly
       ;; results on the map ;; TODO actually, this is a bit more broad, it's all walls surrounded by 4 seen squares, maybe all squares surrounded by 4 seen, not just walls ?

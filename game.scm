@@ -31,9 +31,7 @@
 
 (define (maze h w name)
   ;; simple maze game, start at the top left, and get to the bottom right
-  (let* ((maze   ;; (generate-maze h w)
-		 test-dungeon
-		 )
+  (let* ((maze   (generate-maze h w))
 	 (player (new-player name maze (new-point 0 0)
 			     (empty-grid (grid-height maze) (grid-width maze)
 					 cell-fun: (lambda (pos) 'unknown)))))
@@ -67,6 +65,6 @@
   (shell-command "setterm -cursor on")
   (exit))
 
-(if (not debug) (maze 5 5 (random-element character-names)))
+(if (not debug) (maze 8 8 (random-element character-names)))
 
 (quit)
