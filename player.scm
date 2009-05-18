@@ -53,7 +53,12 @@
 	(if (not (null? queue))
 	    (let ((new (car queue)))
 	      (if (and (inside-grid? g new)
-		       (not (eq? (grid-get view new) 'visible))) ; already seen
+		       (not (eq? (grid-get view new) 'visible)) ; already seen
+		       ;; do we have line of sight ? helps restrict the
+		       ;; visibility down to a reasonable level
+		       ;; TODO with this, if we have a wall surrounded by 4 others, we will never see it
+		       ;; TODO to solve this, maybe a rule that if everything around is seen (or visited), see it ? are there cases where this would be bad ?
+		       (line-of-sight? g pos new))
 		  (begin (grid-set! view new 'visible) ; mark as lit
 			 (if (not (opaque-cell? (grid-get g new)))
 			     (loop (append (cdr queue)
