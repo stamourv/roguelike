@@ -45,8 +45,12 @@
 				     (move maze pos (player-pos player)))
 		    (loop)))))))
 
+(define (quit)
+  ;; restore tty
+  (tty-mode-set! (current-input-port) #t #t #f #f 0)
+  (shell-command "setterm -cursor on")
+  (exit))
+
 (if (not debug) (maze 5 5 (random-element character-names)))
 
-;; restore tty, needed if launched from the REPL
-(tty-mode-set! (current-input-port) #t #t #f #f 0)
-(shell-command "setterm -cursor on")
+(quit)
