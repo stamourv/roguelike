@@ -16,9 +16,22 @@
 ;; supported by gambit
 (for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
 
+
+(define test-dungeon
+  (string->grid
+   (string-append "   |     | |   \n"
+		  "   |     |     \n"
+		  "   |     | |   \n"
+		  "-+ +-- --+ +- -\n"
+		  " | |     | |   \n"
+		  " |       | |- -\n"
+		  " | |     | |   \n"
+		  "   |       | | \n")))
+
 (define (maze h w name)
   ;; simple maze game, start at the top left, and get to the bottom right
-  (let* ((maze   (generate-maze h w))
+  (let* ((maze   ;; (generate-maze h w)
+		 test-dungeon)
 	 (player (new-player name maze (new-point 0 0)
 			     (empty-grid (grid-height maze) (grid-width maze)
 					 cell-fun: (lambda (pos) 'unknown)))))

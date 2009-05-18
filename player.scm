@@ -25,12 +25,12 @@
 
     ;; field of vision using shadow casting (spiral path FOV)
     ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
-    (let* ((g   (player-map player))
-	   (pos (player-pos player))
-	   (x   (point-x    pos))
-	   (y   (point-y    pos)))
+    (let* ((g     (player-map player))
+	   (pos   (player-pos player))
+	   (x     (point-x    pos))
+	   (y     (point-y    pos)))
       (let loop ((queue (list pos)))
-	(define (pass-light pos new) ;; TODO nice, but maybe a bit too permissive, maybe instead of checking the quadrant, be more restrictive ?
+	(define (pass-light pos new)
 	  ;; enqueue cells depending on the orientation of new from pos
 	  (let* ((pos-x (point-x pos)) (pos-y (point-y pos))
 		 (new-x (point-x new)) (new-y (point-y new))
@@ -49,7 +49,7 @@
 		  ((< new-y pos-y) (list north west south))       ; due west
 		  ((> new-y pos-y) (list south east north))       ; due east
 		  (else ; we are at the starting point
-		   (list east north west south)))))
+		   (list east north west south))))) ;; TODO a touch too permissive for mazes
 	(if (not (null? queue))
 	    (let ((new (car queue)))
 	      (if (and (inside-grid? g new)
