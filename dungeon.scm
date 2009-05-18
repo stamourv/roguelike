@@ -71,18 +71,19 @@
 
     ;; the number of features was chosen arbitrarily, with the placement
     ;; failures, this should give some nice results
-    (let loop ((n 20)
+    (let loop ((n 200)
 	       (walls (let loop ((res (add-random-feature (random-position))))
 			(if res ; we place the first feature
 			    res
 			    (loop (add-random-feature (random-position)))))))
       (if (> n 0)
-	  (let* ((i     (random-integer (length walls)))
-		 (start (list-ref walls i))
-		 (walls (remove-at-index walls i)))
+	  (let* ((i     (random-integer (length walls))) ;; TODO we might end up constantly choosing walls close to the edge, which cannot expand into anything, but we also can't systematically remove walls that fail an expansion, maybe have a second chance ? and after that remove it ?
+		 (start (list-ref walls i)))
 	    (loop (- n 1)
-		  (cond ((add-random-feature start)
-			 => (lambda (more) (append walls more)))
+		  (cond ((add-random-feature start) ;; TODO OOPS we have some cases where rectangles touch only by the corner (actually, one square from the corner, so we can't have any doors there, maybe add the room starting with the first free space, not the first wall...
+			 ;; TODO for doors, maybe add doors (for now free space) where we chose a wall to expand
+			 => (lambda (more) (append (remove-at-index walls i)
+						   more)))
 			(else walls)))))) ;; TODO see if it works properly, and add oriented corridors
 
 ;;     (for-each (lambda (x) (add-random-feature (random-position)))

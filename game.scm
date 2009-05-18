@@ -8,7 +8,7 @@
 (include "names.scm")
 (include "help.scm")
 
-(define debug #t) ;; TODO find a better way
+(define debug #f) ;; TODO find a better way
 
 (random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)
@@ -51,7 +51,8 @@
 ;; 			      (object-name treasure) " from "
 ;; 			      (random-element dungeon-names) "\n"))))
 	      (else (update-visibility player)
-		    (show-grid maze (player-view player))
+		    (show-grid maze print-fun: (visibility-printer
+						(player-view player)))
 		    (read-command player) ; side-effects the player
 		    ;; tries to move to the new position, if it fails, return
 		    ;; where we were

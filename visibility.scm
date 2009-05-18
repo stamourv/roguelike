@@ -109,3 +109,15 @@
 		  (grid-set! view pos 'visited))))
 	  (iota (grid-width view))))
        (iota (grid-height view))))))
+
+;; returns a printing function for show-grid
+(define (visibility-printer view)
+  (lambda (pos)
+    (lambda (c)
+      (case (grid-get view pos)
+	((visible)
+	 (terminal-print c bg: 'white fg: 'black)) ;; TODO can we have colored objects with that ? not sure
+	((visited)
+	 (terminal-print c bg: 'black fg: 'white))
+	((unknown)
+	 (terminal-print "?"))))))

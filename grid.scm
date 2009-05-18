@@ -50,7 +50,7 @@
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
-(define (show-grid g #!optional (view #f))
+(define (show-grid g #!key (print-fun (lambda (pos) display)))
   (define (draw-border-line)
     (display "+")
     (for-each (lambda (x) (display "-")) (iota (grid-width g)))
@@ -61,16 +61,9 @@
    (lambda (x)
      (display "|")
      (for-each
-      (lambda (y) ;; TODO have this in a printer function, so we can simply use display for speed
-	(let ((cell       (grid-get g (new-point x y)))
-	      (visibility (if view (grid-get view (new-point x y)) 'visited)))
-	  (case visibility
-	    ((visible)
-	     (terminal-print ((cell-printer cell)) bg: 'white fg: 'black)) ;; TODO have the visibility as a parameter to the printer ? if not, we can't have colored objects, since they absolutely have to return a char, maybe have them return a string, which could contain vt100 commands ?
-	    ((visited)
-	     (terminal-print ((cell-printer cell)) bg: 'black fg: 'white))
-	    ((unknown)
-	     (terminal-print "?")))))
+      (lambda (y)
+	(let ((pos (new-point x y)))
+	  ((print-fun pos) ((cell-printer (grid-get g pos))))))
       (iota (grid-width g)))
      (display "|\n"))
    (iota (grid-height g)))
