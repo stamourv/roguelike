@@ -8,7 +8,7 @@
 (include "names.scm")
 (include "help.scm")
 
-(define debug #f) ;; TODO find a better way
+(define debug #t) ;; TODO find a better way
 
 (random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)

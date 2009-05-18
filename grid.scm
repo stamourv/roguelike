@@ -1,3 +1,6 @@
+(load "utilities.scm")
+(load "terminal.scm")
+
 (define-type point
   x
   y)
@@ -47,7 +50,7 @@
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
-(define (show-grid g #!optional (view #f)) ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
+(define (show-grid g #!optional (view #f))
   (define (draw-border-line)
     (display "+")
     (for-each (lambda (x) (display "-")) (iota (grid-width g)))
@@ -58,9 +61,9 @@
    (lambda (x)
      (display "|")
      (for-each
-      (lambda (y)
+      (lambda (y) ;; TODO have this in a printer function, so we can simply use display for speed
 	(let ((cell       (grid-get g (new-point x y)))
-	      (visibility (if view (grid-get view (new-point x y)) 'visible)))
+	      (visibility (if view (grid-get view (new-point x y)) 'visited)))
 	  (case visibility
 	    ((visible)
 	     (terminal-print ((cell-printer cell)) bg: 'white fg: 'black)) ;; TODO have the visibility as a parameter to the printer ? if not, we can't have colored objects, since they absolutely have to return a char, maybe have them return a string, which could contain vt100 commands ?
@@ -187,9 +190,11 @@
 (define-type-of-wall-cell vertical-wall-cell)
 (define-type-of-wall-cell horizontal-wall-cell)
 (define-type-of-wall-cell corner-wall-cell)
+(define-type-of-wall-cell solid-wall-cell)
 (define (new-wall-cell) (make-wall-cell (lambda () #\#)))
 (define (new-vertical-wall-cell)   (make-vertical-wall-cell   (lambda () #\|)))
 (define (new-horizontal-wall-cell) (make-horizontal-wall-cell (lambda () #\-)))
 (define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
+(define (new-solid-wall-cell)      (make-solid-wall-cell      (lambda () #\#)))
 
 (define (opaque-cell? cell) (wall-cell? cell)) ;; TODO add as other opaque cell types are added

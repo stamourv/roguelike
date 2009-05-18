@@ -7,6 +7,12 @@
       base
       (foldl f (f base (car lst)) (cdr lst))))
 
+(define (repeat n l)
+  (let loop ((n n) (res '()))
+    (if (= n 0)
+	res
+	(loop (- n 1) (append res l)))))
+
 
 ;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 (define-type set
@@ -55,6 +61,9 @@
 
 (define (random-element l)
   (list-ref l (random-integer (length l))))
+
+(define (random-between x y) ; between x and y inclusively
+  (+ x (random-integer (+ 1 (- y x)))))
 
 (define (split-string s delimiter) ; delimiter is a char
   (let loop ((s   (string->list s))
