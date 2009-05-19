@@ -26,11 +26,17 @@
 	       v))
 (define (grid-height g) (vector-length (grid-rows g)))
 (define (grid-width  g) (vector-length (vector-ref (grid-rows g) 0)))
+
 (define (inside-grid? g pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
     (and (>= x 0) (< x (grid-height g))
 	 (>= y 0) (< y (grid-width  g)))))
+
+(define (distance a b)
+  (let ((x (abs (- (point-x b) (point-x a))))
+	(y (abs (- (point-y b) (point-y a)))))
+    (sqrt (+ (expt x 2) (expt y 2)))))
 
 ;; these functions return a list of points in the given directions from pos
 ;; these points might NOT be inside the grid

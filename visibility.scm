@@ -79,8 +79,9 @@
 		   (list east north west south)))))
 	(if (not (null? queue))
 	    (let ((new (car queue)))
-	      (if (and (inside-grid? g new) ;; TODO have a maximum range ?
+	      (if (and (inside-grid? g new)
 		       (not (eq? (grid-get view new) 'visible)) ; already seen
+		       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
 		       ;; do we have line of sight ? helps restrict the
 		       ;; visibility down to a reasonable level
 		       ;; note: line of sight is not necessary to see walls,
@@ -113,9 +114,8 @@
 				    (and (inside-grid? g new)
 					 (not (opaque-cell? (grid-get g new)))
 					 (eq? (grid-get view new) 'visible))))
-			      #f
-			      (eight-directions pos)))
-		  (grid-set! view pos 'visible))))
+			      #f (eight-directions pos)))
+		  (grid-set! view pos 'visited))))
 	  (iota (grid-width view))))
        (iota (grid-height view))))))
 

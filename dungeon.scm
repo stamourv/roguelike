@@ -73,6 +73,11 @@
 	      ;; TODO the first on should not be a door, but the stairs up
 	      ;; TODO maybe actually wait to put the doors, see below
 	      ;; put a doorway between the 2 rooms
+	      (for-each (lambda (pos) (grid-set! level pos
+						 (new-corner-wall-cell)))
+			(if (or (eq? direction 'east) (eq? direction 'west))
+			    (up-down    pos)
+			    (left-right pos)))
 	      (if trace?
 		  (begin (pp (list trace pos: (point-x pos) (point-y pos)
 				   dir: direction height: height width: width))
