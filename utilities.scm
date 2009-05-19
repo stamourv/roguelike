@@ -13,6 +13,11 @@
 	res
 	(loop (- n 1) (append res l)))))
 
+(define (find p l)
+  (cond ((null? l)   #f)
+	((p (car l)) (car l))
+	(else        (find p (cdr l)))))
+
 
 ;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 (define-type set
@@ -80,8 +85,3 @@
 	   (loop (cdr s)
 		 (cons (car s) acc)
 		 res)))))
-
-;; (define (remove x lst) ;; TODO not used
-;;   (cond ((null? lst)       '())
-;;         ((eq? x (car lst)) (cdr lst))
-;;         (else              (cons (car lst) (remove x (cdr lst))))))

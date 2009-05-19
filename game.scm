@@ -1,5 +1,6 @@
 (include "utilities.scm")
 (include "grid.scm")
+(include "cell.scm")
 (include "player.scm")
 (include "maze.scm")
 (include "dungeon.scm")
@@ -9,7 +10,7 @@
 (include "names.scm")
 (include "help.scm")
 
-(define debug #f) ;; TODO find a better way
+(define debug #t) ;; TODO find a better way
 
 (random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)

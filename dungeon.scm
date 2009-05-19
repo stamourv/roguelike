@@ -11,6 +11,20 @@
     (define (trace-cell)
       (let ((x (number->string (modulo trace 10))))
 	(make-walkable-cell (lambda () x) #f #f)))
+
+    (define-type room
+      cells ; TODO both of these are sets, use hash tables for sets if it becomes slow
+      connected-to)
+    (define rooms '()) ;; TODO another set, see above
+    (define (get-room point)
+      (find (lambda (room) (member point (room-cells room))) rooms))
+    (define (connected? a b)
+      ;; since it's commutative, no need to check both sides
+      (memq a (room-connected-to b)))
+    (define (connect! a b)
+      (room-connected-to-set! a (cons b (room-connected-to a)))
+      (room-connected-to-set! b (cons a (room-connected-to b)))
+      #t) ; must return true, since it's used in an and below
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
@@ -41,7 +55,8 @@
 		     #t (iota width))))
 	     #t (iota height))
 	    
-	    (let ((new-walls '())) ; yes it can, add it
+	    (let ((new-walls '()) ; yes it can, add it
+		  (inside    '()))
 	      (for-each
 	       (lambda (x)
 		 (for-each
@@ -64,26 +79,38 @@
 			       (set! new-walls (cons p new-walls))
 			       new-vertical-wall-cell)
 			      ;; inside of the room
-			      (else (if trace?
+			      (else (set! inside (cons p inside))
+				    (if trace?
 					trace-cell
 					new-walkable-cell)))))))
 		  (iota width)))
 	       (iota height))
-	      ;; TODO add doors (for now free space) where we chose a wall to expand
-	      ;; TODO the first on should not be a door, but the stairs up
-	      ;; TODO maybe actually wait to put the doors, see below
-	      ;; put a doorway between the 2 rooms
-	      (for-each (lambda (pos) (grid-set! level pos
-						 (new-corner-wall-cell)))
-			(if (or (eq? direction 'east) (eq? direction 'west))
-			    (up-down    pos)
-			    (left-right pos)))
+
 	      (if trace?
 		  (begin (pp (list trace pos: (point-x pos) (point-y pos)
 				   dir: direction height: height width: width))
-			 (grid-set! level pos (trace-cell))
-			 (set! trace (+ trace 1)))
-		  (grid-set! level pos (new-walkable-cell))) ;; TODO in addition, add + to each wall side of the door, so the door is obvious
+			 (set! trace (+ trace 1))))
+	      
+	      ;; add the new room the list of rooms
+	      (set! rooms (cons (make-room inside '()) rooms))
+	      ;; put a door between the two rooms (the door is at pos)
+	      (for-each (lambda (pos) (grid-set! level pos
+						 (new-corner-wall-cell)))
+			(if (memq direction '(east west))
+			    (up-down    pos)
+			    (left-right pos)))
+	      (let* ((sides (if (memq direction '(east west))
+				(left-right pos)
+				(up-down    pos)))
+		     (a     (get-room (car sides)))
+		     (b     (get-room (cadr sides))))
+		(if (and a b)
+		    (begin (grid-set! level pos (new-door-cell)) ; put the door
+			   (connect!  a b))
+		    ;; when we place the first room, there is nothing to
+		    ;; connect to, and we place the stairs
+		    (grid-set! level pos (new-stairs-up-cell)))) ;; TODO FOO remove cell from ALL names (and stairs are ^ and v)
+
 	      new-walls)
 	    
 	    #f))) ; no it can't, give up
@@ -122,25 +149,71 @@
 	       ((< r 0.7) add-large-room)
 	       (else      add-small-room))
 	 pos direction)))
+    ;; TODO problem : the presence of + on a straight wall reveals the structure on the other side of the wall, maybe use # for all wall, but would be ugly
 
-    ;; the number of features was chosen arbitrarily, with the placement
-    ;; failures, this should give some nice results
     (let loop ((n 1000)
-	       (walls (let loop ((res #f)) ; we place the first feature
+	       (walls (let loop ((res #f) ; we place the first feature
+				 (pos #f))
 			(if res
 			    res
-			    (loop (add-random-feature
-				   (random-position level)))))))
+			    (let ((r (random-position level)))
+			      (loop (add-random-feature r)
+				    r))))))
       (if (> n 0)
 	  (let* ((i     (random-integer (length walls)))
 		 (start (list-ref walls i)))
-	    ;; TODO doors: maybe put a door at all places between 2 +s (and put +s on each side of a doorway), would open doors to form loops in some cases, which is interesting (also, the presence of + on a wall reveals the structure on the other side of a wall, if we see a + in the middle of a wall, we know that there is a wall starting on the other side, it this is a problem, use # for all walls, but it's ugly)
 	    (loop (- n 1)
 		  (cond ((add-random-feature start) ;; TODO maybe instead of just being a list of positions, also have the type of room they are part of, so we can alter the probabilities of generating the same type of room from there (lower it, most likely)
 			 => (lambda (more)
 			      (append (remove-at-index walls i) more)))
 			(else walls))))))
-    ;; TODO maybe have a pass to randomly add doors to 2 rooms that are not directly connected, but still have a width 1 wall between them
+
+    ;; add doors to anything that looks like a doorway
+    ;; TODO maybe only do it with probability p
+    (for-each ;; TODO have a function to iterate over a grid FOO
+     (lambda (x)
+       (for-each
+	(lambda (y)
+	  (let* ((pos    (new-point x y))
+		 (around (four-directions pos))
+		 (up     (list-ref around 0))
+		 (down   (list-ref around 1))
+		 (left   (list-ref around 2))
+		 (right  (list-ref around 3)))
+	    ;; we must either have wall up and down, and free space left and
+	    ;; right, or the other way around
+	    (if (and (not (door-cell? (grid-get level pos))) ; not already
+		     (foldl (lambda (acc cell)
+			      (and acc (inside-grid? level cell)))
+			    #t around)
+		     (let ((c-up    (grid-get level up))
+			   (c-down  (grid-get level down))
+			   (c-left  (grid-get level left))
+			   (c-right (grid-get level right)))
+		       (define (check-and-connect a b)
+			 (let ((a (get-room a))
+			       (b (get-room b)))
+			   (if (not (connected? a b))
+			       ;; connect them
+			       (begin (connect! a b)
+				      #t)
+			       #f)))
+		       (or (and (corner-wall-cell? c-up)
+				(corner-wall-cell? c-down)
+				(walkable-cell?    c-left)
+				(walkable-cell?    c-right)
+				;; must not be connected already
+				(check-and-connect left right))
+			   (and (corner-wall-cell? c-left)
+				(corner-wall-cell? c-right)
+				(walkable-cell?    c-up)
+				(walkable-cell?    c-down)
+				(check-and-connect up down)))))
+		;; yes, we have found a valid doorway
+		(grid-set! level pos (new-door-cell))))) ;; TODO make doors openable by the player
+	(iota level-width)))
+     (iota level-height))
+    
     level))
 ;; TODO how to return the starting point ? so that we may add stairs, the player, etc, maybe also return a list of the free spaces
 ;; TODO maybe instead, just recalculate all that when we receive the map down the line, just just some stairs at this stage (and afterwards, find the stairs up to place the player)
