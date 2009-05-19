@@ -93,9 +93,10 @@
 			    (grid-set! g (new-point x y)
 				       (case (string-ref (list-ref rows x) y)
 					 ((#\ ) (new-walkable-cell))
-					 ((#\+) (new-corner-wall-cell))
-					 ((#\|) (new-vertical-wall-cell))
-					 ((#\-) (new-horizontal-wall-cell)))))
+					 ((#\+) (new-corner-wall))
+					 ((#\|) (new-vertical-wall))
+					 ((#\-) (new-horizontal-wall))
+					 ((#\#) (new-solid-wall))))) ;; TODO add as we add
 			  (iota y)))
 	      (iota x))
     g))

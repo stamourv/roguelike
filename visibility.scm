@@ -36,7 +36,7 @@
 		      #f ; we hit an obstacle, we don't have line of sight
 		      (let ((error (if (>= error 1/2) (- error 1)  error))
 			    (y     (if (>= error 1/2) (floor (+ y y-step)) y))
-			    (seen-opaque? (opaque-cell? (grid-get g pos))))
+			    (seen-opaque? (opaque? (grid-get g pos))))
 			(loop error seen-opaque? (+ x 1) y))))))))))
 
 (define (update-visibility player) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
@@ -88,7 +88,7 @@
 		       ;; this gives better results
 		       (line-of-sight? g pos new))
 		  (begin (grid-set! view new 'visible) ; mark as lit
-			 (if (not (opaque-cell? (grid-get g new)))
+			 (if (not (opaque? (grid-get g new)))
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
@@ -107,12 +107,12 @@
 	 (for-each
 	  (lambda (y)
 	    (let ((pos (new-point x y)))
-	      (if (and (opaque-cell? (grid-get g pos))
+	      (if (and (opaque? (grid-get g pos))
 		       (eq? (grid-get view pos) 'unknown)
 		       (foldl (lambda (acc new)
 				(or acc
 				    (and (inside-grid? g new)
-					 (not (opaque-cell? (grid-get g new)))
+					 (not (opaque? (grid-get g new)))
 					 (eq? (grid-get view new) 'visible))))
 			      #f (eight-directions pos)))
 		  (grid-set! view pos 'visited))))

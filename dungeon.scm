@@ -5,7 +5,7 @@
   (let* ((level-height 20)
 	 (level-width  60)
 	 (level (empty-grid level-height level-width
-			    cell-fun: (lambda (pos) (new-solid-wall-cell)))))
+			    cell-fun: (lambda (pos) (new-solid-wall)))))
     
     (define trace 0) ;; to trace the generation of the dungeon
     (define (trace-cell)
@@ -51,7 +51,7 @@
 		       (let ((p (new-point (+ x pos-x) (+ y pos-y))))
 			 (and acc
 			      (inside-grid? level p)
-			      (wall-cell? (grid-get level p)))))
+			      (wall? (grid-get level p)))))
 		     #t (iota width))))
 	     #t (iota height))
 	    
@@ -65,19 +65,19 @@
 		      (grid-set!
 		       level p
 		       ;; find out the appropriate cell type
-		       ((cond ((or (corner-wall-cell? (grid-get level p))
+		       ((cond ((or (corner-wall? (grid-get level p))
 				   (and (or (= x 0) (= x (- height 1)))
 					(or (= y 0) (= y (- width 1)))))
 			       ;; one of the four corners
-			       new-corner-wall-cell)
+			       new-corner-wall)
 			      ((or (= x 0) (= x (- height 1)))
 			       ;; horizontal-wall
 			       (set! new-walls (cons p new-walls))
-			       new-horizontal-wall-cell)
+			       new-horizontal-wall)
 			      ((or (= y 0) (= y (- width 1)))
 			       ;; vertical wall
 			       (set! new-walls (cons p new-walls))
-			       new-vertical-wall-cell)
+			       new-vertical-wall)
 			      ;; inside of the room
 			      (else (set! inside (cons p inside))
 				    (if trace?
@@ -94,8 +94,7 @@
 	      ;; add the new room the list of rooms
 	      (set! rooms (cons (make-room inside '()) rooms))
 	      ;; put a door between the two rooms (the door is at pos)
-	      (for-each (lambda (pos) (grid-set! level pos
-						 (new-corner-wall-cell)))
+	      (for-each (lambda (pos) (grid-set! level pos (new-corner-wall)))
 			(if (memq direction '(east west))
 			    (up-down    pos)
 			    (left-right pos)))
@@ -105,11 +104,11 @@
 		     (a     (get-room (car sides)))
 		     (b     (get-room (cadr sides))))
 		(if (and a b)
-		    (begin (grid-set! level pos (new-door-cell)) ; put the door
+		    (begin (grid-set! level pos (new-door)) ; put the door
 			   (connect!  a b))
 		    ;; when we place the first room, there is nothing to
 		    ;; connect to, and we place the stairs
-		    (grid-set! level pos (new-stairs-up-cell)))) ;; TODO FOO remove cell from ALL names (and stairs are ^ and v)
+		    (grid-set! level pos (new-stairs-up))))
 
 	      new-walls)
 	    
@@ -182,7 +181,7 @@
 		 (right  (list-ref around 3)))
 	    ;; we must either have wall up and down, and free space left and
 	    ;; right, or the other way around
-	    (if (and (not (door-cell? (grid-get level pos))) ; not already
+	    (if (and (not (door? (grid-get level pos))) ; not already a door
 		     (foldl (lambda (acc cell)
 			      (and acc (inside-grid? level cell)))
 			    #t around)
@@ -198,19 +197,19 @@
 			       (begin (connect! a b)
 				      #t)
 			       #f)))
-		       (or (and (corner-wall-cell? c-up)
-				(corner-wall-cell? c-down)
+		       (or (and (corner-wall? c-up)
+				(corner-wall? c-down)
 				(walkable-cell?    c-left)
 				(walkable-cell?    c-right)
 				;; must not be connected already
 				(check-and-connect left right))
-			   (and (corner-wall-cell? c-left)
-				(corner-wall-cell? c-right)
+			   (and (corner-wall? c-left)
+				(corner-wall? c-right)
 				(walkable-cell?    c-up)
 				(walkable-cell?    c-down)
 				(check-and-connect up down)))))
 		;; yes, we have found a valid doorway
-		(grid-set! level pos (new-door-cell))))) ;; TODO make doors openable by the player
+		(grid-set! level pos (new-door))))) ;; TODO make doors openable by the player
 	(iota level-width)))
      (iota level-height))
     

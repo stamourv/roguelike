@@ -49,36 +49,36 @@
   extender: define-type-of-occupant)
 
 ;; TODO as it is, any object can hide stairs
-(define-type-of-walkable-cell stairs-cell
-  extender: define-type-of-stairs-cell)
-(define-type-of-stairs-cell stairs-up-cell)
-(define-type-of-stairs-cell stairs-down-cell)
-(define (new-stairs-up-cell)   (make-stairs-up-cell   (lambda () #\^) #f #f))
-(define (new-stairs-down-cell) (make-stairs-down-cell (lambda () #\v) #f #f))
+(define-type-of-walkable-cell stairs
+  extender: define-type-of-stairs)
+(define-type-of-stairs stairs-up)
+(define-type-of-stairs stairs-down)
+(define (new-stairs-up)   (make-stairs-up   (lambda () #\^) #f #f))
+(define (new-stairs-down) (make-stairs-down (lambda () #\v) #f #f))
 
 
-(define-type-of-cell wall-cell
-  extender: define-type-of-wall-cell)
-(define-type-of-wall-cell vertical-wall-cell)
-(define-type-of-wall-cell horizontal-wall-cell)
-(define-type-of-wall-cell corner-wall-cell)
-(define-type-of-wall-cell solid-wall-cell)
-(define (new-wall-cell) (make-wall-cell (lambda () #\#)))
-(define (new-vertical-wall-cell)   (make-vertical-wall-cell   (lambda () #\|)))
-(define (new-horizontal-wall-cell) (make-horizontal-wall-cell (lambda () #\-)))
-(define (new-corner-wall-cell)     (make-corner-wall-cell     (lambda () #\+)))
-(define (new-solid-wall-cell)      (make-solid-wall-cell      (lambda () #\#)))
+(define-type-of-cell wall
+  extender: define-type-of-wall)
+(define-type-of-wall vertical-wall)
+(define-type-of-wall horizontal-wall)
+(define-type-of-wall corner-wall)
+(define-type-of-wall solid-wall)
+(define (new-wall) (make-wall (lambda () #\#)))
+(define (new-vertical-wall)   (make-vertical-wall   (lambda () #\|)))
+(define (new-horizontal-wall) (make-horizontal-wall (lambda () #\-)))
+(define (new-corner-wall)     (make-corner-wall     (lambda () #\+)))
+(define (new-solid-wall)      (make-solid-wall      (lambda () #\#)))
 
-(define-type-of-cell door-cell ;; TODO drop the door from the name ? same for wall ?
+(define-type-of-cell door
   open?
   open-fun ; these 2 take the opener as parameter (to help for locked doors)
   close-fun
-  extender: define-type-of-door-cell)
-(define (new-door-cell)
-  (let ((door (make-door-cell #f #f #f #f)))
-    (cell-printer-set! door (lambda () (if (door-cell-open? door) #\_ #\$))) ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
-    (door-cell-open-fun-set!  door (lambda (o) (doorcell-open?-set! door #t)))
-    (door-cell-close-fun-set! door (lambda (o) (doorcell-open?-set! door #f)))
+  extender: define-type-of-door)
+(define (new-door)
+  (let ((door (make-door #f #f #f #f)))
+    (cell-printer-set! door (lambda () (if (door-open? door) #\_ #\$))) ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
+    (door-open-fun-set!  door (lambda (o) (door-open?-set! door #t)))
+    (door-close-fun-set! door (lambda (o) (door-open?-set! door #f)))
     door))
 
-(define (opaque-cell? cell) (or (wall-cell? cell) (door-cell? cell))) ;; TODO add as other opaque cell types are added
+(define (opaque? cell) (or (wall? cell) (door? cell))) ;; TODO add as other opaque cell types are added
