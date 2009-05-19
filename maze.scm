@@ -49,13 +49,10 @@
 		    (grid-set! sets a new)))))))
 
     ;; fill the list of wall cells
-    (for-each (lambda (x)
-		(for-each (lambda (y)
-			    (if (wall? (grid-get grid (new-point x y)))
-				(set! wall-list
-				      (cons (new-point x y) wall-list))))
-			  (iota grid-w)))
-	      (iota grid-h))
+    (grid-for-each (lambda (pos)
+		     (if (wall? (grid-get grid pos))
+			 (set! wall-list (cons pos wall-list))))
+		   grid)
 
     ;; randomly remove walls to get a connected area
     (set! wall-list (randomize-list wall-list))

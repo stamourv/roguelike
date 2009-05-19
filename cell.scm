@@ -48,7 +48,7 @@
   printer
   extender: define-type-of-occupant)
 
-;; TODO as it is, any object can hide stairs
+;; TODO as it is, the stairs hides everything, even the player
 (define-type-of-walkable-cell stairs
   extender: define-type-of-stairs)
 (define-type-of-stairs stairs-up)

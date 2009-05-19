@@ -43,12 +43,10 @@
   ;; set the fog of war
   (let ((view (player-view player))
 	(pos   (player-pos player)))
-    (for-each (lambda (x)
-		(for-each (lambda (y)
-			    (if (eq? (grid-get view (new-point x y)) 'visible)
-				(grid-set! view (new-point x y) 'visited)))
-			  (iota (grid-width view))))
-	      (iota (grid-height view)))
+    (grid-for-each (lambda (pos)
+		     (if (eq? (grid-get view pos) 'visible)
+			 (grid-set! view pos 'visited)))
+		   view)
 
     ;; field of vision using shadow casting (spiral path FOV)
     ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
@@ -102,22 +100,18 @@
       ;; one last pass to solve the problem case of walls that are hard to
       ;; see, which gives ugly results
       ;; to solve the problem, any wall next to a visible square is visible
-      (for-each
-       (lambda (x)
-	 (for-each
-	  (lambda (y)
-	    (let ((pos (new-point x y)))
-	      (if (and (opaque? (grid-get g pos))
-		       (eq? (grid-get view pos) 'unknown)
-		       (foldl (lambda (acc new)
-				(or acc
-				    (and (inside-grid? g new)
-					 (not (opaque? (grid-get g new)))
-					 (eq? (grid-get view new) 'visible))))
-			      #f (eight-directions pos)))
-		  (grid-set! view pos 'visited))))
-	  (iota (grid-width view))))
-       (iota (grid-height view))))))
+      (grid-for-each
+       (lambda (pos)
+	 (if (and (opaque? (grid-get g pos))
+		  (eq? (grid-get view pos) 'unknown)
+		  (foldl (lambda (acc new)
+			   (or acc
+			       (and (inside-grid? g new)
+				    (not (opaque? (grid-get g new)))
+				    (eq? (grid-get view new) 'visible))))
+			 #f (eight-directions pos)))
+	     (grid-set! view pos 'visited)))
+       view))))
 
 ;; returns a printing function for show-grid
 (define (visibility-printer view)

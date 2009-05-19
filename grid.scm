@@ -33,6 +33,15 @@
     (and (>= x 0) (< x (grid-height g))
 	 (>= y 0) (< y (grid-width  g)))))
 
+(define (grid-for-each f g #!key
+		       (start-x 0)                (start-y 0)
+		       (length-x (grid-height g)) (length-y (grid-width g)))
+  (for-each (lambda (x)
+	      (for-each (lambda (y)
+			  (f (new-point (+ x start-x) (+ y start-y))))
+			(iota length-y)))
+	    (iota length-x)))
+
 (define (distance a b)
   (let ((x (abs (- (point-x b) (point-x a))))
 	(y (abs (- (point-y b) (point-y a)))))
@@ -70,16 +79,14 @@
     (display "+\n"))
   (cursor-home)
   (draw-border-line)
-  (for-each
-   (lambda (x)
-     (display "|")
-     (for-each
-      (lambda (y)
-	(let ((pos (new-point x y)))
-	  ((print-fun pos) ((cell-printer (grid-get g pos))))))
-      (iota (grid-width g)))
-     (display "|\n"))
-   (iota (grid-height g)))
+  (grid-for-each
+   (lambda (pos)
+     (if (= (point-y pos) 0) ; beginning of line
+	 (display "|"))
+     ((print-fun pos) ((cell-printer (grid-get g pos))))
+     (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
+	 (display "|\n")))
+   g)
   (draw-border-line))
 
 (define (string->grid s)
@@ -88,17 +95,16 @@
 	 (x    (length rows))
 	 (y    (string-length (car rows)))
 	 (g    (empty-grid x y)))
-    (for-each (lambda (x)
-		(for-each (lambda (y)
-			    (grid-set! g (new-point x y)
-				       (case (string-ref (list-ref rows x) y)
-					 ((#\ ) (new-walkable-cell))
-					 ((#\+) (new-corner-wall))
-					 ((#\|) (new-vertical-wall))
-					 ((#\-) (new-horizontal-wall))
-					 ((#\#) (new-solid-wall))))) ;; TODO add as we add
-			  (iota y)))
-	      (iota x))
+    (grid-for-each (lambda (pos)
+		     (let ((x (point-x pos)) (y (point-y pos)))
+		       (grid-set! g pos
+				  (case (string-ref (list-ref rows x) y)
+				    ((#\ ) (new-walkable-cell))
+				    ((#\+) (new-corner-wall))
+				    ((#\|) (new-vertical-wall))
+				    ((#\-) (new-horizontal-wall))
+				    ((#\#) (new-solid-wall)))))) ;; TODO add as we add
+		   g)
     g))
 
 (define (move g pos new-pos)

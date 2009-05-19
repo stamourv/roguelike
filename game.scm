@@ -60,11 +60,11 @@
 	 (player (new-player name level #f))) ;; TODO abstract what's common with maze to have a generic "game" function (that would also take the victory condition)
     ;; determine a valid player starting point
     ;; TODO instead, find the entrance, once the dungeon identifies it
-    (let loop ((pos (random-position level)))
-      (if (walkable-cell? (grid-get level pos))
-	  (begin (occupant-set! (grid-get level pos) player) ;; TODO for the generic game function, have a function that is called to determine the starting position, then use it to set the player there
-		 (player-pos-set! player pos))
-	  (loop (random-position level))))
+    (grid-for-each (lambda (pos)
+		     (if (stairs-up? (grid-get level pos))
+			 (begin (occupant-set! (grid-get level pos) player) ;; TODO for the generic game function, have a function that is called to determine the starting position, then use it to set the player there
+				(player-pos-set! player pos))))
+		   level)
     ;; TODO place some random treasure
     (let loop () ;; TODO the same game loop as maze, abstract
       (define (victory?) #f) ;; TODO add a victory condition

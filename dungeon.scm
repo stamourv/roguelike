@@ -1,4 +1,4 @@
-(define (generate-level #!optional (trace? #f))
+(define (generate-level #!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
@@ -20,7 +20,8 @@
       (find (lambda (room) (member point (room-cells room))) rooms))
     (define (connected? a b)
       ;; since it's commutative, no need to check both sides
-      (memq a (room-connected-to b)))
+      ;; TODO need to check for a and b, since this sometimes receives #f, probably due to a bug somewhere, investigate
+      (and a b (memq a (room-connected-to b))))
     (define (connect! a b)
       (room-connected-to-set! a (cons b (room-connected-to a)))
       (room-connected-to-set! b (cons a (room-connected-to b)))
@@ -57,39 +58,41 @@
 	    
 	    (let ((new-walls '()) ; yes it can, add it
 		  (inside    '()))
-	      (for-each
-	       (lambda (x)
-		 (for-each
-		  (lambda (y)
-		    (let ((p (new-point (+ x pos-x) (+ y pos-y))))
-		      (grid-set!
-		       level p
-		       ;; find out the appropriate cell type
-		       ((cond ((or (corner-wall? (grid-get level p))
-				   (and (or (= x 0) (= x (- height 1)))
-					(or (= y 0) (= y (- width 1)))))
-			       ;; one of the four corners
-			       new-corner-wall)
-			      ((or (= x 0) (= x (- height 1)))
-			       ;; horizontal-wall
-			       (set! new-walls (cons p new-walls))
-			       new-horizontal-wall)
-			      ((or (= y 0) (= y (- width 1)))
-			       ;; vertical wall
-			       (set! new-walls (cons p new-walls))
-			       new-vertical-wall)
-			      ;; inside of the room
-			      (else (set! inside (cons p inside))
-				    (if trace?
-					trace-cell
-					new-walkable-cell)))))))
-		  (iota width)))
-	       (iota height))
+	      (grid-for-each
+	       (lambda (p)
+		 (let ((x (- (point-x p) pos-x)) (y (- (point-y p) pos-y)))
+		   (grid-set!
+		    level p
+		    ;; find out the appropriate cell type
+		    ((cond ((or (corner-wall? (grid-get level p))
+				(and (or (= x 0) (= x (- height 1)))
+				     (or (= y 0) (= y (- width 1)))))
+			    ;; one of the four corners
+			    new-corner-wall)
+			   ((or (= x 0) (= x (- height 1)))
+			    ;; horizontal-wall
+			    (set! new-walls (cons p new-walls))
+			    new-horizontal-wall)
+			   ((or (= y 0) (= y (- width 1)))
+			    ;; vertical wall
+			    (set! new-walls (cons p new-walls))
+			    new-vertical-wall)
+			   ;; inside of the room
+			   (else (set! inside (cons p inside))
+				 (if trace?
+				     trace-cell
+				     new-walkable-cell)))))))
+	       level
+	       start-x:  pos-x  start-y:  pos-y
+	       length-x: height length-y: width)
 
 	      (if trace?
 		  (begin (pp (list trace pos: (point-x pos) (point-y pos)
 				   dir: direction height: height width: width))
 			 (set! trace (+ trace 1))))
+	      (if step?
+		  (begin (show-grid level)
+			 (read-line)))
 	      
 	      ;; add the new room the list of rooms
 	      (set! rooms (cons (make-room inside '()) rooms))
@@ -158,7 +161,9 @@
 			    (let ((r (random-position level)))
 			      (loop (add-random-feature r)
 				    r))))))
-      (if (> n 0)
+      ;; although unlikely, we might run out of walls (happened once, no
+      ;; idea how)
+      (if (or (> n 0) (null? walls))
 	  (let* ((i     (random-integer (length walls)))
 		 (start (list-ref walls i)))
 	    (loop (- n 1)
@@ -169,49 +174,45 @@
 
     ;; add doors to anything that looks like a doorway
     ;; TODO maybe only do it with probability p
-    (for-each ;; TODO have a function to iterate over a grid FOO
-     (lambda (x)
-       (for-each
-	(lambda (y)
-	  (let* ((pos    (new-point x y))
-		 (around (four-directions pos))
-		 (up     (list-ref around 0))
-		 (down   (list-ref around 1))
-		 (left   (list-ref around 2))
-		 (right  (list-ref around 3)))
-	    ;; we must either have wall up and down, and free space left and
-	    ;; right, or the other way around
-	    (if (and (not (door? (grid-get level pos))) ; not already a door
-		     (foldl (lambda (acc cell)
-			      (and acc (inside-grid? level cell)))
-			    #t around)
-		     (let ((c-up    (grid-get level up))
-			   (c-down  (grid-get level down))
-			   (c-left  (grid-get level left))
-			   (c-right (grid-get level right)))
-		       (define (check-and-connect a b)
-			 (let ((a (get-room a))
-			       (b (get-room b)))
-			   (if (not (connected? a b))
-			       ;; connect them
-			       (begin (connect! a b)
-				      #t)
-			       #f)))
-		       (or (and (corner-wall? c-up)
-				(corner-wall? c-down)
-				(walkable-cell?    c-left)
-				(walkable-cell?    c-right)
-				;; must not be connected already
-				(check-and-connect left right))
-			   (and (corner-wall? c-left)
-				(corner-wall? c-right)
-				(walkable-cell?    c-up)
-				(walkable-cell?    c-down)
-				(check-and-connect up down)))))
-		;; yes, we have found a valid doorway
-		(grid-set! level pos (new-door))))) ;; TODO make doors openable by the player
-	(iota level-width)))
-     (iota level-height))
+    (grid-for-each
+     (lambda (pos)
+       (let* ((around (four-directions pos))
+	      (up     (list-ref around 0))
+	      (down   (list-ref around 1))
+	      (left   (list-ref around 2))
+	      (right  (list-ref around 3)))
+	 ;; we must either have wall up and down, and free space left and
+	 ;; right, or the other way around
+	 (if (and (not (door?      (grid-get level pos))) ; not already a door
+		  (not (stairs-up? (grid-get level pos)))
+		  (foldl (lambda (acc cell)
+			   (and acc (inside-grid? level cell)))
+			 #t around)
+		  (let ((c-up    (grid-get level up))
+			(c-down  (grid-get level down))
+			(c-left  (grid-get level left))
+			(c-right (grid-get level right)))
+		    (define (check-and-connect a b)
+		      (let ((a (get-room a))
+			    (b (get-room b)))
+			(if (not (connected? a b))
+			    ;; connect them
+			    (begin (connect! a b) #t)
+			    #f)))
+		    (or (and (corner-wall? c-up)
+			     (corner-wall? c-down)
+			     (walkable-cell?    c-left)
+			     (walkable-cell?    c-right)
+			     ;; must not be connected already
+			     (check-and-connect left right))
+			(and (corner-wall? c-left)
+			     (corner-wall? c-right)
+			     (walkable-cell?    c-up)
+			     (walkable-cell?    c-down)
+			     (check-and-connect up down)))))
+	     ;; yes, we have found a valid doorway
+	     (grid-set! level pos (new-door)))))
+     level)
     
     level))
 ;; TODO how to return the starting point ? so that we may add stairs, the player, etc, maybe also return a list of the free spaces
