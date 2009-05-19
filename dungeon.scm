@@ -1,6 +1,3 @@
-(load "utilities.scm") ;; TODO have dependencies for all other files
-(load "grid.scm")
-
 (define (generate-level #!optional (trace? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
@@ -53,8 +50,9 @@
 		      (grid-set!
 		       level p
 		       ;; find out the appropriate cell type
-		       ((cond ((and (or (= x 0) (= x (- height 1)))
-				    (or (= y 0) (= y (- width 1))))
+		       ((cond ((or (corner-wall-cell? (grid-get level p))
+				   (and (or (= x 0) (= x (- height 1)))
+					(or (= y 0) (= y (- width 1)))))
 			       ;; one of the four corners
 			       new-corner-wall-cell)
 			      ((or (= x 0) (= x (- height 1)))
@@ -73,13 +71,14 @@
 	       (iota height))
 	      ;; TODO add doors (for now free space) where we chose a wall to expand
 	      ;; TODO the first on should not be a door, but the stairs up
+	      ;; TODO maybe actually wait to put the doors, see below
 	      ;; put a doorway between the 2 rooms
 	      (if trace?
 		  (begin (pp (list trace pos: (point-x pos) (point-y pos)
 				   dir: direction height: height width: width))
 			 (grid-set! level pos (trace-cell))
 			 (set! trace (+ trace 1)))
-		  (grid-set! level pos (new-walkable-cell)))
+		  (grid-set! level pos (new-walkable-cell))) ;; TODO in addition, add + to each wall side of the door, so the door is obvious
 	      new-walls)
 	    
 	    #f))) ; no it can't, give up
@@ -130,6 +129,7 @@
       (if (> n 0)
 	  (let* ((i     (random-integer (length walls)))
 		 (start (list-ref walls i)))
+	    ;; TODO doors: maybe put a door at all places between 2 +s (and put +s on each side of a doorway), would open doors to form loops in some cases, which is interesting (also, the presence of + on a wall reveals the structure on the other side of a wall, if we see a + in the middle of a wall, we know that there is a wall starting on the other side, it this is a problem, use # for all walls, but it's ugly)
 	    (loop (- n 1)
 		  (cond ((add-random-feature start) ;; TODO maybe instead of just being a list of positions, also have the type of room they are part of, so we can alter the probabilities of generating the same type of room from there (lower it, most likely)
 			 => (lambda (more)

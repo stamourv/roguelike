@@ -1,6 +1,3 @@
-(load "utilities.scm")
-(load "terminal.scm")
-
 (define-type point
   x
   y)
@@ -148,9 +145,9 @@
 (define (new-walkable-cell)
   (let ((cell (make-walkable-cell #f #f #f)))
     (cell-printer-set! cell (lambda ()
-			      (cond ((walkable-cell-occupant cell)
+			      (cond ((get-occupant cell)
 				     => (lambda (o) ((occupant-printer o))))
-				    ((walkable-cell-object cell)
+				    ((get-object cell)
 				     => (lambda (o) ((object-printer o))))
 				    (else #\space))))
     cell))

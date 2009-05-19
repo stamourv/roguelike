@@ -1,3 +1,7 @@
+(define (init-visibility g)
+  (empty-grid (grid-height g) (grid-width g)
+	      cell-fun: (lambda (pos) 'unknown)))
+
 (define (line-of-sight? g a b)
   ;; using Bresenham's algorithm to draw a line between a and b, see if we
   ;; hit any opaque objects
@@ -15,7 +19,7 @@
 	    (let ((tmp x0))    (set! x0 x1) (set! x1 tmp)
 		 (set! tmp y0) (set! y0 y1) (set! y1 tmp)))
 	(let* ((delta-x   (- x1 x0))
-	       (delta-y   (- y1 y0))
+	       (delta-y   (abs (- y1 y0)))
 	       (delta-err (/ delta-y delta-x))
 	       (y-step    (if (< y0 y1) 1 -1)))
 	  (let loop ((error        0)
@@ -31,7 +35,7 @@
 		  (if seen-opaque?
 		      #f ; we hit an obstacle, we don't have line of sight
 		      (let ((error (if (>= error 1/2) (- error 1)  error))
-			    (y     (if (>= error 1/2) (+ y y-step) y))
+			    (y     (if (>= error 1/2) (floor (+ y y-step)) y))
 			    (seen-opaque? (opaque-cell? (grid-get g pos))))
 			(loop error seen-opaque? (+ x 1) y))))))))))
 
@@ -79,20 +83,24 @@
 		       (not (eq? (grid-get view new) 'visible)) ; already seen
 		       ;; do we have line of sight ? helps restrict the
 		       ;; visibility down to a reasonable level
+		       ;; note: line of sight is not necessary to see walls,
+		       ;; this gives better results
 		       (line-of-sight? g pos new))
 		  (begin (grid-set! view new 'visible) ; mark as lit
 			 (if (not (opaque-cell? (grid-get g new)))
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
+
       ;; mark our immediate surroundings as visible, in case the previous
       ;; algorithm didn't
       (for-each (lambda (pos) (if (inside-grid? view pos)
 				  (grid-set! view pos 'visible)))
 		(eight-directions pos))
-      ;; one last pass to solve the problem case of walls that are surrounded
-      ;; by four walls, which would normally make them invisible and give ugly
-      ;; results on the map ;; TODO actually, this is a bit more broad, it's all walls surrounded by 4 seen squares, maybe all squares surrounded by 4 seen, not just walls ?
+
+      ;; one last pass to solve the problem case of walls that are hard to
+      ;; see, which gives ugly results
+      ;; to solve the problem, any wall next to a visible square is visible
       (for-each
        (lambda (x)
 	 (for-each
@@ -101,12 +109,13 @@
 	      (if (and (opaque-cell? (grid-get g pos))
 		       (eq? (grid-get view pos) 'unknown)
 		       (foldl (lambda (acc new)
-				(and acc (or (not (inside-grid? g new))
-					     (memq (grid-get view new)
-						   '(visible visited)))))
-			      #t
-			      (four-directions pos)))
-		  (grid-set! view pos 'visited))))
+				(or acc
+				    (and (inside-grid? g new)
+					 (not (opaque-cell? (grid-get g new)))
+					 (eq? (grid-get view new) 'visible))))
+			      #f
+			      (eight-directions pos)))
+		  (grid-set! view pos 'visible))))
 	  (iota (grid-width view))))
        (iota (grid-height view))))))
 

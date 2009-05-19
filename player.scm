@@ -3,12 +3,12 @@
   pos
   view ; grid of either visible, visited or unknown
   inventory) ; list of objects
-(define (new-player name map pos view)
+(define (new-player name map pos)
   (make-player name
 	       (lambda () #\@)
 	       map
 	       pos
-	       view
+	       (init-visibility map)
 	       '()))
 (define player-name occupant-name)
 
