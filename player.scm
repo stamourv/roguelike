@@ -64,8 +64,9 @@
 	 (pos  ((eval dir) (player-pos player)))
 	 (grid (player-map player))
 	 (cell (grid-get grid pos))) ;; TODO lots in common with close
-    (cond ((door? cell) (open-door grid pos player))
-	  (else         (display "I can't open that.\n")))))
+    (cond ((door?      cell) (open-door grid pos player))
+	  ((open-door? cell) (display "This door is already open.\n"))
+	  (else              (display "I can't open that.\n")))))
 (define (close player)
   (display "Close in which direction? ")
   (let* ((dir  (choose-direction)) ; evaluates to a function
@@ -73,4 +74,5 @@
 	 (grid (player-map player))
 	 (cell (grid-get grid pos)))
     (cond ((open-door? cell) (close-door grid pos player))
+	  ((door?      cell) (display "This door is already closed.\n"))
 	  (else              (display "I can't close that.\n")))))

@@ -9,7 +9,7 @@
 	    ((get-object cell)
 	     => (lambda (obj) (display (object-name obj))))
 	    (else
-	     (display "Nothing to see here.")))))
+	     (display "Nothing to see here."))))) ;; TODO describe the terrain, have a description for each type, ideally define with the type
 
 (define (look grid pos) ;; TODO have a moveable cursor, and when enter is pressed, display the info of the location, pos is starting position of the cursor, if final cursor position is outside visibility, say I can't see there
   ;; TODO use the choose-direction command to control the cursor
