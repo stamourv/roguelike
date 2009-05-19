@@ -50,21 +50,31 @@
 ;; these functions return a list of points in the given directions from pos
 ;; these points might NOT be inside the grid
 ;; the order of the points is important, some functions depend on it
-(define (up-down pos)
+(define (up pos) ;; TODO FOO propagate the use of this, is probably done in an ad-hoc way everywhere
   (let ((x (point-x pos))
 	(y (point-y pos)))
-    (list (new-point (- x 1) y) (new-point (+ x 1) y))))
-(define (left-right pos)
+    (new-point (- x 1) y)))
+(define (down pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
-    (list (new-point x (- y 1)) (new-point x (+ y 1)))))
+    (new-point (+ x 1) y)))
+(define (left pos)
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    (new-point x (- y 1))))
+(define (right pos)
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    (new-point x (+ y 1))))
+(define (up-down pos)    (list (up   pos) (down  pos)))
+(define (left-right pos) (list (left pos) (right pos)))
 (define (four-directions pos)
   (append (up-down pos) (left-right pos)))
 (define (eight-directions pos)
   ;; same, but with diagonals
   (append (four-directions pos)
 	  (let ((x (point-x pos))
-		(y (point-y pos)))
+		(y (point-y pos))) ;; TODO maybe have functions for these 4 other directions too ?
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 

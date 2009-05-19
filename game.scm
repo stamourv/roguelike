@@ -79,4 +79,4 @@
 (if (not debug) (dungeon (random-element character-names)))
 
 (if (not debug) (quit))
-;; TODO the player need to be able to open the doors
+;; TODO change the probabilities in dungeon generation depending on which room we start from

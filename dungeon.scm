@@ -215,5 +215,3 @@
      level)
     
     level))
-;; TODO how to return the starting point ? so that we may add stairs, the player, etc, maybe also return a list of the free spaces
-;; TODO maybe instead, just recalculate all that when we receive the map down the line, just just some stairs at this stage (and afterwards, find the stairs up to place the player)

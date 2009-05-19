@@ -12,6 +12,7 @@
 	     (display "Nothing to see here.")))))
 
 (define (look grid pos) ;; TODO have a moveable cursor, and when enter is pressed, display the info of the location, pos is starting position of the cursor, if final cursor position is outside visibility, say I can't see there
+  ;; TODO use the choose-direction command to control the cursor
   (shell-command "setterm -cursor on")
   (set-cursor-on-grid grid pos)
   (read-char) ;; TODO implement the rest, and it seems that pressing l then an arrow shows some weird text in the background about terminal options

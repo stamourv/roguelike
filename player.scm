@@ -56,3 +56,21 @@
   (for-each (lambda (o) (display (object-name o)) (display "\n"))
 	    ;; TODO watch out for the limits of the screen, maybe have more than 1 column, maybe have on its own screen ?
 	    (player-inventory player)))
+
+;; TODO for now, just for doors, but could be used for chests too
+(define (open player)
+  (display "Open in which direction? ")
+  (let* ((dir  (choose-direction)) ; evaluates to a function
+	 (pos  ((eval dir) (player-pos player)))
+	 (grid (player-map player))
+	 (cell (grid-get grid pos))) ;; TODO lots in common with close
+    (cond ((door? cell) (open-door grid pos player))
+	  (else         (display "I can't open that.\n")))))
+(define (close player)
+  (display "Close in which direction? ")
+  (let* ((dir  (choose-direction)) ; evaluates to a function
+	 (pos  ((eval dir) (player-pos player)))
+	 (grid (player-map player))
+	 (cell (grid-get grid pos)))
+    (cond ((open-door? cell) (close-door grid pos player))
+	  (else              (display "I can't close that.\n")))))
