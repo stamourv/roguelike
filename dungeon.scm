@@ -2,8 +2,8 @@
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
-  (let* ((level-height 20)
-	 (level-width  60)
+  (let* ((level-height 20) ;; TODO really show a border ?
+	 (level-width  78) ;; TODO the full 80 or just 60 ? with 60, can display some status on the side, but there is none for the moment
 	 (level (empty-grid level-height level-width
 			    cell-fun: (lambda (pos) (new-solid-wall)))))
     
@@ -23,9 +23,10 @@
       ;; TODO need to check for a and b, since this sometimes receives #f, probably due to a bug somewhere, investigate
       (and a b (memq a (room-connected-to b))))
     (define (connect! a b)
-      (room-connected-to-set! a (cons b (room-connected-to a)))
-      (room-connected-to-set! b (cons a (room-connected-to b)))
-      #t) ; must return true, since it's used in an and below
+      (if (and a b) ;; TODO same here
+	  (begin (room-connected-to-set! a (cons b (room-connected-to a)))
+		 (room-connected-to-set! b (cons a (room-connected-to b)))
+		 #t))) ; must return true, since it's used in an and below
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
