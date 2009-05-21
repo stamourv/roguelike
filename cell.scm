@@ -72,7 +72,7 @@
 (define (new-vertical-wall)   (make-vertical-wall   (lambda () #\|)))
 (define (new-horizontal-wall) (make-horizontal-wall (lambda () #\-)))
 (define (new-corner-wall)     (make-corner-wall     (lambda () #\+)))
-(define (new-solid-wall)      (make-solid-wall      (lambda () #\#)))
+(define (new-solid-wall)      (make-solid-wall      (lambda () #\#))) ;; TODO seldom seen by the player, mostly hidden behing other walls
 
 ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
 (define-type-of-wall door

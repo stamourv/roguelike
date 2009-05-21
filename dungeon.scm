@@ -257,8 +257,12 @@
 			     (connection-check  up down)
 			     (begin (set! direction 'horizontal)
 				    #t)))))
-	     ;; yes, we have found a valid doorway
-	     (add-door pos direction))))
+	     ;; yes, we have found a valid doorway, if this doorway is in an
+	     ;; existing room, we would separate in into two smaller ones,
+	     ;; which is no fun, so only put a door if we would open a wall
+	     (let ((room (get-room pos)))
+	       (if (not room)
+		   (add-door pos direction))))))
      level)
 
     ;; to avoid dead-end corridors, any corridor connected to a single room

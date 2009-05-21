@@ -123,4 +123,4 @@
 	((visited)
 	 (terminal-print c bg: 'black fg: 'white))
 	((unknown)
-	 (terminal-print "?"))))))
+	 (terminal-print " ")))))) ;; TODO blank is good (better than ?, # or .) but conflicts with clear terrain, is it that bad?
