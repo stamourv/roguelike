@@ -7,6 +7,11 @@
       base
       (foldl f (f base (car lst)) (cdr lst))))
 
+(define (filter p l)
+  (cond ((null? l)   '())
+	((p (car l)) (cons (car l) (filter p (cdr l))))
+	(else        (filter p (cdr l)))))
+
 (define (repeat n l)
   (let loop ((n n) (res '()))
     (if (= n 0)

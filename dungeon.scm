@@ -13,7 +13,9 @@
 	(make-walkable-cell (lambda () x) #f #f)))
 
     (define-type room
-      cells ; TODO both of these are sets, use hash tables for sets if it becomes slow
+      type
+      cells ; TODO the 3 of these are sets, use hash tables for sets if it becomes slow
+      walls
       connected-to)
     (define rooms '()) ;; TODO another set, see above
     (define (get-room point)
@@ -94,27 +96,9 @@
 	      (if step?
 		  (begin (show-grid level)
 			 (read-line)))
-	      
-	      ;; add the new room the list of rooms
-	      (set! rooms (cons (make-room inside '()) rooms))
-	      ;; put a door between the two rooms (the door is at pos)
-	      (for-each (lambda (pos) (grid-set! level pos (new-corner-wall)))
-			(if (memq direction '(east west))
-			    (up-down    pos)
-			    (left-right pos)))
-	      (let* ((sides (if (memq direction '(east west))
-				(left-right pos)
-				(up-down    pos)))
-		     (a     (get-room (car sides)))
-		     (b     (get-room (cadr sides))))
-		(if (and a b)
-		    (begin (grid-set! level pos (new-door)) ; put the door
-			   (connect!  a b))
-		    ;; when we place the first room, there is nothing to
-		    ;; connect to, and we place the stairs
-		    (grid-set! level pos (new-stairs-up))))
 
-	      new-walls)
+	      ;; the type will be filled later
+	      (make-room #f inside new-walls '()))
 	    
 	    #f))) ; no it can't, give up
     
@@ -176,14 +160,37 @@
 		       ((corridor)   5)
 		       ((large-room) 2)
 		       ((small-room) 3)))
+	     ;; returns #f or a room structure
 	     (res    ((caddr type) pos direction)))
 	(if res
-	    ;; we add the type of the new room, to influence rooms that
-	    ;; start from it
-	    (map (lambda (x) (cons x (cadr type))) (repeat weight res))
+	    (begin
+	      ;; add the new room the list of rooms
+	      (room-type-set! res (cadr type))
+	      (set! rooms (cons res rooms))
+	      ;; put a door between the two rooms (the door is at pos)
+	      (for-each (lambda (pos) (grid-set! level pos (new-corner-wall)))
+			(if (memq direction '(east west))
+			    (up-down    pos)
+			    (left-right pos)))
+	      (let* ((sides (if (memq direction '(east west))
+				(left-right pos)
+				(up-down    pos)))
+		     (a     (get-room (car sides)))
+		     (b     (get-room (cadr sides))))
+		(if (and a b)
+		    (begin (grid-set! level pos (new-door)) ; put the door
+			   (connect!  a b))
+		    ;; when we place the first room, there is nothing to
+		    ;; connect to, and we place the stairs
+		    (grid-set! level pos (new-stairs-up))))
+	      ;; return the walls of the room "weight" times, and attach the
+	      ;; type of the new room to influence room type probabilities
+	      (map (lambda (x) (cons x (cadr type)))
+		   (repeat weight (room-walls res))))
 	    #f)))
     ;; TODO problem : the presence of + on a straight wall reveals the structure on the other side of the wall, maybe use # for all wall, but would be ugly
 
+    ;; generate features
     (let loop ((n 500)
 	       (walls (let loop ((res #f)) ; we place the first feature
 			(if res
@@ -242,6 +249,52 @@
 	     (grid-set! level pos (new-door)))))
      level)
 
-    ;; TODO add a pass that tries to open a door in corridors that only have one, to avoid dead ends. if a corridor is only linked to one room, check all its walls (in the room structure, have a list of them) and keep those on whose other side there's another room, choose one randomly and open a door (and add the +s for the doorway), maybe just add the +s then wait for the door adding to happen
+    ;; to avoid dead-end corridors, any corridor connected to a single room
+    ;; tries to open a door to another room
+    (for-each
+     (lambda (room)
+       (let ((neighbors (room-connected-to room)))
+	 (if (and (eq? (room-type room) 'corridor)
+		  (= (length neighbors) 1))
+	     (let ((door-candidates
+		    (filter
+		     (lambda (wall)
+		       ;; to open a door, both sides must be clear
+		       (foldl (lambda (acc new)
+				(and acc
+				     (inside-grid? level new)
+				     (walkable-cell? (grid-get level new))))
+			      #t
+			      ((let ((wall (grid-get level wall)))
+				 (cond ((horizontal-wall? wall) up-down)
+				       ((vertical-wall?   wall) left-right)
+				       ;; already a door, fail the test
+				       (else                    (lambda x x))))
+			       wall)))
+		     (room-walls room))))
+	       (if (not (null? door-candidates))
+		   (let* ((chosen (random-element door-candidates)) ;; TODO instead of choosing randomly, choose the farthest from the existing door
+			  (wall   (grid-get level chosen)))
+		     ;; add the door
+		     (grid-set! level chosen (new-door))
+		     ;; add the doorposts
+		     ;; TODO have a function that takes care of all that, adding a door, adding the door posts, connecting the 2 rooms
+		     (for-each (lambda (post)
+				 (grid-set! level post (new-corner-wall)))
+			       ((cond ((horizontal-wall? wall) left-right)
+				      ((vertical-wall?   wall) up-down))
+				chosen))
+		     ;; connect the two rooms
+		     (connect!
+		      room
+		      (let* ((sides ((cond ((horizontal-wall? wall) up-down) ;; TODO common, have a function wall-sides and wall-besides that do that and what's right above, and takes the coordinates as parameter
+					   ((vertical-wall?   wall) left-right))
+				     chosen))
+			     (a     (get-room (car  sides)))
+			     (b     (get-room (cadr sides))))
+			(if (eq? a room)
+			    (get-room b)
+			    a)))))))))
+     rooms)
     
     level))
