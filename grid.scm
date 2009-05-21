@@ -78,6 +78,21 @@
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
+;; given a wall, returns the cells that are either perpendicular or
+;; parrallel to the direction of the wall
+(define (wall-perpendicular g pos)
+  (let ((wall (grid-get g pos)))
+    ((cond ((horizontal-wall? wall) up-down)
+	   ((vertical-wall?   wall) left-right)
+	   (else                    (lambda (x) '()))) ; not an appropriate wall
+     pos)))
+(define (wall-parrallel     g pos)
+  (let ((wall (grid-get g pos)))
+    ((cond ((horizontal-wall? wall) left-right)
+	   ((vertical-wall?   wall) up-down)
+	   (else                    (lambda (x) '()))) ; not an appropriate wall
+     pos)))
+
 (define (random-position g)
   (new-point (random-integer (grid-height g))
 	     (random-integer (grid-width g))))
