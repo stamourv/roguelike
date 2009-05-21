@@ -132,49 +132,76 @@
 	  (add-rectangle pos 3 (random-between 5 17) direction)
 	  (add-rectangle pos (random-between 5 17) 3 direction)))
 
-    (define (add-random-feature pos)
+    (define (add-random-feature start)
       ;; find in which direction to expand from this wall
-      (let ((direction
-	     (let loop ((around     (four-directions pos))
-			(directions '(south north east west)))
-	       (cond ((null? around) ; walls all around
-		      (random-element '(north south west east)))
-		     ((and (inside-grid? level (car around))
-			   (walkable-cell? (grid-get level (car around))))
-		      ;; there is a free space in that direction, we must
-		      ;; expand the opposite way
-		      (car directions))
-		     (else ;; keep looking
-		      (loop (cdr around) (cdr directions))))))
-	    (r (random-real)))
-	;; 30% chance of corridor, 40% of large room, 30% of small room
-	((cond ((< r 0.3) add-corridor)
-	       ((< r 0.7) add-large-room)
-	       (else      add-small-room))
-	 pos direction)))
+      (let* ((pos  (car start))
+	     (prev (cdr start)) ; type of the room we expand from
+	     (direction
+	      (let loop ((around     (four-directions pos))
+			 (directions '(south north east west)))
+		(cond ((null? around) ; walls all around
+		       (random-element '(north south west east)))
+		      ((and (inside-grid? level (car around))
+			    (walkable-cell? (grid-get level (car around))))
+		       ;; there is a free space in that direction, we must
+		       ;; expand the opposite way
+		       (car directions))
+		      (else ;; keep looking
+		       (loop (cdr around) (cdr directions))))))
+	     (probabilities
+	      (case prev
+		((corridor)   `((0.1  corridor   ,add-corridor)
+				(0.6  large-room ,add-large-room)
+				(0.3  small-room ,add-small-room)))
+		((large-room) `((0.6  corridor   ,add-corridor)
+				(0.2  large-room ,add-large-room)
+				(0.2  small-room ,add-small-room)))
+		((small-room) `((0.7  corridor   ,add-corridor)
+				(0.2  large-room ,add-large-room)
+				(0.1  small-room ,add-small-room)))
+		;; should end up here only in the first turn
+		(else         `((0.4  corridor   ,add-corridor)
+				(0.5  large-room ,add-large-room)
+				(0.1  small-room ,add-small-room)))))
+	     (r    (random-real))
+	     (type (let loop ((r r)
+			      (p probabilities))
+		     (cond ((null? probabilities) #f) ; shouldn't happen
+			   ((< r (caar p))        (car p))
+			   (else                  (loop (- r (caar p))
+							(cdr p))))))
+	     ;; the higher it is, the more chance this room will be chosen
+	     ;; as a starting point for another
+	     (weight (case (cadr type)
+		       ((corridor)   5)
+		       ((large-room) 2)
+		       ((small-room) 3)))
+	     (res    ((caddr type) pos direction)))
+	(if res
+	    ;; we add the type of the new room, to influence rooms that
+	    ;; start from it
+	    (map (lambda (x) (cons x (cadr type))) (repeat weight res))
+	    #f)))
     ;; TODO problem : the presence of + on a straight wall reveals the structure on the other side of the wall, maybe use # for all wall, but would be ugly
 
-    (let loop ((n 1000)
-	       (walls (let loop ((res #f) ; we place the first feature
-				 (pos #f))
+    (let loop ((n 500)
+	       (walls (let loop ((res #f)) ; we place the first feature
 			(if res
 			    res
-			    (let ((r (random-position level)))
-			      (loop (add-random-feature r)
-				    r))))))
+			    (loop (add-random-feature
+				   (cons (random-position level) #f)))))))
       ;; although unlikely, we might run out of walls (happened once, no
       ;; idea how)
       (if (or (> n 0) (null? walls))
 	  (let* ((i     (random-integer (length walls)))
 		 (start (list-ref walls i)))
 	    (loop (- n 1)
-		  (cond ((add-random-feature start) ;; TODO maybe instead of just being a list of positions, also have the type of room they are part of, so we can alter the probabilities of generating the same type of room from there (lower it, most likely)
+		  (cond ((add-random-feature start)
 			 => (lambda (more)
 			      (append (remove-at-index walls i) more)))
 			(else walls))))))
 
     ;; add doors to anything that looks like a doorway
-    ;; TODO maybe only do it with probability p
     (grid-for-each
      (lambda (pos)
        (let* ((around (four-directions pos))
@@ -214,5 +241,7 @@
 	     ;; yes, we have found a valid doorway
 	     (grid-set! level pos (new-door)))))
      level)
+
+    ;; TODO add a pass that tries to open a door in corridors that only have one, to avoid dead ends. if a corridor is only linked to one room, check all its walls (in the room structure, have a list of them) and keep those on whose other side there's another room, choose one randomly and open a door (and add the +s for the doorway), maybe just add the +s then wait for the door adding to happen
     
     level))
