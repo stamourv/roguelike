@@ -31,19 +31,16 @@
 		  " | |     | |   \n"
 		  "   |       | | \n")))
 
-(define (game level player victory-fun)
-  (occupant-set! (grid-get level (player-pos player)) player)
+(define (game player victory-fun) ;; TODO get a level function, to generate new levels, or just use generate-level ?
   (let loop ()
-    (if (victory-fun level player)
-	(begin (display "You win!") (quit)) ;; TODO have something more dramatic
-	(let ((pos (copy-point (player-pos player))))
+    (if (victory-fun (player-map player) player)
+	(begin
+	  (display "You win!")
+	  (quit)) ;; TODO have something more dramatic
+	(begin
 	  (update-visibility player)
-	  (show-grid level
-		     print-fun: (visibility-printer (player-view player)))
+	  (show-state player)
 	  (read-command player) ; side-effects the player
-	  ;; tries to move to the new position, if it fails, return where
-	  ;; we were
-	  (player-pos-set! player (move level pos (player-pos player)))
 	  (loop)))))
 
 (define (maze h w name)
@@ -53,21 +50,11 @@
     (add-object (grid-get level (new-point (- (grid-height level) 1)
 					   (- (grid-width level)  1)))
 		(new-treasure))
-    (game level
-	  (new-player name level (new-point 0 0))
+    (game (new-player name level (new-point 0 0)) ;; TODO obsolete, won't work with the new signatures, with starting position, would need stairs up, and level is generated another way...
 	  (lambda (level player) #f))))
 
-(define (dungeon name)
-  (let ((level (generate-level)))
-    (game level
-	  (new-player name level
-		      (let ((start #f))
-			(grid-for-each (lambda (pos)
-					 (if (stairs-up? (grid-get level pos))
-					     (set! start pos)))
-					  level)
-			start))
-	  (lambda (level player) #f))))
+(define (dungeon n-levels name)
+  (game (new-player name) (lambda (level player) #f))) ;; TODO use n-levels
 
 (define (quit)
   ;; restore tty
@@ -76,6 +63,6 @@
   (exit))
 
 ;; (if (not debug) (maze 8 8 (random-element character-names)))
-(if (not debug) (dungeon (random-element character-names)))
+(if (not debug) (dungeon 3 (random-element character-names)))
 
 (if (not debug) (quit))

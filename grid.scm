@@ -93,24 +93,31 @@
 	   (else                    (lambda (x) '()))) ; not an appropriate wall
      pos)))
 
+(define (grid-find g p)
+  (let ((cell #f))
+    (grid-for-each (lambda (pos) (if (p (grid-get g pos)) (set! cell pos)))
+		   g)
+    cell))
+
 (define (random-position g)
   (new-point (random-integer (grid-height g))
 	     (random-integer (grid-width g))))
 
-(define (show-grid g #!key (print-fun (lambda (pos) display)))
+(define (show-grid g #!key (print-fun (lambda (pos) display)) (border? #f))
   (define (draw-border-line)
-    (display "+")
-    (for-each (lambda (x) (display "-")) (iota (grid-width g)))
-    (display "+\n"))
-  (cursor-home)
+    (if border?
+	(begin (display "+")
+	       (for-each (lambda (x) (display "-")) (iota (grid-width g)))
+	       (display "+\n"))))
   (draw-border-line)
   (grid-for-each
    (lambda (pos)
-     (if (= (point-y pos) 0) ; beginning of line
+     (if (and border? (= (point-y pos) 0)) ; beginning of line
 	 (display "|"))
      ((print-fun pos) ((cell-printer (grid-get g pos))))
      (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
-	 (display "|\n")))
+	 (begin (if border? (display "|"))
+		(display "\n"))))
    g)
   (draw-border-line))
 
