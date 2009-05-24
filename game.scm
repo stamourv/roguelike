@@ -63,7 +63,12 @@
   ;; restore tty
   (tty-mode-set! (current-input-port) #t #t #f #f 0)
   (shell-command "setterm -cursor on")
+  (profile-stop!) ;; TODO PROFILING
+  (write-profile-report "profiling")
   (exit))
+
+(load "~/src/scheme/statprof/statprof.scm") ;; TODO PROFILING
+(profile-start!)
 
 ;; (if (not debug) (maze 8 8 (random-element character-names)))
 (if (not debug) (dungeon 3 (random-element character-names)))

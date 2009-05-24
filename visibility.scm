@@ -121,6 +121,9 @@
 	((visible)
 	 (terminal-print c bg: 'white fg: 'black)) ;; TODO can we have colored objects with that ? not sure
 	((visited)
-	 (terminal-print c bg: 'black fg: 'white))
+	 ;; (terminal-print c bg: 'black fg: 'white)
+	 ;; these are the default colors of the terminal, and not having to
+	 ;; print the control characters speeds up the game
+	 (display c))
 	((unknown)
 	 (terminal-print " ")))))) ;; TODO blank is good (better than ?, # or .) but conflicts with clear terrain, is it that bad?

@@ -1,8 +1,14 @@
-(define-type point
-  x
-  y)
-(define new-point make-point) ; for consistency
-(define (copy-point p) (new-point (point-x p) (point-y p)))
+;; (define-type point
+;;   x
+;;   y)
+;; (define new-point make-point) ; for consistency
+;; (define (copy-point p) (new-point (point-x p) (point-y p)))
+(define new-point    cons) ; for better performance
+(define point-x      car)
+(define point-y      cdr)
+(define point-x-set! set-car!)
+(define point-y-set! set-cdr!)
+(define (copy-point p) (cons (car p) (cdr p)))
 
 ;; vector of vectors of cells
 (define-type grid
