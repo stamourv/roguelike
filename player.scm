@@ -40,6 +40,7 @@
 
 (define (show-state player)
   (cursor-home)
+  (clear-line)
   (display (string-append "Level "
 			  (number->string (+ (player-level-no player) 1))
 			  "\n"))
