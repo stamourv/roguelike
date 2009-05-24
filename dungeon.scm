@@ -1,3 +1,9 @@
+(define-type level ;; TODO also have a dungeon type ?
+  map
+  rooms
+  stairs-up
+  stairs-down) ;; TODO also have the stairs (so we don't have to look for them), all the free space, etc.
+
 (define (generate-level #!optional stairs-down? #!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
@@ -29,6 +35,9 @@
 	  (begin (room-connected-to-set! a (cons b (room-connected-to a)))
 		 (room-connected-to-set! b (cons a (room-connected-to b)))
 		 #t))) ; must return true, since it's used in an and below
+
+    (define stairs-up-pos   #f) ;; TODO ugly, build the level structure earlier, then side effect it
+    (define stairs-down-pos #f)
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
@@ -121,7 +130,6 @@
     ;; if we have it (and espescially if it cannot be inferred (we are placing
     ;; a door on a free space, for example)), the direction of the wall can be
     ;; given
-    (define stairs-up-placed? #f)
     (define (add-door cell #!optional direction)
       ;; add the doorposts
       (for-each (lambda (post) (grid-set! level post (new-corner-wall)))
@@ -140,9 +148,9 @@
 		   (connect!  a b))
 	    ;; when we place the first room, there is nothing to connect to,
 	    ;; and we place the stairs if they were not placed already
-	    (if (not stairs-up-placed?)
+	    (if (not stairs-up-pos)
 		(begin (grid-set! level cell (new-stairs-up))
-		       (set! stairs-up-placed? #t))))))
+		       (set! stairs-up-pos cell))))))
 
     (define (add-random-feature start)
       ;; find in which direction to expand from this wall
@@ -312,15 +320,15 @@
     ;; (not a corridor) TODO also, try not to put it in the way of a door
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
     (if stairs-down?
-	(grid-set! level
-		   (random-element
+	(let ((pos (random-element
 		    (apply append
 			   (map room-cells
 				(filter (lambda (room)
 					  (let ((type (room-type room)))
 					    (or (eq? 'small-room type)
 						(eq? 'large-room type))))
-					rooms))))
-		   (new-stairs-down)))
+					rooms))))))
+	  (grid-set! level pos (new-stairs-down))
+	  (set! stairs-down-pos pos)))
     
-    level))
+    (make-level level rooms stairs-up-pos stairs-down-pos)))

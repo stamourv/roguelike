@@ -8,7 +8,7 @@
   extender: define-type-of-walkable-cell)
 (define (walkable-cell-print cell char)
   (lambda () (cond ((get-occupant cell)
-		    => (lambda (o) ((occupant-printer o))))
+		    => (lambda (o) ((character-printer o))))
 		   ((get-object cell)
 		    => (lambda (o) ((object-printer o))))
 		   (else char))))
@@ -44,10 +44,6 @@
 (define-type-of-object treasure) ;; TODO more
 (define (new-treasure) (make-treasure (random-element object-names)
 				      (lambda () #\T)))
-(define-type occupant
-  name
-  printer
-  extender: define-type-of-occupant)
 
 ;; TODO as it is, the stairs hides everything, even the player
 (define-type-of-walkable-cell stairs

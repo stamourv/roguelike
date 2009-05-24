@@ -1,4 +1,4 @@
-(define-type-of-occupant player
+(define-type-of-character player
   levels-before ; pairs (map . view)
   level ; views are a grid of either visible, visited or unknown
   level-no
@@ -14,28 +14,30 @@
 			     '()
 			     #f
 			     '())))
-    (place-player player (new-level))
+    (place-player player (new-player-level))
     player))
-(define player-name occupant-name)
+(define player-name character-name)
 
 
-;; TODO put this in its own file ? have a dungeon type ?
-(define-type level
-  map
+(define-type player-level
+  level
   view)
-(define (new-level #!optional (stairs-down? #t))
-  (let ((map (generate-level stairs-down?)))
-    (make-level map (init-visibility map))))
+(define (new-player-level #!optional (stairs-down? #t))
+  (let ((level (generate-level stairs-down?)))
+    (make-player-level level (init-visibility (level-map level)))))
 
-(define (place-player player level #!key (start-pred stairs-up?))
-  (let* ((map   (level-map level))
-	 (start (grid-find map start-pred)))
-    (occupant-set! (grid-get map start) player)
-    (player-pos-set!   player start)
+(define (place-player
+	 player level
+	 #!key (start-pos (level-stairs-up (player-level-level level))))
+  (let ((map (level-map (player-level-level level))))
+    (occupant-set! (grid-get map start-pos) player)
+    (player-pos-set!   player start-pos)
     (player-level-set! player level)))
 
-(define (player-map  player) (level-map  (player-level player)))
-(define (player-view player) (level-view (player-level player)))
+(define (player-map  player)
+  (level-map (player-level-level (player-level player))))
+(define (player-view player)
+  (player-level-view (player-level player)))
 
 
 (define (show-state player)
@@ -122,7 +124,9 @@
       (cond ((stairs-up? cell)
 	     (cond ((not (null? before))
 		    (let ((new (car before)))
-		      (place-player player new start-pred: stairs-down?)
+		      (place-player
+		       player new
+		       start-pos: (level-stairs-down (player-level-level new)))
 		      (player-levels-after-set!  player (cons level after))
 		      (player-levels-before-set! player (cdr before)))
 		    (player-level-no-set! player
@@ -133,8 +137,8 @@
 	     (if (null? after)
 		 ;; if we would generate the last level, don't put stairs down
 		 (place-player player
-			       (new-level (< (player-level-no player) ;; TODO one too many levels
-					     (- n-levels 2))))
+			       (new-player-level (< (player-level-no player) ;; TODO one too many levels
+						    (- n-levels 2))))
 		 (begin (place-player             player (car after))
 			(player-levels-after-set! player (cdr after))))
 	     (player-level-no-set! player

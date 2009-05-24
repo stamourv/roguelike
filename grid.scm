@@ -153,8 +153,8 @@
       (let* ((cell     (grid-get g pos))
 	     (new-cell (grid-get g new-pos))
 	     (to-move  (walkable-cell-occupant cell)))
-	(walkable-cell-occupant-set! cell     #f)
-	(walkable-cell-occupant-set! new-cell to-move)
+	(occupant-set! cell     #f)
+	(occupant-set! new-cell to-move)
 	new-pos)
       pos)) ; move failed
 

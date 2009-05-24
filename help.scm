@@ -5,7 +5,7 @@
     (let ((cell (grid-get grid pos)))
       (cond ((let ((occ (get-occupant cell)))
 	       (and occ (not (player? occ)) occ))
-	     => (lambda (occ) (display (occupant-name occ))))
+	     => (lambda (occ) (display (character-name occ))))
 	    ((get-object cell)
 	     => (lambda (obj) (display (object-name obj))))
 	    (else
