@@ -1,11 +1,33 @@
+;; TODO change the name of the file for level.scm
+
 (define-type level ;; TODO also have a dungeon type ?
+  no
   map
   rooms
   stairs-up
   stairs-down
   walkable-cells)
 
-(define (generate-level #!optional stairs-down? #!key (trace? #f) (step? #f))
+(define-type room
+  type
+  cells ; TODO the 3 of these are sets, use hash tables for sets if it becomes slow
+  walls
+  connected-to
+  encounter)
+(define (get-room point rooms)
+  (find (lambda (room) (member point (room-cells room))) rooms))
+(define (connected? a b)
+  ;; since it's commutative, no need to check both sides
+  ;; TODO need to check for a and b, since this sometimes receives #f, probably due to a bug somewhere, investigate
+  (and a b (memq a (room-connected-to b))))
+(define (connect! a b)
+  (if (and a b) ;; TODO same here
+      (begin (room-connected-to-set! a (cons b (room-connected-to a)))
+	     (room-connected-to-set! b (cons a (room-connected-to b))))))
+
+
+(define (generate-level no #!optional stairs-down?
+			#!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
@@ -19,27 +41,10 @@
       (let ((x (number->string (modulo trace 10))))
 	(make-walkable-cell (lambda () x) #f #f)))
 
-    (define-type room
-      type
-      cells ; TODO the 3 of these are sets, use hash tables for sets if it becomes slow
-      walls
-      connected-to)
     (define rooms '()) ;; TODO another set, see above
-    (define (get-room point)
-      (find (lambda (room) (member point (room-cells room))) rooms))
-    (define (connected? a b)
-      ;; since it's commutative, no need to check both sides
-      ;; TODO need to check for a and b, since this sometimes receives #f, probably due to a bug somewhere, investigate
-      (and a b (memq a (room-connected-to b))))
-    (define (connect! a b)
-      (if (and a b) ;; TODO same here
-	  (begin (room-connected-to-set! a (cons b (room-connected-to a)))
-		 (room-connected-to-set! b (cons a (room-connected-to b)))
-		 #t))) ; must return true, since it's used in an and below
-
     (define stairs-up-pos   #f) ;; TODO ugly, build the level structure earlier, then side effect it
     (define stairs-down-pos #f)
-    (define walkable-cells  '())
+    (define walkable-cells  '()) ;; TODO remove from the list if we add impassable features, also remove from the cell lists in room objects
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
@@ -109,7 +114,7 @@
 			 (read-line)))
 
 	      ;; the type will be filled later
-	      (make-room #f inside new-walls '()))
+	      (make-room #f inside new-walls '() #f))
 	    
 	    #f))) ; no it can't, give up
     
@@ -143,8 +148,8 @@
 			   ((horizontal) up-down)
 			   ((vertical)   left-right)) cell)
 			sides))
-	     (a     (get-room (car  dirs)))
-	     (b     (get-room (cadr dirs))))
+	     (a     (get-room (car  dirs) rooms))
+	     (b     (get-room (cadr dirs) rooms)))
 	(if (and a b)
 	    (begin (grid-set! level cell (new-door)) ; put the door
 		   (connect!  a b))
@@ -170,45 +175,38 @@
 		       (car directions))
 		      (else ;; keep looking
 		       (loop (cdr around) (cdr directions))))))
-	     (probabilities
-	      (case prev
-		((corridor)   `((0.1  corridor   ,add-corridor)
-				(0.6  large-room ,add-large-room)
-				(0.3  small-room ,add-small-room)))
-		((large-room) `((0.6  corridor   ,add-corridor)
-				(0.2  large-room ,add-large-room)
-				(0.2  small-room ,add-small-room)))
-		((small-room) `((0.7  corridor   ,add-corridor)
-				(0.2  large-room ,add-large-room)
-				(0.1  small-room ,add-small-room)))
-		;; should end up here only in the first turn
-		(else         `((0.4  corridor   ,add-corridor)
-				(0.5  large-room ,add-large-room)
-				(0.1  small-room ,add-small-room)))))
-	     (r    (random-real))
-	     (type (let loop ((r r)
-			      (p probabilities))
-		     (cond ((null? probabilities) #f) ; shouldn't happen
-			   ((< r (caar p))        (car p))
-			   (else                  (loop (- r (caar p))
-							(cdr p))))))
+	     (type (random-choice
+		    (case prev
+		      ((corridor)   `((0.1  corridor   ,add-corridor)
+				      (0.6  large-room ,add-large-room)
+				      (0.3  small-room ,add-small-room)))
+		      ((large-room) `((0.6  corridor   ,add-corridor)
+				      (0.2  large-room ,add-large-room)
+				      (0.2  small-room ,add-small-room)))
+		      ((small-room) `((0.7  corridor   ,add-corridor)
+				      (0.2  large-room ,add-large-room)
+				      (0.1  small-room ,add-small-room)))
+		      ;; should end up here only in the first turn
+		      (else         `((0.4  corridor   ,add-corridor)
+				      (0.5  large-room ,add-large-room)
+				      (0.1  small-room ,add-small-room))))))
 	     ;; the higher it is, the more chance this room will be chosen
 	     ;; as a starting point for another
-	     (weight (case (cadr type)
+	     (weight (case (car type)
 		       ((corridor)   5)
 		       ((large-room) 2)
 		       ((small-room) 3)))
 	     ;; returns #f or a room structure
-	     (res    ((caddr type) pos direction)))
+	     (res    ((cadr type) pos direction)))
 	(if res
 	    (begin
 	      ;; add the new room the list of rooms
-	      (room-type-set! res (cadr type))
+	      (room-type-set! res (car type))
 	      (set! rooms (cons res rooms))
 	      (add-door pos)
 	      ;; return the walls of the room "weight" times, and attach the
 	      ;; type of the new room to influence room type probabilities
-	      (map (lambda (x) (cons x (cadr type)))
+	      (map (lambda (x) (cons x (car type)))
 		   (repeat weight (room-walls res))))
 	    #f)))
     ;; TODO problem : the presence of + on a straight wall reveals the structure on the other side of the wall, maybe use # for all wall, but would be ugly
@@ -252,8 +250,8 @@
 			(c-left  (grid-get level left))
 			(c-right (grid-get level right)))
 		    (define (connection-check a b)
-		      (let ((a (get-room a))
-			    (b (get-room b)))
+		      (let ((a (get-room a rooms))
+			    (b (get-room b rooms)))
 			(not (connected? a b))))
 		    (or (and (corner-wall?      c-up)
 			     (corner-wall?      c-down)
@@ -273,7 +271,7 @@
 	     ;; yes, we have found a valid doorway, if this doorway is in an
 	     ;; existing room, we would separate in into two smaller ones,
 	     ;; which is no fun, so only put a door if we would open a wall
-	     (let ((room (get-room pos)))
+	     (let ((room (get-room pos rooms)))
 	       (if (not room)
 		   (add-door pos direction))))))
      level)
@@ -326,11 +324,10 @@
     (if stairs-down?
 	(let ((pos (random-element
 		    (filter (lambda (cell)
-			      (let ((type (room-type (get-room cell))))
-				(or (eq? 'small-room type)
-				    (eq? 'large-room type))))
+			      (not (eq? 'corridor
+					(room-type (get-room cell rooms)))))
 			    walkable-cells))))
 	  (grid-set! level pos (new-stairs-down))
 	  (set! stairs-down-pos pos)))
     
-    (make-level level rooms stairs-up-pos stairs-down-pos walkable-cells)))
+    (make-level no level rooms stairs-up-pos stairs-down-pos walkable-cells)))

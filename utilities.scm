@@ -58,6 +58,15 @@
 	      (cdr l)
 	      (cons (car l) r)))))
 
+(define (remove x lst)
+  (cond ((null? lst)
+         '())
+        ((eq? x (car lst))
+         (cdr lst))
+        (else
+         (cons (car lst)
+               (remove x (cdr lst))))))
+
 (define (randomize-list l)
   (let loop ((n (length l))
 	     (l l)
@@ -71,7 +80,12 @@
 
 (define (random-element l)
   (list-ref l (random-integer (length l))))
-
+(define (random-choice l) ; list of pairs (prob . x)
+  (let loop ((r (random-real))
+	     (l l))
+    (cond ((null? l)      #f) ; shouldn't happen
+	  ((< r (caar l)) (cdar l))
+	  (else           (loop (- r (caar l)) (cdr l))))))
 (define (random-between x y) ; between x and y inclusively
   (+ x (random-integer (+ 1 (- y x)))))
 

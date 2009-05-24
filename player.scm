@@ -1,20 +1,19 @@
 (define-type-of-character player
   levels-before ; pairs (map . view)
   level ; views are a grid of either visible, visited or unknown
-  level-no
   levels-after
   pos
   inventory) ; list of objects
 (define (new-player name)
   (let ((player (make-player name
 			     (lambda () #\@)
+			     (new-equipment)
 			     '()
 			     #f
-			     0
 			     '()
 			     #f
 			     '())))
-    (place-player player (new-player-level))
+    (place-player player (new-player-level 0))
     player))
 (define player-name character-name)
 
@@ -22,8 +21,9 @@
 (define-type player-level
   level
   view)
-(define (new-player-level #!optional (stairs-down? #t))
-  (let ((level (generate-level stairs-down?)))
+(define (new-player-level no)
+  (let ((level (generate-level no (< no (- n-levels 1)))))
+    (generate-encounters level)
     (make-player-level level (init-visibility (level-map level)))))
 
 (define (place-player
@@ -43,9 +43,11 @@
 (define (show-state player)
   (cursor-home)
   (clear-line)
-  (display (string-append "Level "
-			  (number->string (+ (player-level-no player) 1))
-			  "\n"))
+  (display (string-append
+	    "Level "
+	    (number->string
+	     (+ (level-no (player-level-level (player-level player))) 1))
+	    "\n"))
   (show-grid (player-map player)
 	     print-fun: (visibility-printer (player-view player))))
 
@@ -101,7 +103,7 @@
     (if dir
 	(let* ((pos  ((eval dir) (player-pos player)))
 	       (grid (player-map player))
-	       (cell (grid-get grid pos))) ;; TODO lots in common with close
+	       (cell (grid-get grid pos))) ;; TODO lots in common with close, and anything else that would ask for a direction
 	  (cond ((door?      cell) (open-door grid pos player))
 		((open-door? cell) (display "This door is already open.\n"))
 		(else              (display "I can't open that.\n")))))))
@@ -128,19 +130,32 @@
 		       player new
 		       start-pos: (level-stairs-down (player-level-level new)))
 		      (player-levels-after-set!  player (cons level after))
-		      (player-levels-before-set! player (cdr before)))
-		    (player-level-no-set! player
-					  (- (player-level-no player) 1)))
+		      (player-levels-before-set! player (cdr before))))
 		   (else (display "This would lead to the surface.\n"))))
 	    ((stairs-down? cell)
 	     (player-levels-before-set! player (cons level before))
 	     (if (null? after)
 		 ;; if we would generate the last level, don't put stairs down
 		 (place-player player
-			       (new-player-level (< (player-level-no player) ;; TODO one too many levels
-						    (- n-levels 2))))
+			       (new-player-level
+				(+ (level-no (player-level-level
+					      (player-level player)))
+				   1)))
 		 (begin (place-player             player (car after))
-			(player-levels-after-set! player (cdr after))))
-	     (player-level-no-set! player
-				   (+ (player-level-no player) 1)))
+			(player-levels-after-set! player (cdr after)))))
 	    (else (display "There are no stairs here.\n"))))))
+
+(define (kill player) ; insta-kill something TODO replace with a combat system
+  (display "Kill in which direction? ")
+  (let ((dir (choose-direction))) ; evaluates to a function, or #f
+    (if dir
+	(let* ((pos  ((eval dir) (player-pos player))) ;; TODO doesn't work
+	       (grid (player-map player))
+	       (cell (grid-get grid pos)))
+	  (cond ((get-occupant cell)
+		 => (lambda (occ)
+		      (display (string-append "Killed the "
+					      (character-name occ)
+					      "\n"))
+		      (occupant-set! cell #f)))
+		(else (display "There is nothing to kill there.\n")))))))

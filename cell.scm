@@ -37,13 +37,6 @@
       (walkable-cell-occupant-set! cell occupant)
       #f))
 
-(define-type object
-  name
-  printer
-  extender: define-type-of-object)
-(define-type-of-object treasure) ;; TODO more
-(define (new-treasure) (make-treasure (random-element object-names)
-				      (lambda () #\T)))
 
 ;; TODO as it is, the stairs hides everything, even the player
 (define-type-of-walkable-cell stairs
@@ -104,3 +97,6 @@
 	#f)))
 
 (define (opaque? cell) (or (wall? cell))) ;; TODO add as other opaque cell types are added
+
+(define (free-cell? cell)
+  (and (walkable-cell? cell) (not (get-occupant cell))))

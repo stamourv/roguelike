@@ -124,6 +124,6 @@
 	 ;; (terminal-print c bg: 'black fg: 'white)
 	 ;; these are the default colors of the terminal, and not having to
 	 ;; print the control characters speeds up the game
-	 (display c))
+	 (display c)) ;; TODO if visited, don't display the occupants ? they could have moved
 	((unknown)
 	 (terminal-print " ")))))) ;; TODO blank is good (better than ?, # or .) but conflicts with clear terrain, is it that bad?

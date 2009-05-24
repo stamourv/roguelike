@@ -43,6 +43,9 @@
       ((#\n) (info grid pos))
       ((#\l) (look grid pos))
 
+      ;; debugging
+      ((#\k) (kill player)) ; insta-kill a monster TODO replace with a combat system
+
       ((#\q) (quit))
       (else  (invalid-command)))))
 

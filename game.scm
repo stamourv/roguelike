@@ -4,6 +4,7 @@
 (include "character.scm")
 (include "player.scm")
 (include "monsters.scm")
+(include "objects.scm")
 (include "maze.scm")
 (include "dungeon.scm")
 (include "visibility.scm")

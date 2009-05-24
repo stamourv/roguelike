@@ -145,19 +145,6 @@
 		   g)
     g))
 
-(define (move g pos new-pos)
-  ;; moves the occupant of pos to new-pos, and returns the position of the
-  ;; occupant (the new one or the original, if the move fails)
-  (if (and (inside-grid?   g new-pos)
-	   (walkable-cell? (grid-get g new-pos)))
-      (let* ((cell     (grid-get g pos))
-	     (new-cell (grid-get g new-pos))
-	     (to-move  (walkable-cell-occupant cell)))
-	(occupant-set! cell     #f)
-	(occupant-set! new-cell to-move)
-	new-pos)
-      pos)) ; move failed
-
 (define (set-cursor-on-grid grid pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
