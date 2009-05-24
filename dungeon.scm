@@ -2,7 +2,8 @@
   map
   rooms
   stairs-up
-  stairs-down) ;; TODO also have the stairs (so we don't have to look for them), all the free space, etc.
+  stairs-down
+  walkable-cells)
 
 (define (generate-level #!optional stairs-down? #!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
@@ -38,6 +39,7 @@
 
     (define stairs-up-pos   #f) ;; TODO ugly, build the level structure earlier, then side effect it
     (define stairs-down-pos #f)
+    (define walkable-cells  '())
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
@@ -316,19 +318,19 @@
 		   (add-door door-candidate)))))) ;; TODO do it only with probability p ?
      rooms)
 
+    (set! walkable-cells (apply append (map room-cells rooms)))
+    
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor) TODO also, try not to put it in the way of a door
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
     (if stairs-down?
 	(let ((pos (random-element
-		    (apply append
-			   (map room-cells
-				(filter (lambda (room)
-					  (let ((type (room-type room)))
-					    (or (eq? 'small-room type)
-						(eq? 'large-room type))))
-					rooms))))))
+		    (filter (lambda (cell)
+			      (let ((type (room-type (get-room cell))))
+				(or (eq? 'small-room type)
+				    (eq? 'large-room type))))
+			    walkable-cells))))
 	  (grid-set! level pos (new-stairs-down))
 	  (set! stairs-down-pos pos)))
     
-    (make-level level rooms stairs-up-pos stairs-down-pos)))
+    (make-level level rooms stairs-up-pos stairs-down-pos walkable-cells)))
