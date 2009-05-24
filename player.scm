@@ -18,14 +18,25 @@
     player))
 (define player-name occupant-name)
 
+
+;; TODO put this in its own file ? have a dungeon type ?
 (define-type level
   map
   view)
 (define (new-level #!optional (stairs-down? #t))
   (let ((map (generate-level stairs-down?)))
     (make-level map (init-visibility map))))
+
+(define (place-player player level #!key (start-pred stairs-up?))
+  (let* ((map   (level-map level))
+	 (start (grid-find map start-pred)))
+    (occupant-set! (grid-get map start) player)
+    (player-pos-set!   player start)
+    (player-level-set! player level)))
+
 (define (player-map  player) (level-map  (player-level player)))
 (define (player-view player) (level-view (player-level player)))
+
 
 (define (show-state player)
   (cursor-home)
@@ -83,29 +94,24 @@
 ;; TODO for now, just for doors, but could be used for chests too
 (define (open player)
   (display "Open in which direction? ")
-  (let* ((dir  (choose-direction)) ; evaluates to a function
-	 (pos  ((eval dir) (player-pos player)))
-	 (grid (player-map player))
-	 (cell (grid-get grid pos))) ;; TODO lots in common with close
-    (cond ((door?      cell) (open-door grid pos player))
-	  ((open-door? cell) (display "This door is already open.\n"))
-	  (else              (display "I can't open that.\n")))))
+  (let ((dir (choose-direction))) ; evaluates to a function, or #f
+    (if dir
+	(let* ((pos  ((eval dir) (player-pos player)))
+	       (grid (player-map player))
+	       (cell (grid-get grid pos))) ;; TODO lots in common with close
+	  (cond ((door?      cell) (open-door grid pos player))
+		((open-door? cell) (display "This door is already open.\n"))
+		(else              (display "I can't open that.\n")))))))
 (define (close player)
   (display "Close in which direction? ")
-  (let* ((dir  (choose-direction)) ; evaluates to a function
-	 (pos  ((eval dir) (player-pos player)))
-	 (grid (player-mpa player))
-	 (cell (grid-get grid pos)))
-    (cond ((open-door? cell) (close-door grid pos player)) ;; TODO would be better to send a "close" message to the object
-	  ((door?      cell) (display "This door is already closed.\n"))
-	  (else              (display "I can't close that.\n")))))
-
-(define (place-player player level #!key (start-pred stairs-up?))
-  (let* ((map   (level-map level))
-	 (start (grid-find map start-pred)))
-    (occupant-set! (grid-get map start) player)
-    (player-pos-set!   player start)
-    (player-level-set! player level)))
+  (let ((dir  (choose-direction))) ; evaluates to a function, or #f
+    (if dir
+	(let* ((pos  ((eval dir) (player-pos player)))
+	       (grid (player-mpa player))
+	       (cell (grid-get grid pos)))
+	  (cond ((open-door? cell) (close-door grid pos player)) ;; TODO would be better to send a "close" message to the object
+		((door?      cell) (display "This door is already closed.\n"))
+		(else              (display "I can't close that.\n")))))))
 
 (define (stairs player)
   (let ((cell (grid-get (player-map player) (player-pos player))))
@@ -117,13 +123,19 @@
 		    (let ((new (car before)))
 		      (place-player player new start-pred: stairs-down?)
 		      (player-levels-after-set!  player (cons level after))
-		      (player-levels-before-set! player (cdr before))))
+		      (player-levels-before-set! player (cdr before)))
+		    (player-level-no-set! player
+					  (- (player-level-no player) 1)))
 		   (else (display "This would lead to the surface.\n"))))
 	    ((stairs-down? cell)
 	     (player-levels-before-set! player (cons level before))
 	     (if (null? after)
-		 ;; TODO see if we reached the bottom, or we could be going down ad infinitum, if so, use #f instead of #t
-		 (place-player player (new-level #t))
+		 ;; if we would generate the last level, don't put stairs down
+		 (place-player player
+			       (new-level (< (player-level-no player) ;; TODO one too many levels
+					     (- n-levels 2))))
 		 (begin (place-player             player (car after))
-			(player-levels-after-set! player (cdr after)))))
+			(player-levels-after-set! player (cdr after))))
+	     (player-level-no-set! player
+				   (+ (player-level-no player) 1)))
 	    (else (display "There are no stairs here.\n"))))))

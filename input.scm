@@ -49,4 +49,4 @@
 (define (choose-direction)
   (case (read-char)
     ((#\esc) (which-direction?))
-    (else    (invalid-command))))
+    (else    (invalid-command) #f)))

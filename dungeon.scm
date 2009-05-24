@@ -311,15 +311,16 @@
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor) TODO also, try not to put it in the way of a door
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
-    (grid-set! level
-	       (random-element
-		(apply append
-		       (map room-cells
-			    (filter (lambda (room)
-				      (let ((type (room-type room)))
-					(or (eq? 'small-room type)
-					    (eq? 'large-room type))))
-				    rooms))))
-	       (new-stairs-down))
+    (if stairs-down?
+	(grid-set! level
+		   (random-element
+		    (apply append
+			   (map room-cells
+				(filter (lambda (room)
+					  (let ((type (room-type room)))
+					    (or (eq? 'small-room type)
+						(eq? 'large-room type))))
+					rooms))))
+		   (new-stairs-down)))
     
     level))
