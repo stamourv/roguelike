@@ -84,18 +84,13 @@
 		       ;; visibility down to a reasonable level
 		       ;; note: line of sight is not necessary to see walls,
 		       ;; this gives better results
-		       (line-of-sight? g pos new))
+		       (or (opaque? (grid-get g new))
+			   (line-of-sight? g pos new)))
 		  (begin (grid-set! view new 'visible) ; mark as lit
 			 (if (not (opaque? (grid-get g new)))
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
-
-      ;; mark our immediate surroundings as visible, in case the previous
-      ;; algorithm didn't
-      (for-each (lambda (pos) (if (inside-grid? view pos)
-				  (grid-set! view pos 'visible)))
-		(eight-directions pos))
 
       ;; one last pass to solve the problem case of walls that are hard to
       ;; see, which gives ugly results

@@ -56,7 +56,7 @@
 ;; these functions return a list of points in the given directions from pos
 ;; these points might NOT be inside the grid
 ;; the order of the points is important, some functions depend on it
-(define (up pos) ;; TODO FOO propagate the use of this, is probably done in an ad-hoc way everywhere
+(define (up pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
     (new-point (- x 1) y)))

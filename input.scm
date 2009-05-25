@@ -46,8 +46,9 @@
       ;; debugging
       ((#\k) (kill player)) ; insta-kill a monster TODO replace with a combat system
 
-      ((#\q) (quit))
-      (else  (invalid-command)))))
+      ((#\space) (display "Nothing happened.")) ; noop TODO most roguelikes use .
+      ((#\q)     (quit))
+      (else      (invalid-command)))))
 
 (define (choose-direction)
   (case (read-char)

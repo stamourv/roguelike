@@ -98,7 +98,10 @@
 	       #t)
 	#f)))
 
-(define (opaque? cell) (or (wall? cell))) ;; TODO add as other opaque cell types are added
+(define (opaque? cell)
+  (or (wall? cell)
+      (cond ((get-occupant cell) => (lambda (o) (not (player? o))))
+	    (else #f)))) ;; TODO add as other opaque cell types are added
 
 (define (free-cell? cell)
   (and (walkable-cell? cell) (not (get-occupant cell))))
