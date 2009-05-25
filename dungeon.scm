@@ -123,7 +123,36 @@
       (add-rectangle pos (random-between 5 7) (random-between 5 7) direction))
     (define (add-large-room pos direction)
       ;; both dimensions 8-12 units (including walls)
-      (add-rectangle pos (random-between 8 12) (random-between 8 12) direction))
+      (let* ((height (random-between 8 12)) ;; TODO maybe have even bigger rooms, or longer ones, that can have rows of columns, maybe just a hallway type of room, with width 6 (or maybe 7 possible too) with 2 rows of columns, handle like a corridor
+	     (width  (random-between 8 12))
+	     (room   (add-rectangle pos height width direction)))
+	;; large rooms may have pillars
+	(if (and room (< (random-real) 0.6))
+	    (let* ((cells       (room-cells room))
+		   (top-left-x   (foldl min level-height (map point-x cells)))
+		   (top-left-y   (foldl min level-width  (map point-y cells)))
+		   (n-pillars-x (if (< height 10) 1 2))
+		   (n-pillars-y (if (< width  10) 1 2))
+		   (pts-x       (cond ((= n-pillars-x 1)
+				       ;; in the middle
+				       (list (+ top-left-x -1
+						(quotient height 2))))
+				      ((= n-pillars-x 2)
+				       ;; 2 rows, at 2 cells from each wall
+				       (list (+ top-left-x 2)
+					     (- (+ top-left-x height) 5)))))
+		   (pts-y       (cond ((= n-pillars-y 1)
+				       (list (+ top-left-y -1
+						(quotient width 2))))
+				      ((= n-pillars-y 2)
+				       (list (+ top-left-y 2)
+					     (- (+ top-left-y width) 5))))))
+	      (for-each
+	       (lambda (pos)
+		 (grid-set! level pos (new-pillar))
+		 (room-cells-set! room (remove pos (room-cells room))))
+	       (cartesian-product pts-x pts-y))))
+	room))
     (define (add-corridor   pos direction)
       ;; width: 3, length: 5-17 (including walls)
       ;; TODO maybe wider corridors ?

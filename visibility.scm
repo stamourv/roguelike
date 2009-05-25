@@ -115,15 +115,22 @@
 
 ;; returns a printing function for show-grid
 (define (visibility-printer view)
-  (lambda (pos)
-    (lambda (c)
+  (lambda (pos cell)
+    (lambda (c) ;; TODO actually deduce it from the cell FOO
       (case (grid-get view pos)
 	((visible)
-	 (terminal-print c bg: 'white fg: 'black)) ;; TODO can we have colored objects with that ? not sure
+	 (if (wall? cell)
+	     (display c)
+	     (terminal-print c bg: 'white fg: 'black))) ;; TODO can we have colored objects with that ? not sure
 	((visited)
 	 ;; (terminal-print c bg: 'black fg: 'white)
 	 ;; these are the default colors of the terminal, and not having to
 	 ;; print the control characters speeds up the game
-	 (display c)) ;; TODO if visited, don't display the occupants ? they could have moved
+	 ;; we don't show enemies if they would be in the fog of war
+	 (cond ((not (get-occupant cell)) (display c)) ; no enemy to hide
+	       ;; don't show enemies, but show objects
+	       ((get-object cell) => (lambda (o) (display (object-printer o)))) ;; TODO fights with the printer for the walkable-cell
+	       ;; hide the enemy, and no object to show
+	       (else (display " "))))
 	((unknown)
-	 (terminal-print " ")))))) ;; TODO blank is good (better than ?, # or .) but conflicts with clear terrain, is it that bad?
+	 (terminal-print " "))))))

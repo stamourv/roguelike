@@ -84,6 +84,12 @@
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
+(define (cartesian-product l1 l2)
+  (apply append
+	 (map (lambda (x) (map (lambda (y) (new-point x y))
+			       l2))
+	      l1)))
+
 ;; given a wall, returns the cells that are either perpendicular or
 ;; parrallel to the direction of the wall
 (define (wall-perpendicular g pos)
@@ -109,7 +115,7 @@
   (new-point (random-integer (grid-height g))
 	     (random-integer (grid-width g))))
 
-(define (show-grid g #!key (print-fun (lambda (pos) display)) (border? #f))
+(define (show-grid g #!key (print-fun (lambda (pos c) display)) (border? #f))
   (define (draw-border-line)
     (if border?
 	(begin (display "+")
@@ -120,7 +126,7 @@
    (lambda (pos)
      (if (and border? (= (point-y pos) 0)) ; beginning of line
 	 (display "|"))
-     ((print-fun pos) ((cell-printer (grid-get g pos))))
+     ((print-fun pos (grid-get g pos)) ((cell-printer (grid-get g pos))))
      (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
 	 (begin (if border? (display "|"))
 		(display "\n"))))

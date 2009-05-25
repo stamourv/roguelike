@@ -25,10 +25,10 @@
 	(new-encounter (list (new-orc) (new-orc)))
 	(new-encounter (list (new-orc) (new-goblin) (new-goblin)))))
 
-(define (generate-encounters level) ;; TODO use the room graph
+(define (generate-encounters level)
   (let* ((no                     (+ (level-no level) 1)) ; level-no starts at 0
-	 (encounter-level-cap    no) ;; TODO tweak, and maybe have it also a function of the player level ?
-	 (encounter-level-bottom (max (/ no 2) ;; TODO tweak
+	 (encounter-level-cap    no) ;; TODO maybe have it also a function of the player level ?
+	 (encounter-level-bottom (max (/ no 2)
 				      (foldl min
 					     encounter-level-cap
 					     (map encounter-points
