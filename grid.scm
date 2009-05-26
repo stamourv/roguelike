@@ -10,34 +10,29 @@
 (define point-y-set! set-cdr!)
 (define (copy-point p) (cons (car p) (cdr p)))
 
-;; vector of vectors of cells
-(define-type grid
-  rows)
+;; vector of cells
+(define-type grid ;; TODO maybe try a hash table, to see if it's faster
+  height
+  width
+  cells)
 (define (empty-grid height
 		    #!optional (width height)
 		    ;; function that takes the position, and returns the content
 		    #!key (cell-fun (lambda (pos) (new-walkable-cell))))
-  (make-grid (list->vector
-	      (map (lambda (x) (list->vector
-				(map (lambda (y) (cell-fun (new-point x y)))
-				     (iota width))))
-		   (iota height)))))
+  (make-grid height width
+	     (list->vector
+	      (map (lambda (p) (cell-fun (new-point (quotient p width)
+						    (modulo p width))))
+		   (iota (* height width))))))
 ;; in all cases, x is the row, y is the column
-(define (grid-get  g pos) ;; TODO call grid-ref ?
-  (vector-ref (vector-ref (grid-rows g) (point-x pos))
-	      (point-y pos)))
-(define (grid-set! g pos v)
-  (vector-set! (vector-ref (grid-rows g) (point-x pos))
-	       (point-y pos)
-	       v))
-(define (grid-height g) (vector-length (grid-rows g)))
-(define (grid-width  g) (vector-length (vector-ref (grid-rows g) 0)))
+(define (pos->index g pos)
+  (+ (* (point-x pos) (grid-width g)) (point-y pos)))
+(define (grid-get  g pos)   (vector-ref  (grid-cells g) (pos->index g pos))) ;; TODO call grid-ref ?
+(define (grid-set! g pos v) (vector-set! (grid-cells g) (pos->index g pos) v))
 
 (define (inside-grid? g pos)
-  (let ((x (point-x pos))
-	(y (point-y pos)))
-    (and (>= x 0) (< x (grid-height g))
-	 (>= y 0) (< y (grid-width  g)))))
+  (let ((index (pos->index g pos)))
+    (and (>= index 0) (< index (* (grid-width g) (grid-height g))))))
 
 (define (grid-for-each f g #!key
 		       (start-x 0)                (start-y 0)
