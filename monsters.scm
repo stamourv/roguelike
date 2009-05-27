@@ -40,7 +40,8 @@
 					   (<= pts encounter-level-cap))))
 				  encounter-types)))
     (let loop ((pts        (* no 10)) ;; TODO tweak
-	       (free-rooms (level-rooms level)))
+	       (free-rooms (level-rooms level))
+	       (encounters '()))
       (if (and (>= pts encounter-level-bottom)
 	       (not (null? free-rooms)))
 	  (let* ((encounter  (random-element possible-encounters))
@@ -49,7 +50,7 @@
 		 (room-space (room-cells room)))
 	    (if (or (room-encounter room) ; already an encounter there
 		    (> (length monsters) (length room-space))) ; too small
-		(loop pts free-rooms) ; try something else
+		(loop pts free-rooms encounters) ; try something else
 		(let loop2 ((monsters monsters)
 			    (space    room-space))
 		  (if (not (null? monsters))
@@ -58,4 +59,6 @@
 				       (car monsters))
 			(loop2 (cdr monsters) (remove cell space)))
 		      (loop (- pts (encounter-points encounter))
-			    (remove room free-rooms))))))))))
+			    (remove room free-rooms)
+			    (cons encounter encounters))))))
+	  encounters))))

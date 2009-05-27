@@ -22,7 +22,7 @@
   (make-grid height width
 	     (list->vector
 	      (map (lambda (p) (cell-fun (new-point (quotient p width)
-						    (modulo p width))))
+						    (modulo   p width))))
 		   (iota (* height width))))))
 ;; in all cases, x is the row, y is the column
 (define (pos->index g pos)
@@ -31,8 +31,11 @@
 (define (grid-set! g pos v) (vector-set! (grid-cells g) (pos->index g pos) v))
 
 (define (inside-grid? g pos)
-  (let ((index (pos->index g pos)))
-    (and (>= index 0) (< index (* (grid-width g) (grid-height g))))))
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    (and (>= x 0) (< x (grid-height g))
+	 (>= y 0) (< y (grid-width  g)))))
+
 
 (define (grid-for-each f g #!key
 		       (start-x 0)                (start-y 0)

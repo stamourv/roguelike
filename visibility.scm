@@ -126,6 +126,6 @@
 	       ;; don't show enemies, but show objects
 	       ((get-object cell) => (lambda (o) (display (object-printer o)))) ;; TODO fights with the printer for the walkable-cell
 	       ;; hide the enemy, and no object to show
-	       (else (display " "))))
+	       (else (display #\space))))
 	((unknown)
 	 (terminal-print " "))))))
