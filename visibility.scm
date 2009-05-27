@@ -122,10 +122,11 @@
 	 ;; these are the default colors of the terminal, and not having to
 	 ;; print the control characters speeds up the game
 	 ;; we don't show enemies if they would be in the fog of war
-	 (cond ((not (get-occupant cell)) (display c)) ; no enemy to hide
-	       ;; don't show enemies, but show objects ;; TODO FOO actually, we end up displaying open doors as spaces if an enemy is on them
-	       ((get-object cell) => (lambda (o) (display (object-printer o)))) ;; TODO fights with the printer for the walkable-cell
-	       ;; hide the enemy, and no object to show
-	       (else (display #\space))))
+	 (cond ((get-occupant cell) =>
+		(lambda (occ)
+		  (occupant-set! cell #f)
+		  (display ((cell-printer cell)))
+		  (occupant-set! cell occ)))
+	       (else (display c)))) ; no enemy to hide
 	((unknown)
 	 (terminal-print " "))))))
