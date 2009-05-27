@@ -2,42 +2,45 @@
   levels-before ; pairs (map . view)
   level ; views are a grid of either visible, visited or unknown
   levels-after
-  pos
   inventory) ; list of objects
 (define (new-player name)
   (let ((player (make-player name
 			     (lambda () #\@)
 			     (new-equipment)
-			     '()
 			     #f
 			     '()
 			     #f
+			     '()
 			     '())))
-    (place-player player (new-player-level 0))
+    (place-player player (new-level 0))
     player))
-(define player-name character-name)
+(define player-name     character-name)
+(define player-pos      character-pos)
+(define player-pos-set! character-pos-set!)
 
 
-(define-type player-level
-  level
+(define-type level
+  floor
   view)
-(define (new-player-level no)
-  (let ((level (generate-level no (< no (- n-levels 1)))))
-    (generate-encounters level)
-    (make-player-level level (init-visibility (level-map level)))))
+(define (new-level no)
+  (let ((floor (generate-floor no (< no (- n-levels 1)))))
+    (make-level floor (init-visibility (floor-map floor)))))
+
+
+(define (player-floor player)
+  (level-floor (player-level player)))
+(define (player-map   player)
+  (floor-map (player-floor player)))
+(define (player-view  player)
+  (level-view (player-level player)))
 
 (define (place-player
 	 player level
-	 #!key (start-pos (level-stairs-up (player-level-level level))))
-  (let ((map (level-map (player-level-level level))))
+	 #!key (start-pos (floor-stairs-up (level-floor level))))
+  (let ((map (floor-map (level-floor level))))
     (occupant-set! (grid-get map start-pos) player)
     (player-pos-set!   player start-pos)
     (player-level-set! player level)))
-
-(define (player-map  player)
-  (level-map (player-level-level (player-level player))))
-(define (player-view player)
-  (player-level-view (player-level player)))
 
 
 (define (show-state player)
@@ -46,7 +49,7 @@
   (display (string-append
 	    "Level "
 	    (number->string
-	     (+ (level-no (player-level-level (player-level player))) 1))
+	     (+ (floor-no (player-floor player)) 1))
 	    "\n"))
   (show-grid (player-map player)
 	     print-fun: (visibility-printer (player-view player))))
@@ -128,7 +131,7 @@
 		    (let ((new (car before)))
 		      (place-player
 		       player new
-		       start-pos: (level-stairs-down (player-level-level new)))
+		       start-pos: (floor-stairs-down (level-floor new)))
 		      (player-levels-after-set!  player (cons level after))
 		      (player-levels-before-set! player (cdr before))))
 		   (else (display "This would lead to the surface.\n"))))
@@ -137,9 +140,8 @@
 	     (if (null? after)
 		 ;; if we would generate the last level, don't put stairs down
 		 (place-player player
-			       (new-player-level
-				(+ (level-no (player-level-level
-					      (player-level player)))
+			       (new-level
+				(+ (floor-no (player-floor player))
 				   1)))
 		 (begin (place-player             player (car after))
 			(player-levels-after-set! player (cdr after)))))
@@ -157,5 +159,5 @@
 		      (display (string-append "Killed the "
 					      (character-name occ)
 					      "\n"))
-		      (occupant-set! cell #f)))
+		      (remove-monster (player-floor player) occ)))
 		(else (display "There is nothing to kill there.\n")))))))

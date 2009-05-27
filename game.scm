@@ -36,14 +36,16 @@
 
 (define (game player victory-fun) ;; TODO get a level function, to generate new levels, or just use generate-level ?
   (let loop ()
-    (if (victory-fun (player-map player) player)
+    (if (victory-fun (player-floor player) player)
 	(begin
 	  (display "You win!")
 	  (quit)) ;; TODO have something more dramatic
-	(begin
+	(let ((floor (player-floor player)))
 	  (update-visibility player)
 	  (show-state player)
 	  (read-command player) ; side-effects the player
+	  (for-each (lambda (monster) (move (floor-map floor) monster (random-element (four-directions (character-pos monster)))))
+		    (floor-monsters floor)) ;; TODO FOO replace with an AI
 	  (loop)))))
 
 ;; TODO obsolete, doesn't work with the new architecture

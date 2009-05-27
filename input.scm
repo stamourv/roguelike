@@ -25,9 +25,8 @@
 		 ((down)  (point-x-set! pos (+ x 1)))
 		 ((right) (point-y-set! pos (+ y 1)))
 		 ((left)  (point-y-set! pos (- y 1))))
-       ;; tries to move to the new position, if it fails, return where we were
-       (player-pos-set! player
-			(move (player-map player) (player-pos player) pos)))
+       ;; tries to move to the new position, if it fails, stay where we were
+       (move (player-map player) player pos))
 
       ;; inventory
       ((#\p) (pick-up   player pos))

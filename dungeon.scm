@@ -1,12 +1,13 @@
 ;; TODO change the name of the file for level.scm
 
-(define-type level ;; TODO also have a dungeon type ?
+(define-type floor ;; TODO also have a dungeon type ?
   no
   map
   rooms
   stairs-up
   stairs-down
-  walkable-cells)
+  walkable-cells
+  monsters)
 
 (define-type room
   type
@@ -26,7 +27,7 @@
 	     (room-connected-to-set! b (cons a (room-connected-to b))))))
 
 
-(define (generate-level no #!optional stairs-down?
+(define (generate-floor no #!optional stairs-down?
 			#!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
@@ -359,4 +360,6 @@
 	  (grid-set! level pos (new-stairs-down))
 	  (set! stairs-down-pos pos)))
     
-    (make-level no level rooms stairs-up-pos stairs-down-pos walkable-cells)))
+    (let ((level (make-floor no level rooms stairs-up-pos stairs-down-pos walkable-cells #f))) ;; TODO fill other parts earlier
+      (generate-encounters level) ;; TODO put the monsters in the level structure
+      level)))

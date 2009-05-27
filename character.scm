@@ -1,6 +1,7 @@
 (define-type character
   name
   printer
+  pos
   equipment
   extender: define-type-of-character)
 
@@ -20,15 +21,13 @@
 	      => (lambda (shield) (armor-ac shield)))
 	     ((else 0)))))) ;; TODO add more
 
-(define (move g pos new-pos)
+(define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
   ;; occupant (the new one or the original, if the move fails)
   (if (and (inside-grid? g new-pos)
 	   (free-cell?   (grid-get g new-pos)))
-      (let* ((cell     (grid-get g pos))
-	     (new-cell (grid-get g new-pos))
-	     (to-move  (walkable-cell-occupant cell)))
+      (let* ((cell     (grid-get g (character-pos occ)))
+	     (new-cell (grid-get g new-pos)))
 	(occupant-set! cell     #f)
-	(occupant-set! new-cell to-move)
-	new-pos)
-      pos)) ; move failed
+	(occupant-set! new-cell occ)
+	(character-pos-set! occ new-pos))))
