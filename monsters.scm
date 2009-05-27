@@ -58,6 +58,7 @@
 					(and (>= pts encounter-level-bottom)
 					     (<= pts encounter-level-cap))))
 				    encounter-types)))
+    (if (null? possible-encounter-types) (error "no possible encounters for this level")) ;; TODO make sure this can't happend, currently does for level 3. maybe just don't generate anything instead ?
     (let loop ((pts            (* no 10)) ;; TODO tweak
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))

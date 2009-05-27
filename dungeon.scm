@@ -3,10 +3,10 @@
 (define-type floor ;; TODO also have a dungeon type ?
   no
   map
-  rooms
+  rooms ;; TODO have a set ?
   stairs-up
   stairs-down
-  walkable-cells
+  walkable-cells ;; TODO remove from the list if we add impassable features, also remove from the cell lists in room objects
   monsters)
 
 (define-type room
@@ -34,18 +34,14 @@
   ;; terminal
   (let* ((level-height 20) ;; TODO really show a border ?
 	 (level-width  78) ;; TODO the full 80 or just 60 ? with 60, can display some status on the side, but there is none for the moment
-	 (level (empty-grid level-height level-width
-			    cell-fun: (lambda (pos) (new-solid-wall)))))
+	 (level        (empty-grid level-height level-width
+				   cell-fun: (lambda (pos) (new-solid-wall))))
+	 (new-floor (make-floor no level '() #f #f '() #f)))
     
     (define trace 0) ;; to trace the generation of the dungeon
     (define (trace-cell)
       (let ((x (number->string (modulo trace 10))))
 	(make-walkable-cell (lambda () x) #f #f)))
-
-    (define rooms '()) ;; TODO another set, see above
-    (define stairs-up-pos   #f) ;; TODO ugly, build the level structure earlier, then side effect it
-    (define stairs-down-pos #f)
-    (define walkable-cells  '()) ;; TODO remove from the list if we add impassable features, also remove from the cell lists in room objects
     
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
@@ -178,6 +174,7 @@
 			   ((horizontal) up-down)
 			   ((vertical)   left-right)) cell)
 			sides))
+	     (rooms (floor-rooms new-floor))
 	     (a     (get-room (car  dirs) rooms))
 	     (b     (get-room (cadr dirs) rooms)))
 	(if (and a b)
@@ -185,9 +182,9 @@
 		   (connect!  a b))
 	    ;; when we place the first room, there is nothing to connect to,
 	    ;; and we place the stairs if they were not placed already
-	    (if (not stairs-up-pos)
+	    (if (not (floor-stairs-up new-floor))
 		(begin (grid-set! level cell (new-stairs-up))
-		       (set! stairs-up-pos cell))))))
+		       (floor-stairs-up-set! new-floor cell))))))
 
     (define (add-random-feature start)
       ;; find in which direction to expand from this wall
@@ -232,7 +229,7 @@
 	    (begin
 	      ;; add the new room the list of rooms
 	      (room-type-set! res (car type))
-	      (set! rooms (cons res rooms))
+	      (floor-rooms-set! new-floor (cons res (floor-rooms new-floor)))
 	      (add-door pos)
 	      ;; return the walls of the room "weight" times, and attach the
 	      ;; type of the new room to influence room type probabilities
@@ -280,8 +277,9 @@
 			(c-left  (grid-get level left))
 			(c-right (grid-get level right)))
 		    (define (connection-check a b)
-		      (let ((a (get-room a rooms))
-			    (b (get-room b rooms)))
+		      (let* ((rooms (floor-rooms new-floor))
+			     (a     (get-room a rooms))
+			     (b     (get-room b rooms)))
 			(not (connected? a b))))
 		    (or (and (corner-wall?      c-up)
 			     (corner-wall?      c-down)
@@ -301,7 +299,7 @@
 	     ;; yes, we have found a valid doorway, if this doorway is in an
 	     ;; existing room, we would separate in into two smaller ones,
 	     ;; which is no fun, so only put a door if we would open a wall
-	     (let ((room (get-room pos rooms)))
+	     (let ((room (get-room pos (floor-rooms new-floor))))
 	       (if (not room)
 		   (add-door pos direction))))))
      level)
@@ -344,22 +342,25 @@
 		       walls))))
 	       (if (not (eq? door-candidate current-door))
 		   (add-door door-candidate)))))) ;; TODO do it only with probability p ?
-     rooms)
+     (floor-rooms new-floor))
 
-    (set! walkable-cells (apply append (map room-cells rooms)))
+    (floor-walkable-cells-set!
+     new-floor
+     (apply append (map room-cells (floor-rooms new-floor))))
     
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor) TODO also, try not to put it in the way of a door
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
     (if stairs-down?
-	(let ((pos (random-element
-		    (filter (lambda (cell)
-			      (not (eq? 'corridor
-					(room-type (get-room cell rooms)))))
-			    walkable-cells))))
+	(let* ((rooms (floor-rooms new-floor))
+	       (pos   (random-element
+		       (filter (lambda (cell)
+				 (not (eq? 'corridor
+					   (room-type (get-room cell rooms)))))
+			       (floor-walkable-cells new-floor)))))
 	  (grid-set! level pos (new-stairs-down))
-	  (set! stairs-down-pos pos)))
-    
-    (let ((level (make-floor no level rooms stairs-up-pos stairs-down-pos walkable-cells #f))) ;; TODO fill other parts earlier
-      (generate-encounters level) ;; TODO put the monsters in the level structure
-      level)))
+	  (floor-stairs-down-set! new-floor pos)))
+
+    ;; add everything else on top
+    (generate-encounters new-floor)
+    new-floor))
