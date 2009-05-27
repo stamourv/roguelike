@@ -113,7 +113,10 @@
   (new-point (random-integer (grid-height g))
 	     (random-integer (grid-width g))))
 
-(define (show-grid g #!key (print-fun (lambda (pos c) display)) (border? #f))
+(define (show-grid
+	 g #!key
+	 (print-fun (lambda (pos cell) (display ((cell-printer cell)))))
+	 (border? #f))
   (define (draw-border-line)
     (if border?
 	(begin (display "+")
@@ -124,7 +127,7 @@
    (lambda (pos)
      (if (and border? (= (point-y pos) 0)) ; beginning of line
 	 (display "|"))
-     ((print-fun pos (grid-get g pos)) ((cell-printer (grid-get g pos))))
+     (print-fun pos (grid-get g pos))
      (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
 	 (begin (if border? (display "|"))
 		(display "\n"))))

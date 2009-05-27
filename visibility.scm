@@ -111,7 +111,7 @@
 ;; returns a printing function for show-grid
 (define (visibility-printer view)
   (lambda (pos cell)
-    (lambda (c) ;; TODO actually deduce it from the cell FOO
+    (let ((c ((cell-printer cell))))
       (case (grid-get view pos)
 	((visible)
 	 (if (wall? cell)
