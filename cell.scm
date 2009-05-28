@@ -47,8 +47,8 @@
   (let ((stairs (f #f #f #f)))
     (cell-printer-set! stairs (walkable-cell-print stairs char))
     stairs))
-(define (new-stairs-up)   (new-stairs make-stairs-up   #\^))
-(define (new-stairs-down) (new-stairs make-stairs-down #\v))
+(define (new-stairs-up)   (new-stairs make-stairs-up   #\<))
+(define (new-stairs-down) (new-stairs make-stairs-down #\>))
 
 
 (define-type-of-cell wall

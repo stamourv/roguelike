@@ -1,13 +1,16 @@
 (define-type-of-character monster
   challenge-rating
+  ;; function that takes the monster, the floor, and the position of the
+  ;; player as parameters and makes the monster act
+  behavior
   extender: define-monster-type)
 
 (define-monster-type goblin) ;; TODO do they need to be subtypes ?
-(define (new-goblin) ;; TODO give them different AIs
-  (make-goblin "goblin" (lambda () #\g) #f (new-equipment) 1/3)) ;; TODO equip
+(define (new-goblin)
+  (make-goblin "goblin" (lambda () #\g) #f (new-equipment) 1/3 rush)) ;; TODO equip
 (define-monster-type orc)
 (define (new-orc)
-  (make-orc "orc" (lambda () #\o) #f (new-equipment) 1/2))
+  (make-orc "orc" (lambda () #\o) #f (new-equipment) 1/2 rush)) ;; TODO add a behavior
 
 
 (define-type encounter-type
@@ -58,7 +61,7 @@
 					(and (>= pts encounter-level-bottom)
 					     (<= pts encounter-level-cap))))
 				    encounter-types)))
-    (if (null? possible-encounter-types) (error "no possible encounters for this level")) ;; TODO make sure this can't happend, currently does for level 3. maybe just don't generate anything instead ?
+    (if (null? possible-encounter-types) (error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
     (let loop ((pts            (* no 10)) ;; TODO tweak
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))

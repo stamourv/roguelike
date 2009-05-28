@@ -3,6 +3,7 @@
 (include "cell.scm")
 (include "character.scm")
 (include "player.scm")
+(include "behavior.scm")
 (include "monsters.scm")
 (include "objects.scm")
 (include "maze.scm")
@@ -44,8 +45,11 @@
 	  (update-visibility player)
 	  (show-state player)
 	  (read-command player) ; side-effects the player
-	  (for-each (lambda (monster) (move (floor-map floor) monster (random-element (four-directions (character-pos monster)))))
-		    (floor-monsters floor)) ;; TODO FOO replace with an AI
+;; 	  (for-each (lambda (monster) (move (floor-map floor) monster (random-element (four-directions (character-pos monster)))))
+;; 		    (floor-monsters floor)) ;; TODO FOO replace with an AI
+	  (for-each (lambda (m)
+		      ((monster-behavior m) m floor (player-pos player)))
+		    (floor-monsters floor))
 	  (loop)))))
 
 ;; TODO obsolete, doesn't work with the new architecture
