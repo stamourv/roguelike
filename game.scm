@@ -45,14 +45,12 @@
 	  (update-visibility player)
 	  (show-state player)
 	  (read-command player) ; side-effects the player
-;; 	  (for-each (lambda (monster) (move (floor-map floor) monster (random-element (four-directions (character-pos monster)))))
-;; 		    (floor-monsters floor)) ;; TODO FOO replace with an AI
 	  (for-each (lambda (m)
 		      ((monster-behavior m) m floor (player-pos player)))
 		    (floor-monsters floor))
 	  (loop)))))
 
-;; TODO obsolete, doesn't work with the new architecture
+;; TODO obsolete, doesn't work with the new architecture (actually remove the whole maze thing)
 ;; (define (maze h w name)
 ;;   ;; simple maze game, start at the top left, and get to the bottom right
 ;;   (let ((level (generate-maze h w)))

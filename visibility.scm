@@ -21,23 +21,23 @@
 	(let* ((delta-x   (- x1 x0))
 	       (delta-y   (abs (- y1 y0)))
 	       (delta-err (/ delta-y delta-x))
-	       (y-step    (if (< y0 y1) 1 -1)))
+	       (y-step    (if (< y0 y1) 1 -1))
+	       (start     (if steep (new-point y0 x0) (new-point x0 y0)))
+	       (dest      (if steep (new-point y1 x1) (new-point x1 y1))))
 	  (let loop ((error        0)
-		     ;; we can see opaque squares, but not behind
-		     (seen-opaque? #f)
 		     (x            x0)
 		     (y            y0))
-	    (if (> x x1)
-		#t ; no collision, we have line of sight
-		(let ((pos   (if steep (new-point y x) (new-point x y)))
-		      (error (+ error delta-err)))
-		  ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
-		  (if seen-opaque?
-		      #f ; we hit an obstacle, we don't have line of sight
-		      (let ((error (if (>= error 1/2) (- error 1)  error))
-			    (y     (if (>= error 1/2) (floor (+ y y-step)) y))
-			    (seen-opaque? (opaque? (grid-get g pos))))
-			(loop error seen-opaque? (+ x 1) y))))))))))
+	    (let ((pos   (if steep (new-point y  x)  (new-point x  y)))
+		  
+		  (error (+ error delta-err)))
+	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
+	      (cond ((equal? pos dest)          #t) ; we see it
+		    ((and (opaque? (grid-get g pos)) (not (equal? pos start))) #f) ; we hit an obstacle
+		    (else (let ((error (if (>= error 1/2)
+					   (- error 1)  error))
+				(y     (if (>= error 1/2)
+					   (floor (+ y y-step)) y)))
+			    (loop error (+ x 1) y))))))))))
 
 (define (update-visibility player) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
   ;; set the fog of war

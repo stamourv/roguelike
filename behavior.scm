@@ -1,9 +1,8 @@
 (define (rush monster floor player-pos) ;; TODO how can we keep state in the AI ?
   (let ((pos (character-pos monster))
 	(map (floor-map floor)))
-    (if (< (distance pos player-pos) 5);; (line-of-sight? map player-pos pos) ;; TODO should be, if he can see us, but didn't work FOO weird, line of sight doesn't work well, either way
-	(let ((next (find-path map pos player-pos))) ;; TODO ok, distance works, but is not fun, make line of sight work FOO
-	  (pp (list SEEN: from: pos to: player-pos))
+    (if (line-of-sight? map pos player-pos)
+	(let ((next (find-path map pos player-pos)))
 	  (if next (move map monster next))))))
 ;; TODO another behavior (pursue?) that, even if it does not see the player, remember where it was, and goes there
 
