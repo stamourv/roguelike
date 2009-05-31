@@ -3,31 +3,31 @@
   extender: define-type-of-cell)
 
 (define-type-of-cell walkable-cell
-  object ;; TODO have a list instead
+  objects
   occupant ; player, monster, ...
   extender: define-type-of-walkable-cell)
 (define (walkable-cell-print cell char)
   (lambda () (cond ((get-occupant cell)
 		    => (lambda (o) ((character-printer o))))
-		   ((get-object cell)
-		    => (lambda (o) ((object-printer o))))
+		   ((not (null? (get-objects cell)))
+		    ((object-printer (car (get-objects cell)))))
 		   (else char))))
 (define (new-walkable-cell)
-  (let ((cell (make-walkable-cell #f #f #f)))
+  (let ((cell (make-walkable-cell #f '() #f)))
     (cell-printer-set! cell (walkable-cell-print cell #\space))
     cell))
-(define (get-object cell)
+(define (get-objects cell)
   (if (walkable-cell? cell)
-      (walkable-cell-object cell)
-      #f)) ;; TODO change with multiple objects
+      (walkable-cell-objects cell)
+      #f))
 (define (add-object cell object)
   (if (walkable-cell? cell)
-      (walkable-cell-object-set! cell object)
-      #f)) ;; TODO change it when we have multiple objects
+      (walkable-cell-objects-set! cell (cons object (get-objects cell)))
+      #f))
 (define (remove-object cell object)
   (if (walkable-cell? cell)
-      (walkable-cell-object-set! cell #f)
-      #f)) ;; TODO change with multiple objects
+      (walkable-cell-objects-set! cell (remove object (get-objects cell)))
+      #f))
 (define (get-occupant cell)
   (if (walkable-cell? cell)
       (walkable-cell-occupant cell)
@@ -44,7 +44,7 @@
 (define-type-of-stairs stairs-up)
 (define-type-of-stairs stairs-down)
 (define (new-stairs f char)
-  (let ((stairs (f #f #f #f)))
+  (let ((stairs (f #f '() #f)))
     (cell-printer-set! stairs (walkable-cell-print stairs char))
     stairs))
 (define (new-stairs-up)   (new-stairs make-stairs-up   #\<))
@@ -79,7 +79,7 @@
   close-fun ; analogous to open-fun
   when-closed) ; the original closed door
 (define (new-open-door orig)
-  (let ((door (make-open-door #f #f #f #f orig)))
+  (let ((door (make-open-door #f '() #f #f orig)))
     (cell-printer-set! door (walkable-cell-print door #\_))
     (open-door-close-fun-set! door (lambda (o) #t))
     door))

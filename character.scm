@@ -10,7 +10,11 @@
   off-arm ; shield or 2nd weapon
   torso) ;; TODO add more
 (define (new-equipment #!key (main-arm #f) (off-arm #f) (torso #f))
-  (make-equipment main-arm off-arm torso)) ;; TODO when a monster dies, drop its equipment (maybe randomly remove some items, to make as if they broke during combat)
+  (make-equipment main-arm off-arm torso))
+(define (for-each-equipped f e)
+  (f (equipment-main-arm e))
+  (f (equipment-off-arm  e))
+  (f (equipment-torso    e)))
 
 
 (define (get-armor-class c)

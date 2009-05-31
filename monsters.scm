@@ -97,6 +97,10 @@
 	  (floor-monsters-set! floor floor-monsters)))))
 
 ;; removes a monster, usually when killed
-(define (remove-monster floor monster) ;; TODO drop equipment, and give experience
-  (occupant-set! (grid-get (floor-map floor) (character-pos monster)) #f)
-  (floor-monsters-set! floor (remove monster (floor-monsters floor))))
+(define (remove-monster floor monster) ;; TODO and give experience
+  ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
+  (let ((cell (grid-get (floor-map floor) (character-pos monster))))
+    (for-each-equipped (lambda (x) (if x (add-object cell x)))
+		       (character-equipment monster))
+    (occupant-set! cell #f)
+    (floor-monsters-set! floor (remove monster (floor-monsters floor)))))

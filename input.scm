@@ -53,3 +53,22 @@
   (case (read-char)
     ((#\esc) (which-direction?))
     (else    (invalid-command) #f)))
+
+(define (choice objects)
+  (display "what?\n")
+  (display "0: Cancel\n")
+  (let loop ((objects objects)
+	     (i       1))
+    (if (not (null? objects))
+	(begin (display (string-append (number->string i) ": "
+				       (object-name (car objects)) "\n"))
+	       (loop (cdr objects) (+ i 1)))))
+  (let loop ((nb (read-char)))
+    (cond ((eq? nb #\0)
+	   #f) ; cancel
+	  ((not (and (char>=? nb #\1)
+		     (<= (- (char->integer nb) (char->integer #\0))
+			 (length objects))))
+	   (loop (read-char)))
+	  (else
+	   (list-ref objects (- (char->integer nb) (char->integer #\0) 1))))))
