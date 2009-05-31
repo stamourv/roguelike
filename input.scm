@@ -33,6 +33,7 @@
       ((#\d) (drop      player))
       ((#\i) (inventory player))
       ((#\e) (equip     player))
+      ((#\r) (take-off  player))
 
       ((#\o) (open   player))
       ((#\c) (close  player))
@@ -55,9 +56,11 @@
     ((#\esc) (which-direction?))
     (else    (invalid-command) #f)))
 
-(define (choice objects)
-  (display "what?\n")
-  (display "0: Cancel\n")
+(define (choice player objects question feedback)
+  (cursor-home)
+  (clear-to-bottom)
+  (display question)
+  (display "\n0: Cancel\n")
   (let loop ((objects objects)
 	     (i       1))
     (if (not (null? objects))
@@ -72,4 +75,9 @@
 			 (length objects))))
 	   (loop (read-char)))
 	  (else
-	   (list-ref objects (- (char->integer nb) (char->integer #\0) 1))))))
+	   (let ((object (list-ref objects (- (char->integer nb)
+					      (char->integer #\0) 1))))
+	     	   (show-state player)
+		   (display (string-append feedback
+					   (object-name object)))
+		   object)))))

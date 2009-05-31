@@ -57,79 +57,90 @@
 
 
 (define (pick-up player pos)
-  (clear-to-bottom) ;; TODO is done before each action that writes something, abstract ?
   (let* ((cell    (grid-get (player-map player) pos))
 	 (objects (get-objects cell)))
     (if (null? objects)
 	(display "There is nothing to pick up.")
-	(let ((object (if (= (length objects) 1)
-			  (car objects)
-			  (choice objects))))
+	(let ((object
+	       (if (= (length objects) 1) ;; TODO take this shortcut ?
+		   (let ((object (car objects)))
+		     (display (string-append "Picked up "
+					     (object-name object)))
+		     object)
+		   (choice player objects "Pick up what?" "Picked up "))))
 	  (if object
-	      (begin (display "Picked up ")
-		     (display (object-name object))
-		     (remove-object cell object)
+	      (begin (remove-object cell object)
 		     (player-inventory-set!
 		      player (cons object (player-inventory player)))))))))
 (define (drop player)
-  (clear-to-bottom)
   (let ((objects (player-inventory player)))
     (if (null? objects)
 	(display "You have nothing to drop.")
-	(begin
-	  (display "Drop ")
-	  (let ((cell   (grid-get (player-map player) (player-pos player)))
-		(object (choice objects)))
-	    (if object
-		(begin (display "Dropped ")
-		       (display (object-name object))
-		       (player-inventory-set! player (remove object objects))
-		       (add-object cell object))))))))
-(define (inventory player) ;; TODO FOO add a notification zone on the side, right now, we can't see much
+	(let ((cell   (grid-get (player-map player) (player-pos player)))
+	      (object (choice player objects "Drop what?" "Dropped ")))
+	  (if object
+	      (begin (player-inventory-set! player (remove object objects))
+		     (add-object cell object)))))))
+(define (inventory player)
+  (cursor-home) ;; TODO also done in choice, abstract ?
   (clear-to-bottom)
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
      (if obj (display (string-append where ": " (object-name obj) "\n"))))
    (player-equipment player))
-  (display "Inventory:\n")
+  (display "\nInventory:\n")
   (for-each (lambda (o) (display (string-append (object-name o) "\n")))
-	    ;; TODO watch out for the limits of the screen, maybe have more than 1 column, maybe have on its own screen ?
-	    (player-inventory player)))
+	    (player-inventory player))
+  (let loop ((c #f))
+    (if (not (eq? c #\space))
+	(begin (display "\nPress space bar.")
+	       (loop (read-char)))))
+  (clear-to-bottom))
 (define (equip player)
-  (clear-to-bottom)
   (let ((objects (player-inventory player)))
     (if (null? objects)
 	(display "You have nothing to equip.")
-	(begin
-	  (display "Equip ")
-	  (let ((object (choice objects)))
-	    (if object
-		(let* ((e     (player-equipment player))
-		       (place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
-				    ((shield?     object) 'off-arm)
-				    ((body-armor? object) 'torso)))
-		       (old   ((case place
-				((main-arm) equipment-main-arm) ;; TODO string->symbol and co ?
-				((off-arm)  equipment-off-arm)
-				((torso)    equipment-torso))
-			       e)))
-		  (display (string-append "Equipped "
-					  (object-name object)
-					  "\n"))
-		  (player-inventory-set! player (remove object objects))
-		  ((case place
-		    ((main-arm) equipment-main-arm-set!)
-		    ((off-arm)  equipment-off-arm-set!)
-		    ((torso)    equipment-torso-set!))
-		   e object)
-		  (if old
-		      (begin (display (string-append "Put "
-						     (object-name old)
-						     " back in inventory.\n"))
-			     (player-inventory-set!
-			      player
-			      (cons old (player-inventory player))))))))))))
+	(let ((object (choice player objects "Equip what?" "Equipped ")))
+	  (if object
+	      (let* ((e     (player-equipment player))
+		     (place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
+				  ((shield?     object) 'off-arm)
+				  ((body-armor? object) 'torso)))
+		     (old   ((case place
+			       ((main-arm) equipment-main-arm) ;; TODO string->symbol and co ?
+			       ((off-arm)  equipment-off-arm)
+			       ((torso)    equipment-torso))
+			     e)))
+		(player-inventory-set! player (remove object objects))
+		((case place
+		   ((main-arm) equipment-main-arm-set!)
+		   ((off-arm)  equipment-off-arm-set!)
+		   ((torso)    equipment-torso-set!))
+		 e object)
+		(if old
+		    (begin (display (string-append "\nPut "
+						   (object-name old)
+						   " back in inventory.\n"))
+			   (player-inventory-set!
+			    player
+			    (cons old (player-inventory player)))))))))))
+(define (take-off player)
+  (let* ((e       (player-equipment player))
+	 (objects (filter identity (map car (equipment->list e)))))
+    (if (null? objects)
+	(display "You have nothing to take off.")
+	(let ((object (choice player objects "Take off what?" "Took off ")))
+	  (if object ;; TODO maybe choice should also take a thunk to execute when an object if chosen FOO
+	      (begin (cond ((weapon?     object)
+			    (equipment-main-arm-set! e #f))
+			   ((shield?     object)
+			    (equipment-off-arm-set!  e #f))
+			   ((body-armor? object)
+			    (equipment-torso-set!    e #f)))
+		     (player-inventory-set!
+		      player
+		      (cons object (player-inventory player)))))))))
 
 ;; TODO for now, just for doors, but could be used for chests too
 (define (open player)

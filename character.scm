@@ -11,6 +11,10 @@
   torso) ;; TODO add more
 (define (new-equipment #!key (main-arm #f) (off-arm #f) (torso #f))
   (make-equipment main-arm off-arm torso))
+(define (equipment->list e)
+  (list (cons (equipment-main-arm e) "main arm")
+	(cons (equipment-off-arm  e) "off arm")
+	(cons (equipment-torso    e) "torso")))
 (define (for-each-equipped f e)
   (f (equipment-main-arm e) "main arm")
   (f (equipment-off-arm  e) "off arm")
