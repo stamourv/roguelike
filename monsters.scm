@@ -3,14 +3,21 @@
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
   behavior
-  extender: define-monster-type)
+  extender: define-monster-type) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
 (define-monster-type goblin) ;; TODO do they need to be subtypes ?
 (define (new-goblin)
-  (make-goblin "goblin" (lambda () #\g) #f (new-equipment) 1/3 rush)) ;; TODO equip
+  (make-goblin "goblin" (lambda () #\g) #f
+	       (new-equipment main-arm: (new-morningstar)
+			      off-arm:  (new-light-shield)
+			      torso:    (new-leather-armor))
+	       1/3 (rush)))
 (define-monster-type orc)
 (define (new-orc)
-  (make-orc "orc" (lambda () #\o) #f (new-equipment) 1/2 rush)) ;; TODO add a behavior
+  (make-orc "orc" (lambda () #\o) #f
+	    (new-equipment main-arm: (new-greataxe)
+			   torso:    (new-studded-leather-armor))
+	    1/2 (pursue)))
 
 
 (define-type encounter-type
@@ -90,6 +97,6 @@
 	  (floor-monsters-set! floor floor-monsters)))))
 
 ;; removes a monster, usually when killed
-(define (remove-monster floor monster)
+(define (remove-monster floor monster) ;; TODO drop equipment, and give experience
   (occupant-set! (grid-get (floor-map floor) (character-pos monster)) #f)
   (floor-monsters-set! floor (remove monster (floor-monsters floor))))

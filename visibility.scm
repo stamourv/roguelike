@@ -130,3 +130,9 @@
 	       (else (display c)))) ; no enemy to hide
 	((unknown)
 	 (terminal-print " "))))))
+
+(define (opaque? cell)
+  (or (wall? cell)
+;;       (cond ((get-occupant cell) => (lambda (o) (not (player? o))))
+;; 	    (else #f)) ; disabled. gives more interesting monsters
+      ))

@@ -106,3 +106,8 @@
 	   (loop (cdr s)
 		 (cons (car s) acc)
 		 res)))))
+
+;; returns a thunk that simulated the requested die roll
+(define (dice . kinds)
+  (lambda ()
+    (foldl (lambda (acc new) (+ acc (random-integer new) 1)) 0 kinds)))
