@@ -12,9 +12,9 @@
 (define (new-equipment #!key (main-arm #f) (off-arm #f) (torso #f))
   (make-equipment main-arm off-arm torso))
 (define (for-each-equipped f e)
-  (f (equipment-main-arm e))
-  (f (equipment-off-arm  e))
-  (f (equipment-torso    e)))
+  (f (equipment-main-arm e) "main arm")
+  (f (equipment-off-arm  e) "off arm")
+  (f (equipment-torso    e) "torso"))
 
 
 (define (get-armor-class c)

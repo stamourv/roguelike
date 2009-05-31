@@ -100,7 +100,7 @@
 (define (remove-monster floor monster) ;; TODO and give experience
   ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
   (let ((cell (grid-get (floor-map floor) (character-pos monster))))
-    (for-each-equipped (lambda (x) (if x (add-object cell x)))
+    (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
 		       (character-equipment monster))
     (occupant-set! cell #f)
     (floor-monsters-set! floor (remove monster (floor-monsters floor)))))

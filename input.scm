@@ -32,6 +32,7 @@
       ((#\p) (pick-up   player pos))
       ((#\d) (drop      player))
       ((#\i) (inventory player))
+      ((#\e) (equip     player))
 
       ((#\o) (open   player))
       ((#\c) (close  player))
