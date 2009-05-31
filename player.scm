@@ -56,55 +56,45 @@
 	     print-fun: (visibility-printer (player-view player))))
 
 
-(define (pick-up player pos)
-  (let* ((cell    (grid-get (player-map player) pos))
-	 (objects (get-objects cell)))
-    (if (null? objects)
-	(display "There is nothing to pick up.")
-	(let ((object
-	       (if (= (length objects) 1) ;; TODO take this shortcut ?
-		   (let ((object (car objects)))
-		     (display (string-append "Picked up "
-					     (object-name object)))
-		     object)
-		   (choice player objects "Pick up what?" "Picked up "))))
-	  (if object
-	      (begin (remove-object cell object)
-		     (player-inventory-set!
-		      player (cons object (player-inventory player)))))))))
-(define (drop player)
-  (let ((objects (player-inventory player)))
-    (if (null? objects)
-	(display "You have nothing to drop.")
-	(let ((cell   (grid-get (player-map player) (player-pos player)))
-	      (object (choice player objects "Drop what?" "Dropped ")))
-	  (if object
-	      (begin (player-inventory-set! player (remove object objects))
-		     (add-object cell object)))))))
 (define (inventory player)
   (cursor-home) ;; TODO also done in choice, abstract ?
   (clear-to-bottom)
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (if obj (display (string-append where ": " (object-name obj) "\n"))))
+     (display (string-append where ":	" (if obj (object-name obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
    (player-equipment player))
   (display "\nInventory:\n")
   (for-each (lambda (o) (display (string-append (object-name o) "\n")))
 	    (player-inventory player))
   (let loop ((c #f))
-    (if (not (eq? c #\space))
-	(begin (display "\nPress space bar.")
+    (if (not (eq? c #\q))
+	(begin (display "\nPress q.")
 	       (loop (read-char)))))
   (clear-to-bottom))
+(define (pick-up player pos) ;; TODO pos can be useful if we can pick up at a distance
+  (let* ((cell    (grid-get (player-map player) pos))
+	 (objects (get-objects cell)))
+    (choice player objects
+	    (lambda (object)
+	      (remove-object cell object)
+	      (player-inventory-set! player
+				     (cons object (player-inventory player))))
+	    "There is nothing to pick up." "Pick up what?" "Picked up ")))
+(define (drop player)
+  (let ((cell    (grid-get (player-map player) (player-pos player)))
+	(objects (player-inventory player)))
+    (choice player objects
+	    (lambda (object)
+	      (player-inventory-set! player (remove object objects))
+	      (add-object cell object))
+	    "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip player)
-  (let ((objects (player-inventory player)))
-    (if (null? objects)
-	(display "You have nothing to equip.")
-	(let ((object (choice player objects "Equip what?" "Equipped ")))
-	  (if object
-	      (let* ((e     (player-equipment player))
-		     (place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
+  (let ((e       (player-equipment player))
+	(objects (player-inventory player)))
+    (choice player objects
+	    (lambda (object)
+	      (let* ((place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
 				  ((shield?     object) 'off-arm)
 				  ((body-armor? object) 'torso)))
 		     (old   ((case place
@@ -124,23 +114,22 @@
 						   " back in inventory.\n"))
 			   (player-inventory-set!
 			    player
-			    (cons old (player-inventory player)))))))))))
+			    (cons old (player-inventory player)))))))
+	    "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off player)
   (let* ((e       (player-equipment player))
 	 (objects (filter identity (map car (equipment->list e)))))
-    (if (null? objects)
-	(display "You have nothing to take off.")
-	(let ((object (choice player objects "Take off what?" "Took off ")))
-	  (if object ;; TODO maybe choice should also take a thunk to execute when an object if chosen FOO
-	      (begin (cond ((weapon?     object)
-			    (equipment-main-arm-set! e #f))
-			   ((shield?     object)
-			    (equipment-off-arm-set!  e #f))
-			   ((body-armor? object)
-			    (equipment-torso-set!    e #f)))
-		     (player-inventory-set!
-		      player
-		      (cons object (player-inventory player)))))))))
+    (choice player objects
+	    (lambda (object)
+	      (cond ((weapon?     object)
+		     (equipment-main-arm-set! e #f))
+		    ((shield?     object)
+		     (equipment-off-arm-set!  e #f))
+		    ((body-armor? object)
+		     (equipment-torso-set!    e #f)))
+	      (player-inventory-set! player
+				     (cons object (player-inventory player))))
+	    "You have nothing to take off." "Take off what?" "Took off ")))
 
 ;; TODO for now, just for doors, but could be used for chests too
 (define (open player)

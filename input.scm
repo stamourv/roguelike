@@ -56,28 +56,32 @@
     ((#\esc) (which-direction?))
     (else    (invalid-command) #f)))
 
-(define (choice player objects question feedback)
-  (cursor-home)
-  (clear-to-bottom)
-  (display question)
-  (display "\n0: Cancel\n")
-  (let loop ((objects objects)
-	     (i       1))
-    (if (not (null? objects))
-	(begin (display (string-append (number->string i) ": "
-				       (object-name (car objects)) "\n"))
-	       (loop (cdr objects) (+ i 1)))))
-  (let loop ((nb (read-char)))
-    (cond ((eq? nb #\0)
-	   #f) ; cancel
-	  ((not (and (char>=? nb #\1)
-		     (<= (- (char->integer nb) (char->integer #\0))
-			 (length objects))))
-	   (loop (read-char)))
-	  (else
-	   (let ((object (list-ref objects (- (char->integer nb)
-					      (char->integer #\0) 1))))
-	     	   (show-state player)
-		   (display (string-append feedback
-					   (object-name object)))
-		   object)))))
+(define (choice player objects f null-message question feedback)
+  (if (null? objects)
+      (display null-message)
+      (begin   (cursor-home)
+	       (clear-to-bottom)
+	       (display question)
+	       (display "\n0: Cancel\n")
+	       (let loop ((objects objects)
+			  (i       1))
+		 (if (not (null? objects))
+		     (begin (display (string-append
+				      (number->string i) ": "
+				      (object-name (car objects)) "\n"))
+			    (loop (cdr objects) (+ i 1)))))
+	       (let loop ((nb (read-char)))
+		 (cond ((eq? nb #\0)
+			#f) ; cancel
+		       ((not (and (char>=? nb #\1)
+				  (<= (- (char->integer nb) (char->integer #\0))
+				      (length objects))))
+			(loop (read-char)))
+		       (else
+			(let ((object (list-ref objects
+						(- (char->integer nb)
+						   (char->integer #\0) 1))))
+			  (show-state player)
+			  (display (string-append feedback
+						  (object-name object)))
+			  (f object))))))))
