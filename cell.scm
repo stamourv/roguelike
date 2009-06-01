@@ -62,8 +62,8 @@
 (define (new-vertical-wall)   (make-vertical-wall   (lambda () #\|)))
 (define (new-horizontal-wall) (make-horizontal-wall (lambda () #\-)))
 (define (new-corner-wall)     (make-corner-wall     (lambda () #\+)))
-(define (new-solid-wall)      (make-solid-wall      (lambda () #\#))) ;; TODO seldom seen by the player, mostly hidden behing other walls
-(define (new-pillar)          (make-pillar          (lambda () #\#)))
+(define (new-solid-wall)      (make-solid-wall      (lambda () #\+)))
+(define (new-pillar)          (make-pillar          (lambda () #\+)))
 
 ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
 (define-type-of-wall door
@@ -81,7 +81,7 @@
 (define (new-open-door orig)
   (let ((door (make-open-door #f '() #f #f orig)))
     (cell-printer-set! door (walkable-cell-print door #\_))
-    (open-door-close-fun-set! door (lambda (o) #t))
+    (open-door-close-fun-set! door (lambda (c) #t))
     door))
 (define (open-door  grid pos opener)
   (let ((door (grid-get grid pos)))
@@ -90,11 +90,33 @@
 	       (display "Door opened.\n")
 	       #t)
 	#f)))
-(define (close-door grid pos closer)
+(define (close-door grid pos closer) ;; TODO closing the door would remove any items underneath. maybe have a link to the opened door, which has the objects ?
   (let ((door (grid-get grid pos)))
     (if ((open-door-close-fun door) closer)
 	(begin (grid-set! grid pos (open-door-when-closed door))
 	       (display "Door closed.\n")
+	       #t)
+	#f)))
+
+(define-type-of-wall chest ;; TODO abstract common parts with doors ?
+  open-fun
+  contents)
+(define (new-chest contents)
+  (let ((chest (make-chest (lambda () #\#) #f contents)))
+    (chest-open-fun-set! chest (lambda (o) #t))
+    chest))
+(define-type-of-walkable-cell open-chest
+  close-fun)
+(define (new-open-chest contents)
+  (let ((chest (make-open-chest #f contents #f #f))) ;; TODO for now, chests can't be closed
+    (cell-printer-set! chest (walkable-cell-print chest #\=))
+    (open-chest-close-fun-set! chest (lambda (c) #t))
+    chest))
+(define (open-chest  grid pos opener)
+  (let ((chest (grid-get grid pos)))
+    (if ((chest-open-fun chest) opener)
+	(begin (grid-set! grid pos (new-open-chest (chest-contents chest)))
+	       (display "Chest opened.\n")
 	       #t)
 	#f)))
 

@@ -131,7 +131,6 @@
 				     (cons object (player-inventory player))))
 	    "You have nothing to take off." "Take off what?" "Took off ")))
 
-;; TODO for now, just for doors, but could be used for chests too
 (define (open player)
   (clear-to-bottom)
   (display "Open in which direction? ")
@@ -140,8 +139,10 @@
 	(let* ((pos  ((eval dir) (player-pos player)))
 	       (grid (player-map player))
 	       (cell (grid-get grid pos))) ;; TODO lots in common with close, and anything else that would ask for a direction
-	  (cond ((door?      cell) (open-door grid pos player))
-		((open-door? cell) (display "This door is already open.\n"))
+	  (cond ((door?       cell) (open-door  grid pos player))
+		((open-door?  cell) (display "This door is already open.\n"))
+		((chest?      cell) (open-chest grid pos player))
+		((open-chest? cell) (display "This chest is already open.\n"))
 		(else              (display "I can't open that.\n")))))))
 (define (close player)
   (clear-to-bottom)
@@ -153,6 +154,7 @@
 	       (cell (grid-get grid pos)))
 	  (cond ((open-door? cell) (close-door grid pos player)) ;; TODO would be better to send a "close" message to the object
 		((door?      cell) (display "This door is already closed.\n"))
+		;; chests can't be closed
 		(else              (display "I can't close that.\n")))))))
 
 (define (stairs player)

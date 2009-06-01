@@ -103,6 +103,13 @@
 	   (else                    (lambda (x) '()))) ; not an appropriate wall
      pos)))
 
+(define (next-to-a-door? g pos)
+  (foldl (lambda (acc new)
+	   (or acc
+	       (and (inside-grid? g new)
+		    (door? (grid-get g new)))))
+	 #f (four-directions pos)))
+
 (define (grid-find g p)
   (let ((cell #f))
     (grid-for-each (lambda (pos) (if (p (grid-get g pos)) (set! cell pos)))

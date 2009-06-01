@@ -82,6 +82,6 @@
 						(- (char->integer nb)
 						   (char->integer #\0) 1))))
 			  (show-state player)
+			  (f object)
 			  (display (string-append feedback
-						  (object-name object)))
-			  (f object))))))))
+						  (object-name object))))))))))

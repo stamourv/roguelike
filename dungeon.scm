@@ -27,7 +27,7 @@
 	     (room-connected-to-set! b (cons a (room-connected-to b))))))
 
 
-(define (generate-floor no #!optional stairs-down?
+(define (generate-floor no #!optional (stairs-down? #t)
 			#!key (trace? #f) (step? #f))
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
@@ -349,14 +349,18 @@
      (apply append (map room-cells (floor-rooms new-floor))))
     
     ;; if needed, add the stairs down on a random free square in a room
-    ;; (not a corridor) TODO also, try not to put it in the way of a door
+    ;; (not a corridor)
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
     (if stairs-down?
 	(let* ((rooms (floor-rooms new-floor))
 	       (pos   (random-element
-		       (filter (lambda (cell)
-				 (not (eq? 'corridor
-					   (room-type (get-room cell rooms)))))
+		       (filter
+			(lambda (cell)
+			  ;; not in a corridor, and not in front of a door
+			  (and
+			   (not (eq? 'corridor
+				     (room-type (get-room cell rooms))))
+			   (not (next-to-a-door? (floor-map new-floor) cell))))
 			       (floor-walkable-cells new-floor)))))
 	  (grid-set! level pos (new-stairs-down))
 	  (floor-stairs-down-set! new-floor pos)))
