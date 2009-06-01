@@ -68,15 +68,18 @@
 					(and (>= pts encounter-level-bottom)
 					     (<= pts encounter-level-cap))))
 				    encounter-types)))
-    (if (null? possible-encounter-types) (error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
+    (if (null? possible-encounter-types)
+	(error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
     (let loop ((pts            (* no 10)) ;; TODO tweak
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))
       (if (and (>= pts encounter-level-bottom)
 	       (not (null? free-rooms)))
-	  (let* ((type               (random-element possible-encounter-types))
-		 (room               (random-element free-rooms)))
-	    (if (and (not (room-encounter room)) ; already an encounter there
+	  (let* ((type             (random-element possible-encounter-types))
+		 (encounter-points (encounter-type-points type))
+		 (room             (random-element free-rooms)))
+	    (if (and (<= encounter-points pts)
+		     (not (room-encounter room)) ; already an encounter there
 		     ((encounter-type-can-be-placed? type) room))
 		(let loop2 ((monsters     (encounter-monsters
 					   (new-encounter type)))
@@ -90,7 +93,7 @@
 			(loop2 (cdr monsters)
 			       (cons mon all-monsters)
 			       (remove cell space)))
-		      (loop (- pts (encounter-type-points type))
+		      (loop (- pts encounter-points)
 			    (remove room free-rooms)
 			    (append floor-monsters all-monsters))))
 		(loop pts free-rooms floor-monsters))) ; try something else

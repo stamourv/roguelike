@@ -6,6 +6,7 @@
 (include "behavior.scm")
 (include "objects.scm")
 (include "monsters.scm")
+(include "treasure.scm")
 (include "maze.scm")
 (include "dungeon.scm")
 (include "visibility.scm")

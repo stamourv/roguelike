@@ -98,7 +98,7 @@
 	       #t)
 	#f)))
 
-(define-type-of-wall chest ;; TODO abstract common parts with doors ?
+(define-type-of-cell chest ;; TODO abstract common parts with doors ?
   open-fun
   contents)
 (define (new-chest contents)

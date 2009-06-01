@@ -346,7 +346,10 @@
 
     (floor-walkable-cells-set!
      new-floor
-     (apply append (map room-cells (floor-rooms new-floor))))
+     (filter (lambda (pos)
+	       (walkable-cell? (grid-get (floor-map new-floor) pos)))
+	     (apply append
+		    (map room-cells (floor-rooms new-floor)))))
     
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor)
@@ -363,8 +366,12 @@
 			   (not (next-to-a-door? (floor-map new-floor) cell))))
 			       (floor-walkable-cells new-floor)))))
 	  (grid-set! level pos (new-stairs-down))
-	  (floor-stairs-down-set! new-floor pos)))
+	  (floor-stairs-down-set! new-floor pos)
+	  (floor-walkable-cells-set!
+	   new-floor
+	   (remove pos (floor-walkable-cells new-floor)))))
 
     ;; add everything else on top
     (generate-encounters new-floor)
+    (generate-treasure   new-floor)
     new-floor))
