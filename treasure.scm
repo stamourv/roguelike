@@ -42,6 +42,11 @@
 			 (map (lambda (i) (cons (/ (car i) factor) (cdr i)))
 			      new-items))))
 	       treasure-table))
+	 (actual-bottom (foldl min ; lowest value of the possible treasure
+			       treasure-cap
+			       (map (lambda (i) (object-gp-value ((cdr i))))
+				    (apply append
+					   (map cdr possible-treasure)))))
 	 ;; the number of chests is level number independent
 	 (chests (map (lambda (x) (new-chest '())) ; will be filled later
 		      (iota (random-between 4 8)))))
@@ -74,7 +79,7 @@
     
     ;; fill the chests
     (let loop ((pts treasure-points))
-      (if (>= pts treasure-bottom)
+      (if (>= pts actual-bottom)
 	  (let* ((item  ((random-choice (random-choice possible-treasure))))
 		 (value (object-gp-value item)))
 	    (if (<= value pts)

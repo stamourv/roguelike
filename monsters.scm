@@ -67,13 +67,17 @@
 				      (let ((pts (encounter-type-points e)))
 					(and (>= pts encounter-level-bottom)
 					     (<= pts encounter-level-cap))))
-				    encounter-types)))
+				    encounter-types))
+	 (actual-bottom            (foldl min
+					  encounter-level-cap
+					  (map encounter-type-points
+					       possible-encounter-types))))
     (if (null? possible-encounter-types)
 	(error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
     (let loop ((pts            (* no 10)) ;; TODO tweak
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))
-      (if (and (>= pts encounter-level-bottom)
+      (if (and (>= pts actual-bottom)
 	       (not (null? free-rooms)))
 	  (let* ((type             (random-element possible-encounter-types))
 		 (encounter-points (encounter-type-points type))
