@@ -62,7 +62,7 @@
       (begin   (cursor-home)
 	       (clear-to-bottom)
 	       (display question)
-	       (display "\n0: Cancel\n")
+	       (display "\nq: Cancel\n")
 	       (let loop ((objects objects)
 			  (i       1))
 		 (if (not (null? objects))
@@ -71,7 +71,7 @@
 				      (object-name (car objects)) "\n"))
 			    (loop (cdr objects) (+ i 1)))))
 	       (let loop ((nb (read-char)))
-		 (cond ((eq? nb #\0)
+		 (cond ((eq? nb #\q)
 			#f) ; cancel
 		       ((not (and (char>=? nb #\1)
 				  (<= (- (char->integer nb) (char->integer #\0))

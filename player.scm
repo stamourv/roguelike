@@ -1,18 +1,23 @@
 (define-type-of-character player
-  levels-before ; pairs (map . view)
-  level ; views are a grid of either visible, visited or unknown
-  levels-after
+  floors-before ; pairs (map . view)
+  current-floor
+  floors-after
+  level
+  experience ;; TODO have a way to show level and experience
   inventory) ; list of objects
 (define (new-player name)
   (let ((player (make-player name
 			     (lambda () #\@)
 			     #f
+			     10 10 10 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     (new-equipment)
 			     '()
 			     #f
 			     '()
+			     1
+			     0
 			     '())))
-    (place-player player (new-level 0))
+    (place-player player (new-player-floor 0))
     player))
 (define player-name      character-name)
 (define player-pos       character-pos)
@@ -20,28 +25,28 @@
 (define player-pos-set!  character-pos-set!)
 
 
-(define-type level
-  floor
+(define-type player-floor
+  floor ; views are a grid of either visible, visited or unknown
   view)
-(define (new-level no)
+(define (new-player-floor no)
   (let ((floor (generate-floor no (< no (- n-levels 1)))))
-    (make-level floor (init-visibility (floor-map floor)))))
+    (make-player-floor floor (init-visibility (floor-map floor)))))
 
 
 (define (player-floor player)
-  (level-floor (player-level player)))
+  (player-floor-floor (player-current-floor player)))
 (define (player-map   player)
   (floor-map (player-floor player)))
 (define (player-view  player)
-  (level-view (player-level player)))
+  (player-floor-view (player-current-floor player)))
 
 (define (place-player
-	 player level
-	 #!key (start-pos (floor-stairs-up (level-floor level))))
-  (let ((map (floor-map (level-floor level))))
+	 player player-floor
+	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
+  (let ((map (floor-map (player-floor-floor player-floor))))
     (occupant-set! (grid-get map start-pos) player)
     (player-pos-set!   player start-pos)
-    (player-level-set! player level)))
+    (player-current-floor-set! player player-floor)))
 
 
 (define (show-state player)
@@ -159,28 +164,28 @@
 
 (define (stairs player)
   (let ((cell (grid-get (player-map player) (player-pos player))))
-    (let ((level  (player-level         player))
-	  (before (player-levels-before player))
-	  (after  (player-levels-after  player)))
+    (let ((current      (player-current-floor         player))
+	  (before       (player-floors-before         player))
+	  (after        (player-floors-after          player)))
       (cond ((stairs-up? cell)
 	     (cond ((not (null? before))
 		    (let ((new (car before)))
 		      (place-player
 		       player new
-		       start-pos: (floor-stairs-down (level-floor new)))
-		      (player-levels-after-set!  player (cons level after))
-		      (player-levels-before-set! player (cdr before))))
+		       start-pos: (floor-stairs-down (player-floor-floor new)))
+		      (player-floors-after-set!  player (cons current after))
+		      (player-floors-before-set! player (cdr before))))
 		   (else (display "This would lead to the surface.\n"))))
 	    ((stairs-down? cell)
-	     (player-levels-before-set! player (cons level before))
+	     (player-floors-before-set! player (cons current before))
 	     (if (null? after)
-		 ;; if we would generate the last level, don't put stairs down
+		 ;; if we would generate the last floor, don't put stairs down
 		 (place-player player
-			       (new-level
+			       (new-player-floor
 				(+ (floor-no (player-floor player))
 				   1)))
 		 (begin (place-player             player (car after))
-			(player-levels-after-set! player (cdr after)))))
+			(player-floors-after-set! player (cdr after)))))
 	    (else (display "There are no stairs here.\n"))))))
 
 (define (kill player) ; insta-kill something TODO replace with a combat system
@@ -196,5 +201,8 @@
 		      (display (string-append "Killed the "
 					      (character-name occ)
 					      "\n"))
-		      (remove-monster (player-floor player) occ)))
+		      (remove-monster (player-floor player) occ player)))
 		(else (display "There is nothing to kill there.\n")))))))
+
+(define (add-experience player xp)
+  (player-experience-set! player (+ (player-experience player) xp)))

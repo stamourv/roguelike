@@ -3,7 +3,7 @@
 (define treasure-table
   `((0.45
      ;; weapons
-     (0.7 . ,new-morningstar)
+     (0.7 . ,new-morningstar) ;; FOO add the new items
      (0.3 . ,new-greataxe))
     (0.3
      ;; shields
@@ -80,9 +80,10 @@
     ;; fill the chests
     (let loop ((pts treasure-points))
       (if (>= pts actual-bottom)
-	  (let* ((item  ((random-choice (random-choice possible-treasure))))
-		 (value (object-gp-value item)))
-	    (if (<= value pts)
+	  (let* ((cat   (random-choice possible-treasure))
+		 (item  (if (null? cat) #f ((random-choice cat))))
+		 (value (if item (object-gp-value item) #f)))
+	    (if (and value (<= value pts))
 		(let ((chest (random-element chests)))
 		  (chest-contents-set! chest
 				       (cons item (chest-contents chest)))

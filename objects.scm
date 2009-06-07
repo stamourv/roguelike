@@ -36,5 +36,8 @@
   damage-type) ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee and ranged, ...
 (define (new-weapon name gp dmg-fun dmg-type)
   (make-weapon name gp (lambda () #\!) dmg-fun dmg-type))
-(define (new-morningstar) (new-weapon "morningstar" 8  (dice 8)  'slashing)) ;; TODO do small versions of items? goblins have small morningstars
+;; TODO have small version of items ? (small weapons do less damage) goblins now have clubs instead of small morningstars
+(define (new-club)        (new-weapon "club"        1  (dice 6)  'bludgeoning))
 (define (new-greataxe)    (new-weapon "greataxe"    20 (dice 12) 'slashing))
+(define (new-morningstar) (new-weapon "morningstar" 8  (dice 8)  'bludgeoning)) ;; TODO also piercing
+(define (new-shortspear)  (new-weapon "shortspear"  1  (dice 6)  'piercing))

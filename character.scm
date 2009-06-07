@@ -2,6 +2,14 @@
   name
   printer
   pos
+
+  str ;; TODO have a profile type to store all that ?
+  dex
+  con
+  int
+  wis
+  cha
+  
   equipment
   extender: define-type-of-character)
 

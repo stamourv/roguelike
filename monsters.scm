@@ -7,16 +7,28 @@
 
 (define-monster-type goblin) ;; TODO do they need to be subtypes ?
 (define (new-goblin)
-  (make-goblin "goblin" (lambda () #\g) #f
-	       (new-equipment main-arm: (new-morningstar)
-			      off-arm:  (new-light-shield)
-			      torso:    (new-leather-armor))
+  (make-goblin "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
+	       11 13 12 10 9 6
+	       (new-equipment
+		main-arm: (new-club)
+		off-arm:  (new-light-shield)
+		torso:    (new-leather-armor))
 	       1/3 (rush)))
+(define-monster-type kobold)
+(define (new-kobold)
+  (make-kobold "kobold" (lambda () #\k) #f
+	       9 13 10 10 9 8
+	       (new-equipment
+		main-arm: (new-shortspear)
+		torso:    (new-leather-armor))
+	       1/4 (rush)))
 (define-monster-type orc)
 (define (new-orc)
   (make-orc "orc" (lambda () #\o) #f
-	    (new-equipment main-arm: (new-greataxe)
-			   torso:    (new-studded-leather-armor))
+	    17 11 12 8 7 6
+	    (new-equipment
+	     main-arm: (new-greataxe)
+	     torso:    (new-studded-leather-armor))
 	    1/2 (pursue)))
 
 
@@ -28,6 +40,7 @@
 
 (define-type encounter
   monsters) ;; TODO have more, espescially other kinds of objects that would need to be placed, such as chests or campfires
+;; TODO also have some treasure with the encounter, see DM guide for proportions and amount by encounter level
 (define (new-encounter encounter-type) ; actually creates the monsters
   (make-encounter (map call (encounter-type-monsters encounter-type))))
 (define (encounter-points e)
@@ -48,10 +61,12 @@
     encounter-type))
 
 (define encounter-types ;; TODO have weights, since some would be more common, make it so it can use random-choice
-  (list (new-encounter-type (list new-goblin new-goblin)) ;; TODO have a "language" to define encounters types
-	(new-encounter-type (list new-goblin new-goblin new-goblin))
-	(new-encounter-type (list new-orc new-orc))
-	(new-encounter-type (list new-orc new-goblin new-goblin))))
+  (map new-encounter-type ;; TODO have a "language" to define encounters types, maybe make the probability a function of the level-no ?
+       `((,new-kobold ,new-kobold ,new-kobold ,new-kobold)
+	 (,new-goblin ,new-goblin)
+	 (,new-goblin ,new-goblin ,new-goblin)
+	 (,new-orc ,new-orc)
+	 (,new-orc ,new-goblin ,new-goblin))))
 
 
 (define (generate-encounters floor)
@@ -104,10 +119,20 @@
 	  (floor-monsters-set! floor floor-monsters)))))
 
 ;; removes a monster, usually when killed
-(define (remove-monster floor monster) ;; TODO and give experience
-  ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
+(define (remove-monster floor monster killer)
   (let ((cell (grid-get (floor-map floor) (character-pos monster))))
+    ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
     (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
 		       (character-equipment monster))
+    ;; give experience
+    (let* ((challenge     (monster-challenge-rating monster))
+	   (xp-same-level (* challenge 300))
+	   (delta-level   (- challenge (player-level killer))))
+      (add-experience killer
+		      (if (= delta-level 0)
+			  xp-same-level
+			  (max 0
+			       (* xp-same-level (+ 1 (* 1/3 delta-level))))))) ;; TODO tweak
+    ;; remove the monster
     (occupant-set! cell #f)
     (floor-monsters-set! floor (remove monster (floor-monsters floor)))))
