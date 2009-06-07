@@ -20,3 +20,8 @@
 (define (cursor-position-set! x y)
   (terminal-command (string-append "[" (number->string x)
 				   ";" (number->string y) "H")))
+
+(define (cursor-notification-zone) (cursor-position-set! 2 61))
+(define (display-notification s)
+  (terminal-command (string-append "[" (number->string 60) "C"))
+  (display s))

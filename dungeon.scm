@@ -33,7 +33,7 @@
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 20) ;; TODO really show a border ?
-	 (level-width  78) ;; TODO the full 80 or just 60 ? with 60, can display some status on the side, but there is none for the moment
+	 (level-width  60)
 	 (level        (empty-grid level-height level-width
 				   cell-fun: (lambda (pos) (new-solid-wall))))
 	 (new-floor (make-floor no level '() #f #f '() #f)))

@@ -50,6 +50,23 @@
 
 
 (define (show-state player)
+  (cursor-notification-zone)
+  (display (string-append (player-name player) "\n"))
+  (display-notification
+   (string-append "level " (number->string (player-level player)) "\n"))
+  (display-notification
+   (string-append (number->string (player-experience player))
+		  " xp pts\n"))
+  (display-notification
+   (string-append "str: " (number->string (character-str player)) "	"
+		  "int: " (number->string (character-int player)) "\n"))
+  (display-notification
+   (string-append "dex: " (number->string (character-dex player)) "	"
+		  "wis: " (number->string (character-wis player)) "\n"))
+  (display-notification
+   (string-append "con: " (number->string (character-con player)) "	"
+		  "cha: " (number->string (character-cha player)) "\n"))
+  
   (cursor-home)
   (clear-line)
   (display (string-append

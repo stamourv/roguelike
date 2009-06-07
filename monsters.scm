@@ -132,7 +132,8 @@
 		      (if (= delta-level 0)
 			  xp-same-level
 			  (max 0
-			       (* xp-same-level (+ 1 (* 1/3 delta-level))))))) ;; TODO tweak
+			       (ceiling (* xp-same-level
+					   (+ 1 (* 1/3 delta-level)))))))) ;; TODO tweak
     ;; remove the monster
     (occupant-set! cell #f)
     (floor-monsters-set! floor (remove monster (floor-monsters floor)))))

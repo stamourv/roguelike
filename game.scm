@@ -79,6 +79,6 @@
 (profile-start!)
 
 ;; (if (not debug) (maze 8 8 (random-element character-names)))
-(if (not debug) (dungeon 3 (random-element character-names)))
+(if (not debug) (dungeon 3 "Bob"))
 
 (if (not debug) (quit))
