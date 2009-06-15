@@ -80,14 +80,15 @@
 				       ;; heuristic cost
 				       (distance pos b)
 				       ;; if we would pass through another
-				       ;; monster, add the number of turns it
-				       ;; has been stuck there, to avoid
-				       ;; congestion
+				       ;; monster, take into account the number
+				       ;; of turns it has been stuck there, to
+				       ;; avoid congestion
 				       (let ((occ (get-occupant
 						   (grid-get g pos))))
 					 (if (and occ (monster? occ))
-					     (behavior-nb-turns-idle
-					      (monster-behavior occ))
+					     (* (behavior-nb-turns-idle
+						 (monster-behavior occ))
+						5)
 					     0)))))
 			       (if (< new-cost cost)
 				   (begin
