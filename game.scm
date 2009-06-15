@@ -23,18 +23,7 @@
 (for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
 
 
-(define test-dungeon
-  (string->grid
-   (string-append "   |     | |   \n"
-		  "   |     |     \n"
-		  "   |     | |   \n"
-		  "-+ +-- --+ +- -\n"
-		  " | |     | |   \n"
-		  " |       | |- -\n"
-		  " | |     | |   \n"
-		  "   |       | | \n")))
-
-(define (game player victory-fun) ;; TODO get a level function, to generate new levels, or just use generate-level ?
+(define (game player victory-fun)
   (let loop ()
     (if (victory-fun (player-floor player) player)
 	(begin
@@ -45,25 +34,26 @@
 	  (show-state player)
 	  (read-command player) ; side-effects the player
 	  (for-each (lambda (m)
-		      ((monster-behavior m) m floor (player-pos player)))
+		      ((behavior-fun (monster-behavior m))
+		       m floor (player-pos player)))
 		    (floor-monsters floor))
 	  (loop)))))
 
 (define n-levels #f) ;; TODO having a global for that is ugly, but it can't really fit in the player structure. if we end up having a dungeon type, put it there
 (define (dungeon n name)
   (set! n-levels n)
-  (game (new-player name) (lambda (level player) #f))) ;; TODO use n-levels, have a dungeon type for that
+  (game (new-player name) (lambda (level player) #f)))
 
 (define (quit)
   ;; restore tty
   (tty-mode-set! (current-input-port) #t #t #f #f 0)
   (shell-command "setterm -cursor on")
-  (profile-stop!) ;; TODO PROFILING
-  (write-profile-report "profiling")
+;;   (profile-stop!) ;; TODO PROFILING
+;;   (write-profile-report "profiling")
   (exit))
 
-(load "~/src/scheme/statprof/statprof.scm") ;; TODO PROFILING
-(profile-start!)
+;; (load "~/src/scheme/statprof/statprof.scm") ;; TODO PROFILING
+;; (profile-start!)
 
 ;; (if (not debug) (maze 8 8 (random-element character-names)))
 (if (not debug) (dungeon 3 "Bob"))

@@ -17,11 +17,15 @@
 (define (clear-line)      (terminal-command "[K"))
 (define (clear-to-bottom) (terminal-command "[J"))
 (define (cursor-home)     (terminal-command "[H"))
-(define (cursor-position-set! x y)
+(define (cursor-position-set! x #!optional (y #f))
   (terminal-command (string-append "[" (number->string x)
-				   ";" (number->string y) "H")))
+				   (if y
+				       (string-append ";" (number->string y))
+				       "")
+				   "H")))
 
-(define (cursor-notification-zone) (cursor-position-set! 2 61))
+(define (cursor-notification-head) (cursor-position-set! 2))
 (define (display-notification s)
   (terminal-command (string-append "[" (number->string 60) "C"))
+  (clear-line)
   (display s))

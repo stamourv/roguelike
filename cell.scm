@@ -122,5 +122,4 @@
 
 (define (free-cell? cell)
   (and (walkable-cell? cell)
-       (not (get-occupant cell)) ;; TODO could be interesting to see over monsters (espescially for other monsters), but disabling this gives weird results
-       ))
+       (not (get-occupant cell))))

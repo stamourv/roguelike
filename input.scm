@@ -47,7 +47,7 @@
       ;; debugging
       ((#\k) (kill player)) ; insta-kill a monster TODO replace with a combat system
 
-      ((#\space) (display "Nothing happened.")) ; noop TODO most roguelikes use .
+      ((#\space) (display "Nothing happened.\n")) ; noop TODO most roguelikes use .
       ((#\q)     (quit))
       (else      (invalid-command)))))
 

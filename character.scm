@@ -40,10 +40,28 @@
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
   ;; occupant (the new one or the original, if the move fails)
-  (if (and (inside-grid? g new-pos)
-	   (free-cell?   (grid-get g new-pos)))
-      (let* ((cell     (grid-get g (character-pos occ)))
-	     (new-cell (grid-get g new-pos)))
-	(occupant-set! cell     #f)
-	(occupant-set! new-cell occ)
-	(character-pos-set! occ new-pos))))
+  (if (inside-grid? g new-pos)
+      (let ((cell     (grid-get g (character-pos occ)))
+	    (new-cell (grid-get g new-pos)))
+	(cond ((free-cell? new-cell)
+	       (occupant-set! cell     #f)
+	       (occupant-set! new-cell occ)
+	       (character-pos-set! occ new-pos))
+	      ;; walkable, but occupied already, attack whoever is there
+	      ((walkable-cell? new-cell)
+	       (attack occ (get-occupant (grid-get g new-pos))))))))
+
+(define (attack attacker defender) ;; TODO have a true combat system
+  (cond ((player? attacker)
+	 (display (string-append (character-name attacker)
+				 " killed the "
+				 (character-name defender)
+				 ".\n"))
+	 (remove-monster (player-floor attacker) defender attacker))
+	((and (monster? attacker)
+	      (not (monster? defender))) ; monster don't attack other monsters
+	 (display (string-append "The "
+				 (character-name attacker)
+				 " attacked "
+				 (character-name defender)
+				 ".\n")))))

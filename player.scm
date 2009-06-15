@@ -50,8 +50,8 @@
 
 
 (define (show-state player)
-  (cursor-notification-zone)
-  (display (string-append (player-name player) "\n"))
+  (cursor-notification-head)
+  (display-notification (string-append (player-name player) "\n"))
   (display-notification
    (string-append "level " (number->string (player-level player)) "\n"))
   (display-notification

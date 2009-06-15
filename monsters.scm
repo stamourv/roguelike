@@ -13,7 +13,7 @@
 		main-arm: (new-club)
 		off-arm:  (new-light-shield)
 		torso:    (new-leather-armor))
-	       1/3 (rush)))
+	       1/3 (rush-behavior)))
 (define-monster-type kobold)
 (define (new-kobold)
   (make-kobold "kobold" (lambda () #\k) #f
@@ -21,7 +21,7 @@
 	       (new-equipment
 		main-arm: (new-shortspear)
 		torso:    (new-leather-armor))
-	       1/4 (rush)))
+	       1/4 (rush-behavior)))
 (define-monster-type orc)
 (define (new-orc)
   (make-orc "orc" (lambda () #\o) #f
@@ -29,7 +29,7 @@
 	    (new-equipment
 	     main-arm: (new-greataxe)
 	     torso:    (new-studded-leather-armor))
-	    1/2 (pursue)))
+	    1/2 (pursue-behavior)))
 
 
 (define-type encounter-type

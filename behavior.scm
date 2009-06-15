@@ -1,11 +1,23 @@
-(define (rush)
+(define-type behavior
+  fun
+  nb-turns-idle)
+
+(define (new-behavior fun)
+  (let ((b (make-behavior #f 0)))
+    (behavior-fun-set! b (fun b))
+    b))
+
+(define (rush-behavior) (new-behavior rush))
+(define (rush b)
   (lambda (monster floor player-pos)
     (let ((pos (character-pos monster))
 	  (map (floor-map floor)))
       (if (line-of-sight? map pos player-pos)
 	  (let ((next (find-path map pos player-pos)))
-	    (if next (move map monster next)))))))
-(define (pursue)
+	    (if next (move-or-increment-idle map monster next)))))))
+
+(define (pursue-behavior) (new-behavior pursue))
+(define (pursue b)
   (let ((last-player-pos #f)) ; AI state
     (lambda (monster floor player-pos)
       (let* ((pos    (character-pos monster))
@@ -15,11 +27,18 @@
 			    player-pos)
 			   (else last-player-pos)))) ; we try to pursue
 	(let ((next (and target (find-path map pos target))))
-	  (if next (move map monster next)))))))
-;; TODO another behavior (pursue?) that, even if it does not see the player, remember where it was, and goes there
+	  (if next (move-or-increment-idle map monster next)))))))
+
+(define (move-or-increment-idle map monster dest)
+  (let ((pos (character-pos monster)))
+    (move map monster dest)
+    (if (equal? pos (character-pos monster))
+	;; we did not move, increment idle counter
+	(let ((b (monster-behavior monster)))
+	  (behavior-nb-turns-idle-set! b (+ (behavior-nb-turns-idle b) 1))))))
 
 ;; simple pathfinding using A*
-(define (find-path g a b) ;; TODO avoid piling up on other monsters. to do that, consider other monsters as walkable, but eith an additionnal cost that is equal (proportional) to the number of turns the monster has been staying there. for now, not useful, since monsters can't even see over other monsters
+(define (find-path g a b)
   ;; grid of pairs (cost . previous)
   (let* ((height  (grid-height g))
 	 (width   (grid-width g))
@@ -48,24 +67,34 @@
 				    best))
 			      (car queue)
 			      queue))
-		 (queue     (remove next queue))
-		 (neighbors (filter
-			     (lambda (pos)
-			       (if (inside-grid? g pos)
-				   (cond
-				    ((car (grid-get costs pos)) =>
-				     (lambda (cost)
-				       (let ((new-cost
-					      (+ (car (grid-get costs next))
-						 ;; heuristic cost
-						 (distance pos b))))
-					 (if (< new-cost cost)
-					     (begin
-					       (grid-set! costs pos
-							  (cons new-cost next))
-					       #t)
-					     #f))))
-				    (else #f))
-				   #f))
-			     (four-directions next))))
+		 (queue (remove next queue))
+		 (neighbors
+		  (filter
+		   (lambda (pos)
+		     (if (inside-grid? g pos)
+			 (cond
+			  ((car (grid-get costs pos)) =>
+			   (lambda (cost)
+			     (let ((new-cost
+				    (+ (car (grid-get costs next))
+				       ;; heuristic cost
+				       (distance pos b)
+				       ;; if we would pass through another
+				       ;; monster, add the number of turns it
+				       ;; has been stuck there, to avoid
+				       ;; congestion
+				       (let ((occ (get-occupant
+						   (grid-get g pos))))
+					 (if (and occ (monster? occ))
+					     (behavior-nb-turns-idle
+					      (monster-behavior occ))
+					     0)))))
+			       (if (< new-cost cost)
+				   (begin
+				     (grid-set! costs pos (cons new-cost next))
+				     #t)
+				   #f))))
+			  (else #f))
+			 #f))
+		   (four-directions next))))
 	    (loop (append neighbors queue)))))))
