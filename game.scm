@@ -7,12 +7,10 @@
 (include "objects.scm")
 (include "monsters.scm")
 (include "treasure.scm")
-(include "maze.scm")
 (include "dungeon.scm")
 (include "visibility.scm")
 (include "terminal.scm")
 (include "input.scm")
-(include "names.scm")
 (include "help.scm")
 
 (define debug #f) ;; TODO find a better way
@@ -51,18 +49,7 @@
 		    (floor-monsters floor))
 	  (loop)))))
 
-;; TODO obsolete, doesn't work with the new architecture (actually remove the whole maze thing)
-;; (define (maze h w name)
-;;   ;; simple maze game, start at the top left, and get to the bottom right
-;;   (let ((level (generate-maze h w)))
-;;     ;; add a treasure
-;;     (add-object (grid-get level (new-point (- (grid-height level) 1)
-;; 					   (- (grid-width level)  1)))
-;; 		(new-treasure))
-;;     (game (new-player name level (new-point 0 0))
-;; 	  (lambda (level player) #f))))
-
-(define n-levels #f) ;; TODO having a global for taht is ugly, but it can't really fit in the player structure. if we end up having a dungeon type, put it there
+(define n-levels #f) ;; TODO having a global for that is ugly, but it can't really fit in the player structure. if we end up having a dungeon type, put it there
 (define (dungeon n name)
   (set! n-levels n)
   (game (new-player name) (lambda (level player) #f))) ;; TODO use n-levels, have a dungeon type for that
