@@ -3,8 +3,10 @@
 (define treasure-table
   `((0.45
      ;; weapons
-     (0.7 . ,new-morningstar) ;; FOO add the new items
-     (0.3 . ,new-greataxe))
+     (0.25 . ,new-morningstar)
+     (0.1  . ,new-greataxe)
+     (0.4  . ,new-club)
+     (0.25 . ,new-shortspear))
     (0.3
      ;; shields
      (1 . ,new-light-shield))
