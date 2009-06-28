@@ -6,6 +6,21 @@
 (define (new-cell f c)
   (f (lambda () c) '() #f))
 
+(define (add-object cell object)
+  (cell-objects-set! cell (cons object (cell-objects cell))))
+(define (remove-object cell object)
+  (cell-objects-set! cell (remove object (cell-objects cell))))
+
+(define-generic walkable-cell?)
+(define-method (walkable-cell? c) #f)
+(define (free-cell? cell)
+  (and (walkable-cell? cell)
+       (not (cell-occupant cell))))
+
+(define-generic opaque-cell?)
+(define-method (opaque-cell? c) #f)
+
+
 (define-class empty-cell (cell))
 (define (walkable-cell-print cell char)
   (lambda () (cond ((cell-occupant cell)
@@ -17,10 +32,7 @@
   (let ((cell (make-empty-cell #f '() #f)))
     (cell-printer-set! cell (walkable-cell-print cell #\space))
     cell))
-(define (add-object cell object)
-  (cell-objects-set! cell (cons object (cell-objects cell))))
-(define (remove-object cell object)
-  (cell-objects-set! cell (remove object (cell-objects cell))))
+(define-method (walkable-cell? (c empty-cell)) #t)
 
 
 (define-class stairs (empty-cell))
@@ -35,6 +47,7 @@
 
 
 (define-class wall (cell))
+(define-method (opaque-cell? (c wall)) #t)
 (define-class vertical-wall   (wall))
 (define-class horizontal-wall (wall))
 (define-class corner-wall     (wall))
@@ -49,9 +62,10 @@
 
 
 (define-generic open)
-(define-method  (open  grid x opener) (display "I can't open that.\n"))
+(define-method (open  grid x opener) (display "I can't open that.\n"))
 (define-generic close)
-(define-method  (close grid x closer) (display "I can't close that.\n"))
+(define-method (close grid x closer) (display "I can't close that.\n"))
+
 
 ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
 (define-class door (cell)
@@ -74,6 +88,9 @@
       (display "This door is already closed.\n")
       (begin (door-open?-set! door #f)
 	     (display "Door closed.\n"))))
+(define-method (walkable-cell? (c door))      (door-open? c))
+(define-method (opaque-cell?   (c door)) (not (door-open? c)))
+
 
 (define-class chest (cell)
   (slot: open?))
@@ -89,13 +106,4 @@
       (display "This chest is already open.\n")
       (begin (chest-open?-set! chest #t)
 	     (display "Chest opened.\n"))))
-
-(define-generic walkable-cell?)
-(define-method  (walkable-cell? (c empty-cell)) #t)
-(define-method  (walkable-cell? (c door))       (door-open?  c))
-(define-method  (walkable-cell? (c chest))      (chest-open? c))
-(define-method  (walkable-cell? c)              #f)
-
-(define (free-cell? cell)
-  (and (walkable-cell? cell)
-       (not (cell-occupant cell))))
+(define-method  (walkable-cell? (c chest)) (chest-open? c))

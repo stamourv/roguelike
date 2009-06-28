@@ -32,7 +32,8 @@
 		  (error (+ error delta-err)))
 	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
 	      (cond ((equal? pos dest)          #t) ; we see it
-		    ((and (opaque? (grid-get g pos)) (not (equal? pos start))) #f) ; we hit an obstacle
+		    ((and (opaque-cell? (grid-get g pos))
+			  (not (equal? pos start))) #f) ; we hit an obstacle
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
 				(y     (if (>= error 1/2)
@@ -84,10 +85,10 @@
 		       ;; visibility down to a reasonable level
 		       ;; note: line of sight is not necessary to see walls,
 		       ;; this gives better results
-		       (or (opaque? (grid-get g new))
+		       (or (opaque-cell? (grid-get g new))
 			   (line-of-sight? g pos new)))
 		  (begin (grid-set! view new 'visible) ; mark as lit
-			 (if (not (opaque? (grid-get g new)))
+			 (if (not (opaque-cell? (grid-get g new)))
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
@@ -97,12 +98,12 @@
       ;; to solve the problem, any wall next to a visible square is visible
       (grid-for-each
        (lambda (pos)
-	 (if (and (opaque? (grid-get g pos))
+	 (if (and (opaque-cell? (grid-get g pos))
 		  (eq? (grid-get view pos) 'unknown)
 		  (foldl (lambda (acc new)
 			   (or acc
 			       (and (inside-grid? g new)
-				    (not (opaque? (grid-get g new)))
+				    (not (opaque-cell? (grid-get g new)))
 				    (eq? (grid-get view new) 'visible))))
 			 #f (eight-directions pos)))
 	     (grid-set! view pos 'visited)))
@@ -114,7 +115,7 @@
     (let ((c ((cell-printer cell))))
       (case (grid-get view pos)
 	((visible)
-	 (if (opaque? cell)
+	 (if (opaque-cell? cell)
 	     (display c)
 	     (terminal-print c bg: 'white fg: 'black))) ;; TODO can we have colored objects with that ? not sure
 	((visited)
@@ -130,10 +131,3 @@
 	       (else (display c)))) ; no enemy to hide
 	((unknown)
 	 (terminal-print " "))))))
-
-(define (opaque? cell)
-  (or (wall? cell)
-      (and (door? cell) (not (door-open? cell)))
-;;       (cond ((cell-occupant cell) => (lambda (o) (not (player? o))))
-;; 	    (else #f)) ; disabled. gives more interesting monsters
-      ))
