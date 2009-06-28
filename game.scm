@@ -1,4 +1,5 @@
-(include "utilities.scm")
+(include "class.scm") ; CLOS-like object system ;; TODO sucks that I can't put it in ~~/lib
+(include "utilities.scm") ;; TODO have a makefile, and separate compilation
 (include "grid.scm")
 (include "cell.scm")
 (include "character.scm")

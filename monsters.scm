@@ -107,7 +107,8 @@
 		  (if (not (null? monsters))
 		      (let ((cell (random-element space))
 			    (mon  (car monsters)))
-			(occupant-set! (grid-get (floor-map floor) cell) mon)
+			(cell-occupant-set! (grid-get (floor-map floor) cell)
+					    mon)
 			(character-pos-set! mon cell)
 			(loop2 (cdr monsters)
 			       (cons mon all-monsters)
@@ -135,5 +136,5 @@
 			       (ceiling (* xp-same-level
 					   (+ 1 (* 1/3 delta-level)))))))) ;; TODO tweak
     ;; remove the monster
-    (occupant-set! cell #f)
+    (cell-occupant-set! cell #f)
     (floor-monsters-set! floor (remove monster (floor-monsters floor)))))

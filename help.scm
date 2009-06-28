@@ -3,7 +3,7 @@
 
 (define (info grid pos) ;; TODO show a message about the location, occupant first (unless player), objects then, finally terrain
     (let ((cell (grid-get grid pos)))
-      (cond ((let ((occ (get-occupant cell)))
+      (cond ((let ((occ (cell-occupant cell)))
 	       (and occ (not (player? occ)) occ))
 	     => (lambda (occ) (display (character-name occ))))
 	    ((get-object cell)

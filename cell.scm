@@ -1,48 +1,32 @@
-(define-type cell
-  printer    ; thunk that returns a character ;; TODO maybe not a thunk, but a function that receives bg and fg color ?
-  extender: define-type-of-cell)
+(define-class cell ()
+  (slot: printer)   ; thunk that returns a character ;; TODO maybe not a thunk, but a function that receives bg and fg color ?
+  (slot: objects)
+  (slot: occupant)) ; player, monster, ...
 
-(define-type-of-cell walkable-cell
-  objects
-  occupant ; player, monster, ...
-  extender: define-type-of-walkable-cell)
+(define (new-cell f c)
+  (f (lambda () c) '() #f))
+
+(define-class empty-cell (cell))
 (define (walkable-cell-print cell char)
-  (lambda () (cond ((get-occupant cell)
+  (lambda () (cond ((cell-occupant cell)
 		    => (lambda (o) ((character-printer o))))
-		   ((not (null? (get-objects cell)))
-		    ((object-printer (car (get-objects cell)))))
+		   ((not (null? (cell-objects cell)))
+		    ((object-printer (car (cell-objects cell)))))
 		   (else char))))
-(define (new-walkable-cell)
-  (let ((cell (make-walkable-cell #f '() #f)))
+(define (new-empty-cell) ;; TODO use constructors
+  (let ((cell (make-empty-cell #f '() #f)))
     (cell-printer-set! cell (walkable-cell-print cell #\space))
     cell))
-(define (get-objects cell)
-  (if (walkable-cell? cell)
-      (walkable-cell-objects cell)
-      #f))
 (define (add-object cell object)
-  (if (walkable-cell? cell)
-      (walkable-cell-objects-set! cell (cons object (get-objects cell)))
-      #f))
+  (cell-objects-set! cell (cons object (cell-objects cell))))
 (define (remove-object cell object)
-  (if (walkable-cell? cell)
-      (walkable-cell-objects-set! cell (remove object (get-objects cell)))
-      #f))
-(define (get-occupant cell)
-  (if (walkable-cell? cell)
-      (walkable-cell-occupant cell)
-      #f))
-(define (occupant-set! cell occupant)
-  (if (walkable-cell? cell)
-      (walkable-cell-occupant-set! cell occupant)
-      #f))
+  (cell-objects-set! cell (remove object (cell-objects cell))))
 
 
 ;; TODO as it is, the stairs hides everything, even the player
-(define-type-of-walkable-cell stairs
-  extender: define-type-of-stairs)
-(define-type-of-stairs stairs-up)
-(define-type-of-stairs stairs-down)
+(define-class stairs (empty-cell))
+(define-class stairs-up   (stairs))
+(define-class stairs-down (stairs))
 (define (new-stairs f char)
   (let ((stairs (f #f '() #f)))
     (cell-printer-set! stairs (walkable-cell-print stairs char))
@@ -51,75 +35,68 @@
 (define (new-stairs-down) (new-stairs make-stairs-down #\>))
 
 
-(define-type-of-cell wall
-  extender: define-type-of-wall)
-(define-type-of-wall vertical-wall)
-(define-type-of-wall horizontal-wall)
-(define-type-of-wall corner-wall)
-(define-type-of-wall solid-wall)
-(define-type-of-wall pillar)
-(define (new-wall) (make-wall (lambda () #\#)))
-(define (new-vertical-wall)   (make-vertical-wall   (lambda () #\|)))
-(define (new-horizontal-wall) (make-horizontal-wall (lambda () #\-)))
-(define (new-corner-wall)     (make-corner-wall     (lambda () #\+)))
-(define (new-solid-wall)      (make-solid-wall      (lambda () #\+)))
-(define (new-pillar)          (make-pillar          (lambda () #\+)))
+(define-class wall (cell))
+(define-class vertical-wall   (wall))
+(define-class horizontal-wall (wall))
+(define-class corner-wall     (wall))
+(define-class solid-wall      (wall))
+(define-class pillar          (wall))
+(define (new-wall)            (new-cell make-wall            #\#))
+(define (new-vertical-wall)   (new-cell make-vertical-wall   #\|))
+(define (new-horizontal-wall) (new-cell make-horizontal-wall #\-))
+(define (new-corner-wall)     (new-cell make-corner-wall     #\+))
+(define (new-solid-wall)      (new-cell make-solid-wall      #\+))
+(define (new-pillar)          (new-cell make-pillar          #\+))
+
+
+(define-generic open)
+(define-method  (open  grid x opener) (display "I can't open that.\n"))
+(define-generic close)
+(define-method  (close grid x closer) (display "I can't close that.\n"))
 
 ;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
-(define-type-of-wall door
-  ;; open-fun takes the opened as parameter (to help for locked doors and co)
-  ;; and returns whether the door can be opened
-  open-fun
-  extender: define-type-of-door)
+(define-class door (cell)
+  (slot: open?))
+(define closed-door-printer (lambda () #\$))
 (define (new-door)
-  (let ((door (make-door (lambda () #\$) #f)))
-    (door-open-fun-set! door (lambda (o) #t))
+  (let ((door (make-door #f '() #f #f)))
+    (cell-printer-set!
+     door (lambda () (if (door-open? door)
+			 ((walkable-cell-print door #\_))
+			 #\$)))
     door))
-(define-type-of-walkable-cell open-door
-  close-fun ; analogous to open-fun
-  when-closed) ; the original closed door
-(define (new-open-door orig)
-  (let ((door (make-open-door #f '() #f #f orig)))
-    (cell-printer-set! door (walkable-cell-print door #\_))
-    (open-door-close-fun-set! door (lambda (c) #t))
-    door))
-(define (open-door  grid pos opener)
-  (let ((door (grid-get grid pos)))
-    (if ((door-open-fun door) opener)
-	(begin (grid-set! grid pos (new-open-door door))
-	       (display "Door opened.\n")
-	       #t)
-	#f)))
-(define (close-door grid pos closer) ;; TODO closing the door would remove any items underneath. maybe have a link to the opened door, which has the objects ?
-  (let ((door (grid-get grid pos)))
-    (if ((open-door-close-fun door) closer)
-	(begin (grid-set! grid pos (open-door-when-closed door))
-	       (display "Door closed.\n")
-	       #t)
-	#f)))
+(define-method (open grid (door door) opener)
+  (if (door-open? door)
+      (display "This door is already open.\n")
+      (begin (door-open?-set! door #t)
+	     (display "Door opened.\n"))))
+(define-method (close grid (door door) closer)
+  (if (not (door-open? door))
+      (display "This door is already closed.\n")
+      (begin (door-open?-set! door #f)
+	     (display "Door closed.\n"))))
 
-(define-type-of-cell chest ;; TODO abstract common parts with doors ?
-  open-fun
-  contents)
+(define-class chest (cell)
+  (slot: open?))
 (define (new-chest contents)
-  (let ((chest (make-chest (lambda () #\#) #f contents)))
-    (chest-open-fun-set! chest (lambda (o) #t))
+  (let ((chest (make-chest #f contents #f #f)))
+    (cell-printer-set!
+     chest (lambda () (if (chest-open? chest)
+			  ((walkable-cell-print chest #\=))
+			  #\#)))
     chest))
-(define-type-of-walkable-cell open-chest
-  close-fun)
-(define (new-open-chest contents)
-  (let ((chest (make-open-chest #f contents #f #f))) ;; TODO for now, chests can't be closed
-    (cell-printer-set! chest (walkable-cell-print chest #\=))
-    (open-chest-close-fun-set! chest (lambda (c) #t))
-    chest))
-(define (open-chest  grid pos opener)
-  (let ((chest (grid-get grid pos)))
-    (if ((chest-open-fun chest) opener)
-	(begin (grid-set! grid pos (new-open-chest (chest-contents chest)))
-	       (display "Chest opened.\n")
-	       #t)
-	#f)))
+(define-method (open grid (chest chest) opener)
+  (if (chest-open? chest)
+      (display "This chest is already open.\n")
+      (begin (chest-open?-set! chest #t)
+	     (display "Chest opened.\n"))))
+
+(define-generic walkable-cell?)
+(define-method  (walkable-cell? (c empty-cell)) #t)
+(define-method  (walkable-cell? (c door))       (door-open?  c))
+(define-method  (walkable-cell? (c chest))      (chest-open? c))
+(define-method  (walkable-cell? c)              #f)
 
 (define (free-cell? cell)
   (and (walkable-cell? cell)
-       (not (get-occupant cell))))
+       (not (cell-occupant cell))))

@@ -83,7 +83,7 @@
 				       ;; monster, take into account the number
 				       ;; of turns it has been stuck there, to
 				       ;; avoid congestion
-				       (let ((occ (get-occupant
+				       (let ((occ (cell-occupant
 						   (grid-get g pos))))
 					 (if (and occ (monster? occ))
 					     (* (behavior-nb-turns-idle

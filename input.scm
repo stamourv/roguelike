@@ -35,9 +35,9 @@
       ((#\e) (equip     player))
       ((#\r) (take-off  player))
 
-      ((#\o) (open   player))
-      ((#\c) (close  player))
-      ((#\t) (stairs player))
+      ((#\o) (cmd-open   player))
+      ((#\c) (cmd-close  player))
+      ((#\t) (stairs     player))
 
       ;; help
       ((#\?) (show-help))
@@ -84,4 +84,5 @@
 			  (show-state player)
 			  (f object)
 			  (display (string-append feedback
-						  (object-name object))))))))))
+						  (object-name object)
+						  ".\n")))))))))

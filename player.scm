@@ -44,8 +44,8 @@
 	 player player-floor
 	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
   (let ((map (floor-map (player-floor-floor player-floor))))
-    (occupant-set! (grid-get map start-pos) player)
-    (player-pos-set!   player start-pos)
+    (cell-occupant-set!        (grid-get map start-pos) player)
+    (player-pos-set!           player start-pos)
     (player-current-floor-set! player player-floor)))
 
 
@@ -96,7 +96,7 @@
   (clear-to-bottom))
 (define (pick-up player pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-get (player-map player) pos))
-	 (objects (get-objects cell)))
+	 (objects (cell-objects cell)))
     (choice player objects
 	    (lambda (object)
 	      (remove-object cell object)
@@ -153,31 +153,22 @@
 				     (cons object (player-inventory player))))
 	    "You have nothing to take off." "Take off what?" "Took off ")))
 
-(define (open player)
+(define (cmd-open player)
   (clear-to-bottom)
   (display "Open in which direction? ")
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
-	(let* ((pos  ((eval dir) (player-pos player)))
-	       (grid (player-map player))
-	       (cell (grid-get grid pos))) ;; TODO lots in common with close, and anything else that would ask for a direction
-	  (cond ((door?       cell) (open-door  grid pos player))
-		((open-door?  cell) (display "This door is already open.\n"))
-		((chest?      cell) (open-chest grid pos player))
-		((open-chest? cell) (display "This chest is already open.\n"))
-		(else              (display "I can't open that.\n")))))))
-(define (close player)
+	(let* ((grid (player-map player))
+	       (cell (grid-get grid ((eval dir) (player-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
+	  (open grid cell player)))))
+(define (cmd-close player)
   (clear-to-bottom)
   (display "Close in which direction? ")
   (let ((dir  (choose-direction))) ; evaluates to a function, or #f
     (if dir
-	(let* ((pos  ((eval dir) (player-pos player)))
-	       (grid (player-mpa player))
-	       (cell (grid-get grid pos)))
-	  (cond ((open-door? cell) (close-door grid pos player)) ;; TODO would be better to send a "close" message to the object
-		((door?      cell) (display "This door is already closed.\n"))
-		;; chests can't be closed
-		(else              (display "I can't close that.\n")))))))
+	(let* ((grid (player-map player))
+	       (cell (grid-get grid ((eval dir) (player-pos player)))))
+	  (close grid cell player)))))
 
 (define (stairs player)
   (let ((cell (grid-get (player-map player) (player-pos player))))
@@ -213,7 +204,7 @@
 	(let* ((pos  ((eval dir) (player-pos player)))
 	       (grid (player-map player))
 	       (cell (grid-get grid pos)))
-	  (cond ((get-occupant cell)
+	  (cond ((cell-occupant cell)
 		 => (lambda (occ)
 		      (display (string-append "Killed the "
 					      (character-name occ)

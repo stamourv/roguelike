@@ -114,7 +114,7 @@
     (let ((c ((cell-printer cell))))
       (case (grid-get view pos)
 	((visible)
-	 (if (wall? cell)
+	 (if (opaque? cell)
 	     (display c)
 	     (terminal-print c bg: 'white fg: 'black))) ;; TODO can we have colored objects with that ? not sure
 	((visited)
@@ -122,17 +122,18 @@
 	 ;; these are the default colors of the terminal, and not having to
 	 ;; print the control characters speeds up the game
 	 ;; we don't show enemies if they would be in the fog of war
-	 (cond ((get-occupant cell) =>
+	 (cond ((cell-occupant cell) =>
 		(lambda (occ)
-		  (occupant-set! cell #f)
+		  (cell-occupant-set! cell #f)
 		  (display ((cell-printer cell)))
-		  (occupant-set! cell occ)))
+		  (cell-occupant-set! cell occ)))
 	       (else (display c)))) ; no enemy to hide
 	((unknown)
 	 (terminal-print " "))))))
 
 (define (opaque? cell)
   (or (wall? cell)
-;;       (cond ((get-occupant cell) => (lambda (o) (not (player? o))))
+      (and (door? cell) (not (door-open? cell)))
+;;       (cond ((cell-occupant cell) => (lambda (o) (not (player? o))))
 ;; 	    (else #f)) ; disabled. gives more interesting monsters
       ))

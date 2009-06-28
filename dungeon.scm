@@ -97,7 +97,7 @@
 			   (else (set! inside (cons p inside))
 				 (if trace?
 				     trace-cell
-				     new-walkable-cell)))))))
+				     new-empty-cell)))))))
 	       level
 	       start-x:  pos-x  start-y:  pos-y
 	       length-x: height length-y: width)

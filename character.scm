@@ -44,12 +44,12 @@
       (let ((cell     (grid-get g (character-pos occ)))
 	    (new-cell (grid-get g new-pos)))
 	(cond ((free-cell? new-cell)
-	       (occupant-set! cell     #f)
-	       (occupant-set! new-cell occ)
+	       (cell-occupant-set! cell     #f)
+	       (cell-occupant-set! new-cell occ)
 	       (character-pos-set! occ new-pos))
 	      ;; walkable, but occupied already, attack whoever is there
 	      ((walkable-cell? new-cell)
-	       (attack occ (get-occupant (grid-get g new-pos))))))))
+	       (attack occ (cell-occupant (grid-get g new-pos))))))))
 
 (define (attack attacker defender) ;; TODO have a true combat system
   (cond ((player? attacker)

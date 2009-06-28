@@ -18,7 +18,7 @@
 (define (empty-grid height
 		    #!optional (width height)
 		    ;; function that takes the position, and returns the content
-		    #!key (cell-fun (lambda (pos) (new-walkable-cell))))
+		    #!key (cell-fun (lambda (pos) (new-empty-cell))))
   (make-grid height width
 	     (list->vector
 	      (map (lambda (p) (cell-fun (new-point (quotient p width)
@@ -151,7 +151,7 @@
 		     (let ((x (point-x pos)) (y (point-y pos)))
 		       (grid-set! g pos
 				  (case (string-ref (list-ref rows x) y)
-				    ((#\ ) (new-walkable-cell))
+				    ((#\ ) (new-empty-cell))
 				    ((#\+) (new-corner-wall))
 				    ((#\|) (new-vertical-wall))
 				    ((#\-) (new-horizontal-wall))
