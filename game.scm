@@ -36,7 +36,7 @@
 	  (read-command player) ; side-effects the player
 	  (for-each (lambda (m)
 		      ((behavior-fun (monster-behavior m))
-		       m floor (player-pos player)))
+		       m floor (character-pos player)))
 		    (floor-monsters floor))
 	  (loop)))))
 

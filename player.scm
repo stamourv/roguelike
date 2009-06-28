@@ -19,10 +19,6 @@
 			     '())))
     (place-player player (new-player-floor 0))
     player))
-(define player-name      character-name)
-(define player-pos       character-pos)
-(define player-equipment character-equipment)
-(define player-pos-set!  character-pos-set!)
 
 
 (define-type player-floor
@@ -45,13 +41,13 @@
 	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
   (let ((map (floor-map (player-floor-floor player-floor))))
     (cell-occupant-set!        (grid-get map start-pos) player)
-    (player-pos-set!           player start-pos)
+    (character-pos-set!        player start-pos)
     (player-current-floor-set! player player-floor)))
 
 
 (define (show-state player)
   (cursor-notification-head)
-  (display-notification (string-append (player-name player) "\n"))
+  (display-notification (string-append (character-name player) "\n"))
   (display-notification
    (string-append "level " (number->string (player-level player)) "\n"))
   (display-notification
@@ -85,7 +81,7 @@
   (for-each-equipped
    (lambda (obj where)
      (display (string-append where ":	" (if obj (object-name obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
-   (player-equipment player))
+   (character-equipment player))
   (display "\nInventory:\n")
   (for-each (lambda (o) (display (string-append (object-name o) "\n")))
 	    (player-inventory player))
@@ -104,7 +100,7 @@
 				     (cons object (player-inventory player))))
 	    "There is nothing to pick up." "Pick up what?" "Picked up ")))
 (define (drop player)
-  (let ((cell    (grid-get (player-map player) (player-pos player)))
+  (let ((cell    (grid-get (player-map player) (character-pos player)))
 	(objects (player-inventory player)))
     (choice player objects
 	    (lambda (object)
@@ -112,8 +108,8 @@
 	      (add-object cell object))
 	    "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip player)
-  (let ((e       (player-equipment player))
-	(objects (player-inventory player)))
+  (let ((e       (character-equipment player))
+	(objects (player-inventory    player)))
     (choice player objects
 	    (lambda (object)
 	      (let* ((place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
@@ -139,7 +135,7 @@
 			    (cons old (player-inventory player)))))))
 	    "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off player)
-  (let* ((e       (player-equipment player))
+  (let* ((e       (character-equipment player))
 	 (objects (filter identity (map car (equipment->list e)))))
     (choice player objects
 	    (lambda (object)
@@ -159,7 +155,7 @@
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-get grid ((eval dir) (player-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
+	       (cell (grid-get grid ((eval dir) (character-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
 	  (open grid cell player)))))
 (define (cmd-close player)
   (clear-to-bottom)
@@ -167,11 +163,11 @@
   (let ((dir  (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-get grid ((eval dir) (player-pos player)))))
+	       (cell (grid-get grid ((eval dir) (character-pos player)))))
 	  (close grid cell player)))))
 
 (define (stairs player)
-  (let ((cell (grid-get (player-map player) (player-pos player))))
+  (let ((cell (grid-get (player-map player) (character-pos player))))
     (let ((current      (player-current-floor         player))
 	  (before       (player-floors-before         player))
 	  (after        (player-floors-after          player)))
@@ -201,7 +197,7 @@
   (display "Kill in which direction? ")
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
-	(let* ((pos  ((eval dir) (player-pos player)))
+	(let* ((pos  ((eval dir) (character-pos player)))
 	       (grid (player-map player))
 	       (cell (grid-get grid pos)))
 	  (cond ((cell-occupant cell)

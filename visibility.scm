@@ -42,7 +42,7 @@
 (define (update-visibility player) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
   ;; set the fog of war
   (let ((view (player-view player))
-	(pos   (player-pos player)))
+	(pos  (character-pos player)))
     (grid-for-each (lambda (pos)
 		     (if (eq? (grid-get view pos) 'visible)
 			 (grid-set! view pos 'visited)))
