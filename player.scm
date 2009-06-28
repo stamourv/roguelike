@@ -1,11 +1,11 @@
-(define-type-of-character player
-  floors-before ; pairs (map . view)
-  current-floor
-  floors-after
-  level
-  experience ;; TODO have a way to show level and experience
-  inventory) ; list of objects
-(define (new-player name)
+(define-class player (character)
+  (slot: floors-before) ; pairs (map . view)
+  (slot: current-floor)
+  (slot: floors-after)
+  (slot: level)
+  (slot: experience) ;; TODO have a way to show level and experience
+  (slot: inventory)) ; list of objects
+(define (new-player name) ;; TODO constructor ?
   (let ((player (make-player name
 			     (lambda () #\@)
 			     #f

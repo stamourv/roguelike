@@ -1,11 +1,10 @@
-(define-type-of-character monster
-  challenge-rating
+(define-class monster (character)
+  (slot: challenge-rating)
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
-  behavior
-  extender: define-monster-type) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
+  (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
-(define-monster-type goblin) ;; TODO do they need to be subtypes ?
+(define-class goblin (monster)) ;; TODO do they need to be subtypes ?
 (define (new-goblin)
   (make-goblin "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6
@@ -14,7 +13,7 @@
 		off-arm:  (new-light-shield)
 		torso:    (new-leather-armor))
 	       1/3 (rush-behavior)))
-(define-monster-type kobold)
+(define-class kobold (monster))
 (define (new-kobold)
   (make-kobold "kobold" (lambda () #\k) #f
 	       9 13 10 10 9 8
@@ -22,7 +21,7 @@
 		main-arm: (new-shortspear)
 		torso:    (new-leather-armor))
 	       1/4 (rush-behavior)))
-(define-monster-type orc)
+(define-class orc (monster))
 (define (new-orc)
   (make-orc "orc" (lambda () #\o) #f
 	    17 11 12 8 7 6

@@ -1,5 +1,5 @@
 (define-class cell ()
-  (slot: printer)   ; thunk that returns a character ;; TODO maybe not a thunk, but a function that receives bg and fg color ?
+  (slot: printer)   ; thunk that returns a character ;; TODO maybe not a thunk, but a function that receives bg and fg color ? or visibility ?
   (slot: objects)
   (slot: occupant)) ; player, monster, ...
 
@@ -23,7 +23,6 @@
   (cell-objects-set! cell (remove object (cell-objects cell))))
 
 
-;; TODO as it is, the stairs hides everything, even the player
 (define-class stairs (empty-cell))
 (define-class stairs-up   (stairs))
 (define-class stairs-down (stairs))

@@ -1,17 +1,16 @@
-(define-type character
-  name
-  printer
-  pos
+(define-class character ()
+  (slot: name)
+  (slot: printer)
+  (slot: pos)
 
-  str ;; TODO have a profile type to store all that ?
-  dex
-  con
-  int
-  wis
-  cha
+  (slot: str) ;; TODO have a profile type to store all that ?
+  (slot: dex)
+  (slot: con)
+  (slot: int)
+  (slot: wis)
+  (slot: cha)
   
-  equipment
-  extender: define-type-of-character)
+  (slot: equipment))
 
 (define-type equipment
   main-arm

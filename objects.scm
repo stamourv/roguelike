@@ -1,24 +1,19 @@
-(define-type object
-  name
-  gp-value
-  printer
-  extender: define-type-of-object)
+(define-class object ()
+  (slot: name)
+  (slot: gp-value)
+  (slot: printer))
 
 
-(define-type-of-object treasure) ;; TODO more
-(define (new-treasure) (make-treasure (random-element object-names)
-				      0
-				      (lambda () #\T)))
+(define-class treasure (object)) ;; TODO more
+(define (new-treasure name) (make-treasure name 0 (lambda () #\T)))
 
 
-(define-type-of-object equipable-object
-  extender: define-type-of-equipable-object)
+(define-class equipable-object (object))
 
-(define-type-of-equipable-object armor
-  ac
-  extender: define-type-of-armor)
+(define-class armor (equipable-object)
+  (slot: ac))
 
-(define-type-of-armor body-armor)
+(define-class body-armor (armor))
 (define (new-body-armor name gp ac) ;; TODO have light, medium and heavy armor TODO have different printers for each type of armor ?
   (make-body-armor name gp (lambda () #\&) ac))
 (define (new-leather-armor)
@@ -26,14 +21,14 @@
 (define (new-studded-leather-armor)
   (new-body-armor "studded leather armor" 25 3))
 
-(define-type-of-armor shield)
+(define-class shield (armor))
 (define (new-shield name gp ac)
   (make-shield name gp (lambda () #\0) ac))
 (define (new-light-shield) (new-shield "light shield" 3 1))
 
-(define-type-of-equipable-object weapon
-  damage-fun ; function that returns the damage
-  damage-type) ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee and ranged, ...
+(define-class weapon (equipable-object)
+  (slot: damage-fun) ; function that returns the damage
+  (slot: damage-type)) ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee and ranged, ...
 (define (new-weapon name gp dmg-fun dmg-type)
   (make-weapon name gp (lambda () #\!) dmg-fun dmg-type))
 ;; TODO have small version of items ? (small weapons do less damage) goblins now have clubs instead of small morningstars
