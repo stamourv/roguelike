@@ -32,7 +32,7 @@
   ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
-  (let* ((level-height 20) ;; TODO really show a border ?
+  (let* ((level-height 18) ;; TODO was 20, but needed more room for text (espescially with multiple monsters attacking
 	 (level-width  60)
 	 (level        (empty-grid level-height level-width
 				   cell-fun: (lambda (pos) (new-solid-wall))))

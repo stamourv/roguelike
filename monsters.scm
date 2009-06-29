@@ -8,6 +8,7 @@
 (define (new-goblin)
   (make-goblin "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6
+	       5 1 ;; TODO instead of directly putting hp, have the hit dice, and roll them and add the constitution bonus
 	       (new-equipment
 		main-arm: (new-club)
 		off-arm:  (new-light-shield)
@@ -17,6 +18,7 @@
 (define (new-kobold)
   (make-kobold "kobold" (lambda () #\k) #f
 	       9 13 10 10 9 8
+	       4 1
 	       (new-equipment
 		main-arm: (new-shortspear)
 		torso:    (new-leather-armor))
@@ -25,6 +27,7 @@
 (define (new-orc)
   (make-orc "orc" (lambda () #\o) #f
 	    17 11 12 8 7 6
+	    5 1
 	    (new-equipment
 	     main-arm: (new-greataxe)
 	     torso:    (new-studded-leather-armor))

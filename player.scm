@@ -9,8 +9,10 @@
   (let ((player (make-player name
 			     (lambda () #\@)
 			     #f
-			     10 10 10 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
-			     (new-equipment)
+			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
+			     12 ; hp TODO consider constitution, also for monsters
+			     1  ; base attack bonus
+			     (new-equipment) ;; TODO add some starting equipment, to help the player defend itself
 			     '()
 			     #f
 			     '()
@@ -54,6 +56,9 @@
    (string-append (number->string (player-experience player))
 		  " xp pts\n"))
   (display-notification
+   (string-append (number->string (character-hp player))
+		  " hp\n"))
+  (display-notification
    (string-append "str: " (number->string (character-str player)) "	"
 		  "int: " (number->string (character-int player)) "\n"))
   (display-notification
@@ -80,7 +85,7 @@
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (display (string-append where ":	" (if obj (object-name obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
+     (display (string-append where (if obj (object-name obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
    (character-equipment player))
   (display "\nInventory:\n")
   (for-each (lambda (o) (display (string-append (object-name o) "\n")))
