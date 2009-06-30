@@ -12,7 +12,7 @@
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     12 ; hp TODO consider constitution, also for monsters
 			     1  ; base attack bonus
-			     (new-equipment) ;; TODO add some starting equipment, to help the player defend itself
+			     (new-equipment main-arm: (new-club))
 			     '()
 			     #f
 			     '()

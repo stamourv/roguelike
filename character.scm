@@ -87,7 +87,7 @@
                                        (character-name defender)))))
         (if (>= (+ roll (get-attack-bonus attacker))
 		(get-armor-class defender))
-	    (let* ((dmg     (get-damage attacker))
+	    (let* ((dmg     (max (get-damage attacker) 1)) ;; TODO could deal 0 damage ?
 		   (killed? (damage attacker defender dmg)))
 	      (display (string-append " and deals " (number->string dmg)
 				      " damage"))

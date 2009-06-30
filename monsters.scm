@@ -4,34 +4,50 @@
   ;; player as parameters and makes the monster act
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
-(define-class goblin (monster)) ;; TODO do they need to be subtypes ?
+
 (define (new-goblin)
-  (make-goblin "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
-	       11 13 12 10 9 6
-	       5 1 ;; TODO instead of directly putting hp, have the hit dice, and roll them and add the constitution bonus
-	       (new-equipment
-		main-arm: (new-club)
-		off-arm:  (new-light-shield)
-		torso:    (new-leather-armor))
-	       1/3 (rush-behavior)))
-(define-class kobold (monster))
+  (make-monster "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
+		11 13 12 10 9 6
+		5 1 ;; TODO instead of directly putting hp, have the hit dice, and roll them and add the constitution bonus
+		(new-equipment
+		 main-arm: (new-club)
+		 off-arm:  (new-light-shield)
+		 torso:    (new-leather-armor))
+		1/3 (rush-behavior)))
 (define (new-kobold)
-  (make-kobold "kobold" (lambda () #\k) #f
-	       9 13 10 10 9 8
-	       4 1
-	       (new-equipment
-		main-arm: (new-shortspear)
-		torso:    (new-leather-armor))
-	       1/4 (rush-behavior)))
-(define-class orc (monster))
+  (make-monster "kobold" (lambda () #\k) #f
+		9 13 10 10 9 8
+		4 1
+		(new-equipment
+		 main-arm: (new-shortspear)
+		 torso:    (new-leather-armor))
+		1/4 (rush-behavior)))
 (define (new-orc)
-  (make-orc "orc" (lambda () #\o) #f
-	    17 11 12 8 7 6
-	    5 1
-	    (new-equipment
-	     main-arm: (new-greataxe)
-	     torso:    (new-studded-leather-armor))
-	    1/2 (pursue-behavior)))
+  (make-monster "orc" (lambda () #\o) #f
+		17 11 12 8 7 6
+		5 1
+		(new-equipment
+		 main-arm: (new-greataxe)
+		 torso:    (new-studded-leather-armor))
+		1/2 (pursue-behavior)))
+
+
+(define-class animal (monster))
+(define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
+  (make-animal "bat" (lambda () #\b) #f
+	       1 15 10 2 14 4
+	       1 0
+	       (new-equipment) ;; TODO will attack with the 1d4 unarmed strike, is that too much ? (actually, with the strength penalty, it's ridiculous)
+	       1/10 (rush-behavior)))
+(define (new-rat)
+  (make-animal "rat" (lambda () #\r) #f
+	       2 15 10 2 12 2
+	       1 0
+	       (new-equipment) ;; TODO also has unarmed strike, should have a way to represent natural attacks, damage is ridiculous, once again
+	       1/8 (rush-behavior)))
+
+
+(define-class undead (monster)) ;; TODO add some
 
 
 (define-type encounter-type
@@ -64,7 +80,12 @@
 
 (define encounter-types ;; TODO have weights, since some would be more common, make it so it can use random-choice
   (map new-encounter-type ;; TODO have a "language" to define encounters types, maybe make the probability a function of the level-no ?
-       `((,new-kobold ,new-kobold ,new-kobold ,new-kobold)
+       `((,new-bat ,new-bat ,new-bat)
+	 (,new-rat ,new-rat)
+	 (,new-rat ,new-rat ,new-rat)
+	 (,new-rat ,new-rat ,new-rat ,new-rat)
+	 (,new-kobold ,new-kobold)
+	 (,new-kobold ,new-kobold ,new-kobold ,new-kobold)
 	 (,new-goblin ,new-goblin)
 	 (,new-goblin ,new-goblin ,new-goblin)
 	 (,new-orc ,new-orc)
@@ -73,8 +94,8 @@
 
 (define (generate-encounters floor)
   (let* ((no                       (+ (floor-no floor) 1)) ; floor-no starts at 0
-	 (encounter-level-cap      no) ;; TODO maybe have it also a function of the player level ?
-	 (encounter-level-bottom   (max (/ no 2)
+	 (encounter-level-cap      (/ no 2)) ;; TODO maybe have it also a function of the player level ?
+	 (encounter-level-bottom   (max (/ no 4) ;; TODO TWEAK
 					(foldl min
 					       encounter-level-cap
 					       (map encounter-type-points
@@ -91,7 +112,7 @@
 					       possible-encounter-types))))
     (if (null? possible-encounter-types)
 	(error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
-    (let loop ((pts            (* no 10)) ;; TODO tweak
+    (let loop ((pts            (* no 5)) ;; TODO tweak
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))
       (if (and (>= pts actual-bottom)
