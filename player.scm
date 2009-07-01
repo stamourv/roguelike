@@ -89,9 +89,12 @@
   (for-each (lambda (o) (display (string-append (object-info o) "\n")))
 	    (player-inventory player))
   (let loop ((c #f))
-    (if (not (eq? c #\q))
-	(begin (display "\nPress q.")
-	       (loop (read-char)))))
+    (case c
+      ((#\e) (equip    player))
+      ((#\r) (take-off player))
+      ((#\q) #f)
+      (else  (display "\ne: Equip\nr: Take off\nq: Cancel\n")
+	     (loop (read-char)))))
   (clear-to-bottom))
 (define (pick-up player pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-get (player-map player) pos))
