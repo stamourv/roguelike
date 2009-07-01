@@ -68,7 +68,7 @@
 		 (if (not (null? objects))
 		     (begin (display (string-append
 				      (number->string i) ": "
-				      (object-name (car objects)) "\n"))
+				      (object-info (car objects)) "\n"))
 			    (loop (cdr objects) (+ i 1)))))
 	       (let loop ((nb (read-char)))
 		 (cond ((eq? nb #\q)

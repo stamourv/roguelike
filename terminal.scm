@@ -25,7 +25,7 @@
 				   "H")))
 
 (define (cursor-notification-head) (cursor-position-set! 2))
-(define (display-notification s)
+(define (display-notification . s)
   (terminal-command (string-append "[" (number->string 60) "C"))
   (clear-line)
-  (display s))
+  (display (apply string-append s)))

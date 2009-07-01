@@ -49,24 +49,20 @@
 
 (define (show-state player)
   (cursor-notification-head)
-  (display-notification (string-append (character-name player) "\n"))
-  (display-notification
-   (string-append "level " (number->string (player-level player)) "\n"))
-  (display-notification
-   (string-append (number->string (player-experience player))
-		  " xp pts\n"))
-  (display-notification
-   (string-append (number->string (character-hp player))
-		  " hp\n"))
-  (display-notification
-   (string-append "str: " (number->string (character-str player)) "	"
-		  "int: " (number->string (character-int player)) "\n"))
-  (display-notification
-   (string-append "dex: " (number->string (character-dex player)) "	"
-		  "wis: " (number->string (character-wis player)) "\n"))
-  (display-notification
-   (string-append "con: " (number->string (character-con player)) "	"
-		  "cha: " (number->string (character-cha player)) "\n"))
+  (display-notification (character-name player) "\n")
+  (display-notification "level " (number->string (player-level player)) "\n")
+  (display-notification (number->string (player-experience player)) " xp pts\n")
+  (display-notification (number->string (character-hp player)) " hp\n")
+  (display-notification "AC: "  (number->string (get-armor-class player)) "\n")
+  (display-notification "str: " (number->string (character-str player))
+			"	"
+			"int: " (number->string (character-int player)) "\n")
+  (display-notification "dex: " (number->string (character-dex player))
+			"	"
+			"wis: " (number->string (character-wis player)) "\n")
+  (display-notification "con: " (number->string (character-con player))
+			"	"
+			"cha: " (number->string (character-cha player)) "\n")
   
   (cursor-home)
   (clear-line)
@@ -85,10 +81,12 @@
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (display (string-append where (if obj (object-name obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
+     (display (string-append where (if obj (object-info obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
    (character-equipment player))
+  (display
+   (string-append "\nAC: " (number->string (get-armor-class player)) "\n"))
   (display "\nInventory:\n")
-  (for-each (lambda (o) (display (string-append (object-name o) "\n")))
+  (for-each (lambda (o) (display (string-append (object-info o) "\n")))
 	    (player-inventory player))
   (let loop ((c #f))
     (if (not (eq? c #\q))
@@ -114,7 +112,8 @@
 	    "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip player)
   (let ((e       (character-equipment player))
-	(objects (player-inventory    player)))
+	(objects (filter (lambda (x) (equipable-object? x))
+			 (player-inventory player))))
     (choice player objects
 	    (lambda (object)
 	      (let* ((place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
