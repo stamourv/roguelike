@@ -37,30 +37,28 @@
       (lambda () (display new)))
     new))
 
-(define (game player victory-fun)
+(define (game)
   (let loop ()
-    (cond ((victory-fun (player-floor player) player)
+    (cond (#f ;; TODO winning condition ?
 	   (display "You win!\n") ;; TODO have something more dramatic
-	   (quit player))
+	   (quit))
 	  ((<= (character-hp player) 0)
 	   (display "You die.\n")
-	   (quit player))
+	   (quit))
 	  (else (let ((floor (player-floor player)))
-		  (update-visibility player)
-		  (show-state player)
-		  (read-command player) ; side-effects the player
+		  (update-visibility)
+		  (show-state)
+		  (read-command) ; side-effects the player
 		  (for-each (lambda (m)
 			      ((behavior-fun (monster-behavior m))
 			       m floor (character-pos player)))
 			    (floor-monsters floor))
 		  (loop))))))
 
-(define n-levels #f) ;; TODO having a global for that is ugly, but it can't really fit in the player structure. if we end up having a dungeon type, put it there
-(define (dungeon n name)
-  (set! n-levels n)
-  (game (new-player name) (lambda (level player) #f)))
+(define n-levels 3) ;; TODO change
+(define player (new-player (getenv "LOGNAME")))
 
-(define (quit player)
+(define (quit)
   (display "\nHall of fame:\n\n")
   (let loop ((hall       (update-hall-of-fame
 			  (string->symbol (player-name player))
@@ -93,4 +91,4 @@
 ;; (load "~/src/scheme/statprof/statprof.scm") ;; TODO PROFILING
 ;; (profile-start!)
 
-(if (not debug) (dungeon 3 (getenv "LOGNAME")))
+(if (not debug) (game))

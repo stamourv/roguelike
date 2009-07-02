@@ -40,7 +40,7 @@
 					   (floor (+ y y-step)) y)))
 			    (loop error (+ x 1) y))))))))))
 
-(define (update-visibility player) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
+(define (update-visibility) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
   ;; set the fog of war
   (let ((view (player-view player))
 	(pos  (character-pos player)))

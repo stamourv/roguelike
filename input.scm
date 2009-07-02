@@ -9,7 +9,7 @@
     ((#\D) 'left)
     (else  (invalid-command))))
 
-(define (read-command player) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
+(define (read-command) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
   (let* ((pos   (copy-point (character-pos player)))
 	 (grid  (player-map player))
 	 (x     (point-x pos))
@@ -29,15 +29,15 @@
        (move (player-map player) player pos))
 
       ;; inventory
-      ((#\p) (pick-up   player pos))
-      ((#\d) (drop      player))
-      ((#\i) (inventory player))
-      ((#\e) (equip     player))
-      ((#\r) (take-off  player))
+      ((#\p) (pick-up pos))
+      ((#\d) (drop))
+      ((#\i) (inventory))
+      ((#\e) (equip))
+      ((#\r) (take-off))
 
-      ((#\o) (cmd-open   player))
-      ((#\c) (cmd-close  player))
-      ((#\t) (stairs     player))
+      ((#\o) (cmd-open))
+      ((#\c) (cmd-close))
+      ((#\t) (stairs))
 
       ;; help
       ((#\?) (show-help))
@@ -45,11 +45,11 @@
       ((#\l) (look grid pos))
 
       ;; debugging
-      ((#\k) (kill    player)) ; insta-kill a monster
-      ((#\:) (console player))
+      ((#\k) (kill)) ; insta-kill a monster
+      ((#\:) (console))
 
       ((#\space) (display "Nothing happened.\n")) ; noop TODO most roguelikes use .
-      ((#\q)     (quit player))
+      ((#\q)     (quit))
       (else      (invalid-command)))))
 
 (define (choose-direction)
@@ -57,7 +57,7 @@
     ((#\esc) (which-direction?))
     (else    (invalid-command) #f)))
 
-(define (choice player objects f null-message question feedback)
+(define (choice objects f null-message question feedback)
   (if (null? objects)
       (display null-message)
       (begin   (cursor-home)
@@ -82,17 +82,18 @@
 			(let ((object (list-ref objects
 						(- (char->integer nb)
 						   (char->integer #\0) 1))))
-			  (show-state player)
+			  (show-state)
 			  (f object)
 			  (display (string-append feedback
 						  (object-name object)
 						  ".\n")))))))))
 
 ;; console from which arbitrary expressions can be evaluated
-(define (console player)
+(define (console)
   (tty-mode-set! (current-input-port) #t #t #f #f 0)
   (shell-command "setterm -cursor on")
   (display ": ")
-  (display (eval (read))) ;; TODO currently useless, since we don't have access to the player, only to global variables
+  (display (eval (read)))
+  (read-char)
   (shell-command "setterm -cursor off")
   (tty-mode-set! (current-input-port) #t #t #t #f 0))

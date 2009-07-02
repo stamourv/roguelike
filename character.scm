@@ -100,6 +100,6 @@
 (define (damage attacker defender n) ; returns #t if the opponent dies
   (character-hp-set! defender (- (character-hp defender) n))
   (if (and (<= (character-hp defender) 0) (monster? defender)) ;; TODO the player cannot die for the moment
-      (begin (remove-monster (player-floor attacker) defender attacker)
+      (begin (remove-monster defender)
 	     #t)
       #f))

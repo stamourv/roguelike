@@ -47,7 +47,7 @@
     (player-current-floor-set! player player-floor)))
 
 
-(define (show-state player)
+(define (show-state)
   (cursor-notification-head)
   (display-notification (character-name player) "\n")
   (display-notification "level " (number->string (player-level player)) "\n")
@@ -75,7 +75,7 @@
 	     print-fun: (visibility-printer (player-view player))))
 
 
-(define (inventory player)
+(define (inventory)
   (cursor-home) ;; TODO also done in choice, abstract ?
   (clear-to-bottom)
   (display "Equipment:\n")
@@ -90,34 +90,35 @@
 	    (player-inventory player))
   (let loop ((c #f))
     (case c
-      ((#\e) (equip    player))
-      ((#\r) (take-off player))
+      ((#\e) (equip))
+      ((#\r) (take-off))
+      ((#\d) (drop))
       ((#\q) #f)
-      (else  (display "\ne: Equip\nr: Take off\nq: Cancel\n")
+      (else  (display "\ne: Equip\nr: Take off\nd: Drop\nq: Cancel\n")
 	     (loop (read-char)))))
   (clear-to-bottom))
-(define (pick-up player pos) ;; TODO pos can be useful if we can pick up at a distance
+(define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-get (player-map player) pos))
 	 (objects (cell-objects cell)))
-    (choice player objects
+    (choice objects
 	    (lambda (object)
 	      (remove-object cell object)
 	      (player-inventory-set! player
 				     (cons object (player-inventory player))))
 	    "There is nothing to pick up." "Pick up what?" "Picked up ")))
-(define (drop player)
+(define (drop)
   (let ((cell    (grid-get (player-map player) (character-pos player)))
 	(objects (player-inventory player)))
-    (choice player objects
+    (choice objects
 	    (lambda (object)
 	      (player-inventory-set! player (remove object objects))
 	      (add-object cell object))
 	    "You have nothing to drop." "Drop what?" "Dropped ")))
-(define (equip player)
+(define (equip)
   (let ((e       (character-equipment player))
 	(objects (filter (lambda (x) (equipable-object? x))
 			 (player-inventory player))))
-    (choice player objects
+    (choice objects
 	    (lambda (object)
 	      (let* ((place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
 				  ((shield?     object) 'off-arm)
@@ -141,10 +142,10 @@
 			    player
 			    (cons old (player-inventory player)))))))
 	    "You have nothing to equip." "Equip what?" "Equipped ")))
-(define (take-off player)
+(define (take-off)
   (let* ((e       (character-equipment player))
 	 (objects (filter identity (map car (equipment->list e)))))
-    (choice player objects
+    (choice objects
 	    (lambda (object)
 	      (cond ((weapon?     object)
 		     (equipment-main-arm-set! e #f))
@@ -156,7 +157,7 @@
 				     (cons object (player-inventory player))))
 	    "You have nothing to take off." "Take off what?" "Took off ")))
 
-(define (cmd-open player)
+(define (cmd-open)
   (clear-to-bottom)
   (display "Open in which direction? ")
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
@@ -164,7 +165,7 @@
 	(let* ((grid (player-map player))
 	       (cell (grid-get grid ((eval dir) (character-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
 	  (open grid cell player)))))
-(define (cmd-close player)
+(define (cmd-close)
   (clear-to-bottom)
   (display "Close in which direction? ")
   (let ((dir  (choose-direction))) ; evaluates to a function, or #f
@@ -173,7 +174,7 @@
 	       (cell (grid-get grid ((eval dir) (character-pos player)))))
 	  (close grid cell player)))))
 
-(define (stairs player)
+(define (stairs)
   (let ((cell (grid-get (player-map player) (character-pos player))))
     (let ((current      (player-current-floor         player))
 	  (before       (player-floors-before         player))
@@ -199,7 +200,7 @@
 			(player-floors-after-set! player (cdr after)))))
 	    (else (display "There are no stairs here.\n"))))))
 
-(define (kill player) ; insta-kill something TODO replace with a combat system
+(define (kill) ; insta-kill something TODO replace with a combat system
   (clear-to-bottom)
   (display "Kill in which direction? ")
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
@@ -212,8 +213,8 @@
 		      (display (string-append "Killed the "
 					      (character-name occ)
 					      "\n"))
-		      (remove-monster (player-floor player) occ player)))
+		      (remove-monster occ)))
 		(else (display "There is nothing to kill there.\n")))))))
 
-(define (add-experience player xp)
+(define (add-experience xp)
   (player-experience-set! player (+ (player-experience player) xp)))

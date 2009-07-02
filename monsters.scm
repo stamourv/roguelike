@@ -143,17 +143,17 @@
 	  (floor-monsters-set! floor floor-monsters)))))
 
 ;; removes a monster, usually when killed
-(define (remove-monster floor monster killer)
-  (let ((cell (grid-get (floor-map floor) (character-pos monster))))
+(define (remove-monster monster)
+  (let* ((floor (player-floor player))
+	 (cell  (grid-get (floor-map floor) (character-pos monster))))
     ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
     (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
 		       (character-equipment monster))
     ;; give experience
     (let* ((challenge     (monster-challenge-rating monster))
 	   (xp-same-level (* challenge 300))
-	   (delta-level   (- challenge (player-level killer))))
-      (add-experience killer
-		      (if (= delta-level 0)
+	   (delta-level   (- challenge (player-level player))))
+      (add-experience (if (= delta-level 0)
 			  xp-same-level
 			  (max 0
 			       (ceiling (* xp-same-level
