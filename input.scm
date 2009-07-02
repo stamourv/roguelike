@@ -45,10 +45,11 @@
       ((#\l) (look grid pos))
 
       ;; debugging
-      ((#\k) (kill player)) ; insta-kill a monster TODO replace with a combat system
+      ((#\k) (kill    player)) ; insta-kill a monster
+      ((#\:) (console player))
 
       ((#\space) (display "Nothing happened.\n")) ; noop TODO most roguelikes use .
-      ((#\q)     (quit))
+      ((#\q)     (quit player))
       (else      (invalid-command)))))
 
 (define (choose-direction)
@@ -86,3 +87,12 @@
 			  (display (string-append feedback
 						  (object-name object)
 						  ".\n")))))))))
+
+;; console from which arbitrary expressions can be evaluated
+(define (console player)
+  (tty-mode-set! (current-input-port) #t #t #f #f 0)
+  (shell-command "setterm -cursor on")
+  (display ": ")
+  (display (eval (read))) ;; TODO currently useless, since we don't have access to the player, only to global variables
+  (shell-command "setterm -cursor off")
+  (tty-mode-set! (current-input-port) #t #t #t #f 0))
