@@ -1,4 +1,8 @@
+;; needed in the included files
 (include "class.scm") ; CLOS-like object system ;; TODO sucks that I can't put it in ~~/lib
+(define-generic print) ; used for objects, cells, etc. ;; TODO receive bg and fg color ? or visibility ? as optional arguments, if methods can have them ?
+(define-method (print o) #\space)
+
 (include "utilities.scm") ;; TODO have a makefile, and separate compilation
 (include "grid.scm")
 (include "cell.scm")
@@ -40,6 +44,7 @@
     (with-output-to-file "hall-of-fame"
       (lambda () (display new)))
     new))
+
 
 (define (game)
   (let loop ()

@@ -6,7 +6,7 @@
   (slot: experience) ;; TODO have a way to show level and experience
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
-  (let ((player (make-player name (lambda () #\@) #f
+  (let ((player (make-player name #f
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     '(10) ; hit dice
 			     #f #f
@@ -18,6 +18,7 @@
     (init-hp player #t) ; the player gets maxed out hp
     (place-player player (new-player-floor 0))
     player))
+(define-method (print (p player)) #\@)
 
 
 (define-type player-floor

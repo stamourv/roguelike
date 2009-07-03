@@ -5,14 +5,14 @@
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
 ;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
-(define-macro (new-monster f name printer pos
+(define-macro (new-monster f name pos
 			   str dex con int wis cha
 			   hit-dice max-hp hp
 			   base-attack-bonus
 			   equipment
 			   challenge-rating behavior)
   (let ((m (gensym)))
-    `(let ((,m (,f ,name ,printer ,pos
+    `(let ((,m (,f ,name ,pos
 		   ,str ,dex ,con ,int ,wis ,cha
 		   ,hit-dice ,max-hp ,hp
 		   ,base-attack-bonus
@@ -21,9 +21,10 @@
        (init-hp ,m)
        ,m)))
 
+(define-class goblin (monster))
 (define (new-goblin)
-  (new-monster make-monster
-	       "goblin" (lambda () #\g) #f ;; TODO add ranged versions too
+  (new-monster make-goblin
+	       "goblin" #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6
 	       '(8) #f #f 1
 	       (new-equipment
@@ -31,41 +32,54 @@
 		off-arm:  (new-light-shield)
 		torso:    (new-leather-armor))
 	       1/3 (rush-behavior)))
+(define-method (print (m goblin)) #\g)
+
+(define-class kobold (monster))
 (define (new-kobold)
-  (new-monster make-monster
-	       "kobold" (lambda () #\k) #f
+  (new-monster make-kobold
+	       "kobold" #f
 	       9 13 10 10 9 8
 	       '(8) #f #f 1
 	       (new-equipment
 		main-arm: (new-shortspear)
 		torso:    (new-leather-armor))
 	       1/4 (rush-behavior)))
+(define-method (print (m kobold)) #\k)
+
+(define-class orc (monster))
 (define (new-orc)
-  (new-monster make-monster
-	       "orc" (lambda () #\o) #f
+  (new-monster make-orc
+	       "orc" #f
 	       17 11 12 8 7 6
 	       '(8) #f #f 1
 	       (new-equipment
 		main-arm: (new-greataxe)
 		torso:    (new-studded-leather-armor))
 	       1/2 (pursue-behavior)))
+(define-method (print (m orc)) #\o)
 
 
 (define-class animal (monster))
+
+(define-class bat (animal))
 (define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
-  (new-monster make-animal
-	       "bat" (lambda () #\b) #f
+  (new-monster make-bat
+	       "bat" #f
 	       1 15 10 2 14 4
 	       '(2) #f #f 0
 	       (new-equipment) ;; TODO will attack with the 1d4 unarmed strike, is that too much ? (actually, with the strength penalty, it's ridiculous)
 	       1/10 (rush-behavior)))
+(define-method (print (m bat)) #\b)
+
+(define-class rat (animal))
 (define (new-rat)
-  (new-monster make-animal
-	       "rat" (lambda () #\r) #f
+  (new-monster make-rat
+	       "rat" #f
 	       2 15 10 2 12 2
 	       '(2) #f #f 0
 	       (new-equipment) ;; TODO also has unarmed strike, should have a way to represent natural attacks, damage is ridiculous, once again
 	       1/8 (rush-behavior)))
+(define-method (print (m rat)) #\r)
 
 
 (define-class undead (monster)) ;; TODO add some

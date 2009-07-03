@@ -112,7 +112,7 @@
 ;; returns a printing function for show-grid
 (define (visibility-printer view)
   (lambda (pos cell)
-    (let ((c ((cell-printer cell))))
+    (let ((c (print cell)))
       (case (grid-get view pos)
 	((visible)
 	 (if (opaque-cell? cell)
@@ -126,7 +126,7 @@
 	 (cond ((cell-occupant cell) =>
 		(lambda (occ)
 		  (cell-occupant-set! cell #f)
-		  (display ((cell-printer cell)))
+		  (display (print cell))
 		  (cell-occupant-set! cell occ)))
 	       (else (display c)))) ; no enemy to hide
 	((unknown)

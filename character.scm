@@ -1,6 +1,5 @@
 (define-class character ()
   (slot: name)
-  (slot: printer)
   (slot: pos)
 
   (slot: str) ;; TODO have a profile type to store all that ?
