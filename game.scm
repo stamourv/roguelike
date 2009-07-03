@@ -24,11 +24,15 @@
 (for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
 
 ;; list of pairs (name . score), sorted by descending order of score
-(define hall-of-fame (car (read-all (open-file (list path:   "hall-of-fame"
-						     create: 'maybe)))))
-(define (update-hall-of-fame name score)
-  (let* ((l   (sort-list (cons (cons name score) hall-of-fame)
-			 (lambda (x y) (> (cdr x) (cdr y)))))
+(define hall-of-fame
+  (let ((hall (read-all (open-file (list path:   "hall-of-fame"
+					 create: 'maybe)))))
+    (if (null? hall)
+	'()
+	(car hall))))
+(define (update-hall-of-fame name score level floor)
+  (let* ((l   (sort-list (cons (list name score level floor) hall-of-fame)
+			 (lambda (x y) (> (cadr x) (cadr y))))) ;; TODO is same score, sort with the other factors
 	 (new (if (> (length l) 10) ; we keep the 10 best
 		  (remove-at-index l 10)
 		  l)))
@@ -59,18 +63,24 @@
 (define player (new-player (getenv "LOGNAME")))
 
 (define (quit)
-  (display "\nHall of fame:\n\n")
-  (let loop ((hall       (update-hall-of-fame
-			  (string->symbol (player-name player))
-			  (player-experience player)))
-	     (highlight? #t))
-    (if (not (null? hall))
-	(let ((current-game (cons (string->symbol (player-name player))
-				  (player-experience player))))
+  (display "\nHall of fame:\n\n") ;; TODO have in a function
+  (let* ((name         (string->symbol (player-name player)))
+	 (xp           (player-experience player))
+	 (level        (player-level player))
+	 (floor-no     (+ (floor-no (player-floor player)) 1))
+	 (current-game (list name xp level floor-no)))
+    (let loop ((hall (update-hall-of-fame name xp level floor-no))
+	       (highlight? #t))
+      (if (not (null? hall))
+	  (let ((head (car hall)))
 	    (terminal-print
-	     (string-append (symbol->string (caar hall))
+	     (string-append (symbol->string (car    head))
 			    ":\t" ;; TODO alignement will be messed up anyways
-			    (number->string (cdar hall))
+			    (number->string (cadr   head))
+			    "\tlevel "
+			    (number->string (caddr  head))
+			    "\tfloor "
+			    (number->string (cadddr head))
 			    "\n")
 	     bg: (if (and highlight? (equal? (car hall) current-game))
 		     'white
@@ -79,7 +89,7 @@
 		     'black
 		     'white))
 	    (loop (cdr hall)
-		  (and highlight? (not (equal? (car hall) current-game)))))))
+		  (and highlight? (not (equal? (car hall) current-game))))))))
   (display "\n")
   ;; restore tty
   (tty-mode-set! (current-input-port) #t #t #f #f 0)

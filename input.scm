@@ -59,7 +59,7 @@
 
 (define (choice objects f null-message question feedback)
   (if (null? objects)
-      (display null-message)
+      (display (string-append null-message "\n"))
       (begin   (cursor-home)
 	       (clear-to-bottom)
 	       (display question)

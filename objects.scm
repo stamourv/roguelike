@@ -61,7 +61,7 @@
 			     (string-append s
 					    (if +? " + " "")
 					    ; we don't need the Xd of Xd1
-					    (if (= (car l) 1) "" "1d") ;; TODO handle the case where we have '(6 6), print 2d6, not 1d6 + 1d6, to do that, sort the list of die (highest first), then count how many consecutive are identical. to have things like 2d6+2, use 2 1 sided die for the +2
+					    (if (= (car l) 1) "" "1d") ;; TODO handle the case where we have '(6 6), print 2d6, not 1d6 + 1d6, to do that, sort the list of dice (highest first), then count how many consecutive are identical. to have things like 2d6+2, use 2 1 sided dice for the +2
 					    (number->string (car l)))
 			     #t)))
 		 " "

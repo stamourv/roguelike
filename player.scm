@@ -10,7 +10,9 @@
 			     (lambda () #\@)
 			     #f
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
-			     12 ; hp TODO consider constitution, also for monsters
+			     '(10) ; hit dice
+			     #f
+			     #f
 			     1  ; base attack bonus
 			     (new-equipment main-arm: (new-club))
 			     '()
@@ -19,6 +21,7 @@
 			     1
 			     0
 			     '())))
+    (init-hp player #t) ; the player gets maxed out hp TODO do it that way ? ;; FOO also call it when a player levels up
     (place-player player (new-player-floor 0))
     player))
 

@@ -10,10 +10,24 @@
   (slot: wis)
   (slot: cha)
 
-  (slot: hp) ;; TODO have hp and max-hp
+  (slot: hit-dice)
+  (slot: max-hp)
+  (slot: hp)
+  
   (slot: base-attack-bonus)
 
   (slot: equipment))
+
+;; TODO abstract the hit dice rolling, maybe have a constructor for characters that could be called by player and monsters
+(define (init-hp character #!optional max?)
+  (let* ((hd (character-hit-dice character))
+	 (hp (max (+ (if max?
+			 (foldl + 0 hd)
+			 ((apply dice hd)))
+		     (get-attribute-bonus 'con character))
+		  1)))
+    (character-max-hp-set! character hp)
+    (character-hp-set!     character hp)))
 
 (define (get-attribute-bonus attr char)
   (quotient (- ((case attr
@@ -72,7 +86,7 @@
               ((walkable-cell? new-cell)
                (attack occ (cell-occupant (grid-get g new-pos))))))))
 
-(define (attack attacker defender) ;; TODO have a true combat system
+(define (attack attacker defender)
   (if (not (and (monster? attacker)
                 (monster? defender))) ; monsters don't attack other monsters
       (let ((roll ((dice 20))))
@@ -92,14 +106,14 @@
 	      (display (string-append " and deals " (number->string dmg)
 				      " damage"))
 	      (if killed?
-		  (display (string-append ", which kills the " ;; TODO different message if the player dies
+		  (display (string-append ", which kills the "
 					  (character-name defender))))
 	      (display ".\n"))
 	    (display " and missed.\n"))))) ;; TODO depending on by how much it missed, say different things
 
 (define (damage attacker defender n) ; returns #t if the opponent dies
   (character-hp-set! defender (- (character-hp defender) n))
-  (if (and (<= (character-hp defender) 0) (monster? defender)) ;; TODO the player cannot die for the moment
+  (if (and (<= (character-hp defender) 0) (monster? defender))
       (begin (remove-monster defender)
 	     #t)
       #f))
