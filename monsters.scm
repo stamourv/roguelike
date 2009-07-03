@@ -170,6 +170,9 @@
     ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
     (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
 		       (character-equipment monster))
+    ;; remove the monster
+    (cell-occupant-set! cell #f)
+    (floor-monsters-set! floor (remove monster (floor-monsters floor)))
     ;; give experience
     (let* ((challenge     (monster-challenge-rating monster))
 	   (xp-same-level (* challenge 300))
@@ -178,7 +181,4 @@
 			  xp-same-level
 			  (max 0
 			       (ceiling (* xp-same-level
-					   (+ 1 (* 1/3 delta-level)))))))) ;; TODO tweak
-    ;; remove the monster
-    (cell-occupant-set! cell #f)
-    (floor-monsters-set! floor (remove monster (floor-monsters floor)))))
+					   (+ 1 (* 1/3 delta-level)))))))))) ;; TODO tweak

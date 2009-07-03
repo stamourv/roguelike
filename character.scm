@@ -101,19 +101,19 @@
                                        (character-name defender)))))
         (if (>= (+ roll (get-attack-bonus attacker))
 		(get-armor-class defender))
-	    (let* ((dmg     (max (get-damage attacker) 1)) ;; TODO could deal 0 damage ?
-		   (killed? (damage attacker defender dmg)))
-	      (display (string-append " and deals " (number->string dmg)
-				      " damage"))
-	      (if killed?
-		  (display (string-append ", which kills the "
-					  (character-name defender))))
-	      (display ".\n"))
+	    (damage attacker defender)
 	    (display " and missed.\n"))))) ;; TODO depending on by how much it missed, say different things
 
-(define (damage attacker defender n) ; returns #t if the opponent dies
-  (character-hp-set! defender (- (character-hp defender) n))
-  (if (and (<= (character-hp defender) 0) (monster? defender))
-      (begin (remove-monster defender)
-	     #t)
-      #f))
+(define (damage attacker defender) ; returns #t if the opponent dies
+  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
+    (display (string-append " and deals " (number->string dmg)
+			    " damage"))
+    (character-hp-set! defender (- (character-hp defender) dmg))
+    (if (and (<= (character-hp defender) 0) (monster? defender))
+	(begin (display (string-append ", which kills the "
+				       (character-name defender)
+				       ".\n"))
+	       (remove-monster defender)
+	       #t)
+	(begin (display ".\n")
+	       #f))))

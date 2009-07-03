@@ -6,22 +6,16 @@
   (slot: experience) ;; TODO have a way to show level and experience
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
-  (let ((player (make-player name
-			     (lambda () #\@)
-			     #f
+  (let ((player (make-player name (lambda () #\@) #f
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     '(10) ; hit dice
-			     #f
-			     #f
+			     #f #f
 			     1  ; base attack bonus
 			     (new-equipment main-arm: (new-club))
-			     '()
-			     #f
-			     '()
-			     1
-			     0
+			     '() #f '()
+			     1 0
 			     '())))
-    (init-hp player #t) ; the player gets maxed out hp TODO do it that way ? ;; FOO also call it when a player levels up
+    (init-hp player #t) ; the player gets maxed out hp
     (place-player player (new-player-floor 0))
     player))
 
@@ -220,4 +214,17 @@
 		(else (display "There is nothing to kill there.\n")))))))
 
 (define (add-experience xp)
-  (player-experience-set! player (+ (player-experience player) xp)))
+  (let ((total (+ (player-experience player) xp))
+	(level (player-level player)))
+    (player-experience-set! player total)
+    (if (>= total (* 1000 (/ (* level (+ level 1)) 2))) ; 1000, 3000, 6000, ...
+	(level-up))))
+
+(define (level-up) ;; TODO have attribute upgrades, etc
+  (display "Level up!\n")
+  (player-level-set! player (+ (player-level player) 1))
+  (let ((hd (character-hit-dice player)))
+    (character-hit-dice-set! player (cons (car hd) hd))
+    (init-hp player #t))
+  (character-base-attack-bonus-set!
+   player (+ (character-base-attack-bonus player) 1)))
