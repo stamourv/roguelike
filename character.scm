@@ -30,7 +30,12 @@
 (define (get-attribute-bonus attr char)
   (quotient (- ((case attr
                   ((str) character-str)
-                  ((dex) character-dex) ;; TODO limit with the armor
+                  ((dex) (lambda (char)
+			   (let ((dex (character-dex char))
+				 (max (max-dex-bonus
+				       (equipment-torso
+					(character-equipment char)))))
+			     (if max (min max dex) dex))))
                   ((con) character-con)
                   ((int) character-int)
                   ((wis) character-wis)
@@ -65,7 +70,7 @@
 (define (get-armor-class c)
   (let ((e (character-equipment c)))
     (+ 10
-       (get-attribute-bonus 'dex c) ;; TODO only up to what the armor permits
+       (get-attribute-bonus 'dex c)
        (get-ac (equipment-torso   e))
        (get-ac (equipment-off-arm e))))) ;; TODO add more
 

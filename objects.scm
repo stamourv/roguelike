@@ -15,6 +15,8 @@
 
 (define-generic get-ac)
 (define-method (get-ac o) 0)
+(define-generic max-dex-bonus)
+(define-method (max-dex-bonus o) #f)
 
 (define-class armor (equipable-object)
   (slot: ac))
@@ -25,12 +27,14 @@
 		 (number->string (armor-ac o))
 		 ")"))
 
-(define-class body-armor (armor)) ;; TODO have light, medium and heavy armor TODO have different display characters for each type of armor ?
+(define-class body-armor (armor)
+  (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor TODO have different display characters for each type of armor ?
+(define-method (max-dex-bonus (o body-armor)) (body-armor-max-dex-bonus o))
 (define-method (print (o body-armor)) #\&)
 (define (new-leather-armor)
-  (make-body-armor "leather armor"         10 2))
+  (make-body-armor "leather armor"         10 2 6))
 (define (new-studded-leather-armor)
-  (make-body-armor "studded leather armor" 25 3))
+  (make-body-armor "studded leather armor" 25 3 5))
 
 (define-class shield (armor))
 (define-method (print (o shield)) #\0)
