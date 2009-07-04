@@ -17,7 +17,6 @@
 
   (slot: equipment))
 
-;; TODO abstract the hit dice rolling, maybe have a constructor for characters that could be called by player and monsters
 (define (init-hp character #!optional max?)
   (let* ((hd (character-hit-dice character))
 	 (hp (max (+ (if max?
@@ -31,7 +30,7 @@
 (define (get-attribute-bonus attr char)
   (quotient (- ((case attr
                   ((str) character-str)
-                  ((dex) character-dex)
+                  ((dex) character-dex) ;; TODO limit with the armor
                   ((con) character-con)
                   ((int) character-int)
                   ((wis) character-wis)
@@ -40,9 +39,12 @@
                10)
             2))
 
-(define (get-attack-bonus c) ;; TODO also have it for ranged
+(define (get-melee-attack-bonus  c)
   (+ (character-base-attack-bonus c)
      (get-attribute-bonus 'str c)))
+(define (get-ranged-attack-bonus c)
+  (+ (character-base-attack-bonus c)
+     (get-attribute-bonus 'dex c)))
 
 (define-type equipment
   main-arm
@@ -75,15 +77,15 @@
   ;; moves the occupant of pos to new-pos, and returns the position of the
   ;; occupant (the new one or the original, if the move fails)
   (if (inside-grid? g new-pos)
-      (let ((cell     (grid-get g (character-pos occ)))
-            (new-cell (grid-get g new-pos)))
+      (let ((cell     (grid-ref g (character-pos occ)))
+            (new-cell (grid-ref g new-pos)))
         (cond ((free-cell? new-cell)
                (cell-occupant-set! cell     #f)
                (cell-occupant-set! new-cell occ)
                (character-pos-set! occ new-pos))
               ;; walkable, but occupied already, attack whoever is there
               ((walkable-cell? new-cell)
-               (attack occ (cell-occupant (grid-get g new-pos))))))))
+               (attack occ (cell-occupant (grid-ref g new-pos))))))))
 
 (define (attack attacker defender)
   (if (not (and (monster? attacker)
@@ -98,7 +100,7 @@
                                        (character-name attacker)
                                        " attacks " ;; TODO have everything either in the past tense or in the present tense
                                        (character-name defender)))))
-        (if (>= (+ roll (get-attack-bonus attacker))
+        (if (>= (+ roll (get-melee-attack-bonus attacker))
 		(get-armor-class defender))
 	    (damage attacker defender)
 	    (display " and missed.\n"))))) ;; TODO depending on by how much it missed, say different things

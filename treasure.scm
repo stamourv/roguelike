@@ -64,7 +64,7 @@
 			  ;; no one there, not in a corridor, and not in front
 			  ;; of a door
 			  (and
-			   (not (cell-occupant (grid-get (floor-map floor)
+			   (not (cell-occupant (grid-ref (floor-map floor)
 							cell)))
 			   (not (eq? 'corridor
 				     (room-type (get-room

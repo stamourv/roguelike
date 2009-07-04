@@ -62,7 +62,6 @@
 (define-method (close grid x closer) (display "I can't close that.\n"))
 
 
-;; TODO other symbols ? silly for horizontal doors. if wall ever end up all being #, use - and |, or maybe for now use $ and _ for vertical doors and _ and something else for horizontal TODO see on the web what other people use
 (define-class door (cell)
   (slot: open?))
 (define (new-door) (make-door '() #f #f))

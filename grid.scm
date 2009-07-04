@@ -11,7 +11,7 @@
 (define (copy-point p) (cons (car p) (cdr p)))
 
 ;; vector of cells
-(define-type grid ;; TODO maybe try a hash table, to see if it's faster
+(define-type grid
   height
   width
   cells)
@@ -27,7 +27,7 @@
 ;; in all cases, x is the row, y is the column
 (define (pos->index g pos)
   (+ (* (point-x pos) (grid-width g)) (point-y pos)))
-(define (grid-get  g pos)   (vector-ref  (grid-cells g) (pos->index g pos))) ;; TODO call grid-ref ?
+(define (grid-ref  g pos)   (vector-ref  (grid-cells g) (pos->index g pos)))
 (define (grid-set! g pos v) (vector-set! (grid-cells g) (pos->index g pos) v))
 
 (define (inside-grid? g pos)
@@ -91,13 +91,13 @@
 ;; given a wall, returns the cells that are either perpendicular or
 ;; parrallel to the direction of the wall
 (define (wall-perpendicular g pos)
-  (let ((wall (grid-get g pos)))
+  (let ((wall (grid-ref g pos)))
     ((cond ((horizontal-wall? wall) up-down)
 	   ((vertical-wall?   wall) left-right)
 	   (else                    (lambda (x) '()))) ; not an appropriate wall
      pos)))
 (define (wall-parrallel     g pos)
-  (let ((wall (grid-get g pos)))
+  (let ((wall (grid-ref g pos)))
     ((cond ((horizontal-wall? wall) left-right)
 	   ((vertical-wall?   wall) up-down)
 	   (else                    (lambda (x) '()))) ; not an appropriate wall
@@ -107,12 +107,12 @@
   (foldl (lambda (acc new)
 	   (or acc
 	       (and (inside-grid? g new)
-		    (door? (grid-get g new)))))
+		    (door? (grid-ref g new)))))
 	 #f (four-directions pos)))
 
 (define (grid-find g p)
   (let ((cell #f))
-    (grid-for-each (lambda (pos) (if (p (grid-get g pos)) (set! cell pos)))
+    (grid-for-each (lambda (pos) (if (p (grid-ref g pos)) (set! cell pos)))
 		   g)
     cell))
 
@@ -134,7 +134,7 @@
    (lambda (pos)
      (if (and border? (= (point-y pos) 0)) ; beginning of line
 	 (display "|"))
-     (print-fun pos (grid-get g pos))
+     (print-fun pos (grid-ref g pos))
      (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
 	 (begin (if border? (display "|"))
 		(display "\n"))))

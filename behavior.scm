@@ -46,7 +46,7 @@
 	 (costs (empty-grid
 		 height width
 		 cell-fun: (lambda (pos)
-			     (cons (if (walkable-cell? (grid-get g pos))
+			     (cons (if (walkable-cell? (grid-ref g pos))
 				       maximum
 				       #f) ; we can't even get there
 				   #f)))))
@@ -56,13 +56,13 @@
 	  ;; we have found a path, we return its first step
 	  (let loop ((pos  b)
 		     (prev #f))
-	    (let ((parent (cdr (grid-get costs pos))))
+	    (let ((parent (cdr (grid-ref costs pos))))
 	      (if parent
 		  (loop parent pos)
 		  prev)))
 	  (let* ((next (foldl (lambda (best new) ; least expensive neighbor
-				(if (< (car (grid-get costs new))
-				       (car (grid-get costs best)))
+				(if (< (car (grid-ref costs new))
+				       (car (grid-ref costs best)))
 				    new
 				    best))
 			      (car queue)
@@ -73,10 +73,10 @@
 		   (lambda (pos)
 		     (if (inside-grid? g pos)
 			 (cond
-			  ((car (grid-get costs pos)) =>
+			  ((car (grid-ref costs pos)) =>
 			   (lambda (cost)
 			     (let ((new-cost
-				    (+ (car (grid-get costs next))
+				    (+ (car (grid-ref costs next))
 				       ;; heuristic cost
 				       (distance pos b)
 				       ;; if we would pass through another
@@ -84,7 +84,7 @@
 				       ;; of turns it has been stuck there, to
 				       ;; avoid congestion
 				       (let ((occ (cell-occupant
-						   (grid-get g pos))))
+						   (grid-ref g pos))))
 					 (if (and occ (monster? occ))
 					     (* (behavior-nb-turns-idle
 						 (monster-behavior occ))

@@ -165,7 +165,7 @@
 		  (if (not (null? monsters))
 		      (let ((cell (random-element space))
 			    (mon  (car monsters)))
-			(cell-occupant-set! (grid-get (floor-map floor) cell)
+			(cell-occupant-set! (grid-ref (floor-map floor) cell)
 					    mon)
 			(character-pos-set! mon cell)
 			(loop2 (cdr monsters)
@@ -180,7 +180,7 @@
 ;; removes a monster, usually when killed
 (define (remove-monster monster)
   (let* ((floor (player-floor player))
-	 (cell  (grid-get (floor-map floor) (character-pos monster))))
+	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
     ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
     (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
 		       (character-equipment monster))

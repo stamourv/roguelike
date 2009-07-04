@@ -18,14 +18,14 @@
 (include "input.scm")
 (include "help.scm")
 
-(define debug #f) ;; TODO find a better way
+(define debug #f)
 
 (random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)
 (shell-command "setterm -cursor off")
 ;; clear the screen. ugly, but the clear terminal code does not seem to be
 ;; supported by gambit
-(for-each (lambda (dummy) (display "\n")) (iota 50)) ;; TODO use window size
+(for-each (lambda (dummy) (display "\n")) (iota 50))
 
 ;; list of pairs (name . score), sorted by descending order of score
 (define hall-of-fame
@@ -36,7 +36,7 @@
 	(car hall))))
 (define (update-hall-of-fame name score level floor)
   (let* ((l   (sort-list (cons (list name score level floor) hall-of-fame)
-			 (lambda (x y) (> (cadr x) (cadr y))))) ;; TODO is same score, sort with the other factors
+			 (lambda (x y) (> (cadr x) (cadr y))))) ;; TODO if same score, sort with the other factors
 	 (new (if (> (length l) 10) ; we keep the 10 best
 		  (remove-at-index l 10)
 		  l)))
@@ -48,10 +48,7 @@
 
 (define (game)
   (let loop ()
-    (cond (#f ;; TODO winning condition ?
-	   (display "You win!\n") ;; TODO have something more dramatic
-	   (quit))
-	  ((<= (character-hp player) 0)
+    (cond ((<= (character-hp player) 0)
 	   (display "You die.\n")
 	   (quit))
 	  (else (let ((floor (player-floor player)))
@@ -99,11 +96,6 @@
   ;; restore tty
   (tty-mode-set! (current-input-port) #t #t #f #f 0)
   (shell-command "setterm -cursor on")
-;;   (profile-stop!) ;; TODO PROFILING
-;;   (write-profile-report "profiling")
   (exit))
-
-;; (load "~/src/scheme/statprof/statprof.scm") ;; TODO PROFILING
-;; (profile-start!)
 
 (if (not debug) (game))

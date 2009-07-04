@@ -40,7 +40,7 @@
 	 player player-floor
 	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
   (let ((map (floor-map (player-floor-floor player-floor))))
-    (cell-occupant-set!        (grid-get map start-pos) player)
+    (cell-occupant-set!        (grid-ref map start-pos) player)
     (character-pos-set!        player start-pos)
     (player-current-floor-set! player player-floor)))
 
@@ -96,7 +96,7 @@
 	     (loop (read-char)))))
   (clear-to-bottom))
 (define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
-  (let* ((cell    (grid-get (player-map player) pos))
+  (let* ((cell    (grid-ref (player-map player) pos))
 	 (objects (cell-objects cell)))
     (choice objects
 	    (lambda (object)
@@ -105,7 +105,7 @@
 				     (cons object (player-inventory player))))
 	    "There is nothing to pick up." "Pick up what?" "Picked up ")))
 (define (drop)
-  (let ((cell    (grid-get (player-map player) (character-pos player)))
+  (let ((cell    (grid-ref (player-map player) (character-pos player)))
 	(objects (player-inventory player)))
     (choice objects
 	    (lambda (object)
@@ -161,7 +161,7 @@
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-get grid ((eval dir) (character-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
+	       (cell (grid-ref grid ((eval dir) (character-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
 	  (open grid cell player)))))
 (define (cmd-close)
   (clear-to-bottom)
@@ -169,11 +169,11 @@
   (let ((dir  (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-get grid ((eval dir) (character-pos player)))))
+	       (cell (grid-ref grid ((eval dir) (character-pos player)))))
 	  (close grid cell player)))))
 
 (define (stairs)
-  (let ((cell (grid-get (player-map player) (character-pos player))))
+  (let ((cell (grid-ref (player-map player) (character-pos player))))
     (let ((current      (player-current-floor         player))
 	  (before       (player-floors-before         player))
 	  (after        (player-floors-after          player)))
@@ -205,7 +205,7 @@
     (if dir
 	(let* ((pos  ((eval dir) (character-pos player)))
 	       (grid (player-map player))
-	       (cell (grid-get grid pos)))
+	       (cell (grid-ref grid pos)))
 	  (cond ((cell-occupant cell)
 		 => (lambda (occ)
 		      (display (string-append "Killed the "

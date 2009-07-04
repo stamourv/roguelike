@@ -27,22 +27,15 @@
 	     (room-connected-to-set! b (cons a (room-connected-to b))))))
 
 
-(define (generate-floor no #!optional (stairs-down? #t)
-			#!key (trace? #f) (step? #f))
-  ;; TODO have a limit linked to the size of the screen, or scroll ? if scrolling, query the terminal size
+(define (generate-floor no #!optional (stairs-down? #t) (step? #f))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
-  (let* ((level-height 18) ;; TODO was 20, but needed more room for text (espescially with multiple monsters attacking
+  (let* ((level-height 18)
 	 (level-width  60)
 	 (level        (empty-grid level-height level-width
 				   cell-fun: (lambda (pos) (new-solid-wall))))
 	 (new-floor (make-floor no level '() #f #f '() #f)))
-    
-    (define trace 0) ;; to trace the generation of the dungeon
-    (define (trace-cell)
-      (let ((x (number->string (modulo trace 10))))
-	(make-walkable-cell (lambda () x) #f #f)))
-    
+        
     (define (add-rectangle pos height width direction)
       ;; height and width consider a wall of one cell wide on each side
       (let* ((x     (point-x pos))
@@ -68,7 +61,7 @@
 		       (let ((p (new-point (+ x pos-x) (+ y pos-y))))
 			 (and acc
 			      (inside-grid? level p)
-			      (wall? (grid-get level p)))))
+			      (wall? (grid-ref level p)))))
 		     #t (iota width))))
 	     #t (iota height))
 	    
@@ -80,7 +73,7 @@
 		   (grid-set!
 		    level p
 		    ;; find out the appropriate cell type
-		    ((cond ((or (corner-wall? (grid-get level p))
+		    ((cond ((or (corner-wall? (grid-ref level p))
 				(and (or (= x 0) (= x (- height 1)))
 				     (or (= y 0) (= y (- width 1)))))
 			    ;; one of the four corners
@@ -95,17 +88,11 @@
 			    new-vertical-wall)
 			   ;; inside of the room
 			   (else (set! inside (cons p inside))
-				 (if trace?
-				     trace-cell
-				     new-empty-cell)))))))
+				 new-empty-cell))))))
 	       level
 	       start-x:  pos-x  start-y:  pos-y
 	       length-x: height length-y: width)
 
-	      (if trace?
-		  (begin (pp (list trace pos: (point-x pos) (point-y pos)
-				   dir: direction height: height width: width))
-			 (set! trace (+ trace 1))))
 	      (if step?
 		  (begin (show-grid level)
 			 (read-line)))
@@ -196,7 +183,7 @@
 		(cond ((null? around) ; walls all around
 		       (random-element '(north south west east)))
 		      ((and (inside-grid? level (car around))
-			    (walkable-cell? (grid-get level (car around))))
+			    (walkable-cell? (grid-ref level (car around))))
 		       ;; there is a free space in that direction, we must
 		       ;; expand the opposite way
 		       (car directions))
@@ -236,7 +223,6 @@
 	      (map (lambda (x) (cons x (car type)))
 		   (repeat weight (room-walls res))))
 	    #f)))
-    ;; TODO problem : the presence of + on a straight wall reveals the structure on the other side of the wall, maybe use # for all wall, but would be ugly
 
     ;; generate features
     (let loop ((n 500)
@@ -267,15 +253,15 @@
 	      (direction #f))
 	 ;; we must either have wall up and down, and free space left and
 	 ;; right, or the other way around
-	 (if (and (not (door?      (grid-get level pos))) ; not already a door
-		  (not (stairs-up? (grid-get level pos)))
+	 (if (and (not (door?      (grid-ref level pos))) ; not already a door
+		  (not (stairs-up? (grid-ref level pos)))
 		  (foldl (lambda (acc cell)
 			   (and acc (inside-grid? level cell)))
 			 #t around)
-		  (let ((c-up    (grid-get level up))
-			(c-down  (grid-get level down))
-			(c-left  (grid-get level left))
-			(c-right (grid-get level right)))
+		  (let ((c-up    (grid-ref level up))
+			(c-down  (grid-ref level down))
+			(c-left  (grid-ref level left))
+			(c-right (grid-ref level right)))
 		    (define (connection-check a b)
 		      (let* ((rooms (floor-rooms new-floor))
 			     (a     (get-room a rooms))
@@ -313,7 +299,7 @@
 		  (= (length neighbors) 1))
 	     (let* ((walls        (room-walls room))
 		    (current-door (find (lambda (pos)
-					  (door? (grid-get level pos)))
+					  (door? (grid-ref level pos)))
 					walls))
 		    (door-candidate
 		     (foldl
@@ -337,17 +323,17 @@
 				 (lambda (acc new)
 				   (and acc
 					(inside-grid? level new)
-					(walkable-cell? (grid-get level new))))
+					(walkable-cell? (grid-ref level new))))
 				 #t sides))))
 		       walls))))
 	       (if (not (eq? door-candidate current-door))
-		   (add-door door-candidate)))))) ;; TODO do it only with probability p ?
+		   (add-door door-candidate))))))
      (floor-rooms new-floor))
 
     (floor-walkable-cells-set!
      new-floor
      (filter (lambda (pos)
-	       (walkable-cell? (grid-get (floor-map new-floor) pos)))
+	       (walkable-cell? (grid-ref (floor-map new-floor) pos)))
 	     (apply append
 		    (map room-cells (floor-rooms new-floor)))))
     

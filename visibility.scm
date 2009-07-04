@@ -32,7 +32,7 @@
 		  (error (+ error delta-err)))
 	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
 	      (cond ((equal? pos dest)          #t) ; we see it
-		    ((and (opaque-cell? (grid-get g pos))
+		    ((and (opaque-cell? (grid-ref g pos))
 			  (not (equal? pos start))) #f) ; we hit an obstacle
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
@@ -45,7 +45,7 @@
   (let ((view (player-view player))
 	(pos  (character-pos player)))
     (grid-for-each (lambda (pos)
-		     (if (eq? (grid-get view pos) 'visible)
+		     (if (eq? (grid-ref view pos) 'visible)
 			 (grid-set! view pos 'visited)))
 		   view)
 
@@ -79,16 +79,16 @@
 	(if (not (null? queue))
 	    (let ((new (car queue)))
 	      (if (and (inside-grid? g new)
-		       (not (eq? (grid-get view new) 'visible)) ; already seen
+		       (not (eq? (grid-ref view new) 'visible)) ; already seen
 		       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
 		       ;; do we have line of sight ? helps restrict the
 		       ;; visibility down to a reasonable level
 		       ;; note: line of sight is not necessary to see walls,
 		       ;; this gives better results
-		       (or (opaque-cell? (grid-get g new))
+		       (or (opaque-cell? (grid-ref g new))
 			   (line-of-sight? g pos new)))
 		  (begin (grid-set! view new 'visible) ; mark as lit
-			 (if (not (opaque-cell? (grid-get g new)))
+			 (if (not (opaque-cell? (grid-ref g new)))
 			     (loop (append (cdr queue)
 					   (pass-light pos new))))))
 	      (loop (cdr queue)))))
@@ -98,13 +98,13 @@
       ;; to solve the problem, any wall next to a visible square is visible
       (grid-for-each
        (lambda (pos)
-	 (if (and (opaque-cell? (grid-get g pos))
-		  (eq? (grid-get view pos) 'unknown)
+	 (if (and (opaque-cell? (grid-ref g pos))
+		  (eq? (grid-ref view pos) 'unknown)
 		  (foldl (lambda (acc new)
 			   (or acc
 			       (and (inside-grid? g new)
-				    (not (opaque-cell? (grid-get g new)))
-				    (eq? (grid-get view new) 'visible))))
+				    (not (opaque-cell? (grid-ref g new)))
+				    (eq? (grid-ref view new) 'visible))))
 			 #f (eight-directions pos)))
 	     (grid-set! view pos 'visited)))
        view))))
@@ -113,7 +113,7 @@
 (define (visibility-printer view)
   (lambda (pos cell)
     (let ((c (print cell)))
-      (case (grid-get view pos)
+      (case (grid-ref view pos)
 	((visible)
 	 (if (opaque-cell? cell)
 	     (display c)
