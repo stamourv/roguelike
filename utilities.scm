@@ -139,3 +139,34 @@
         (merge l1 l2))))
 
   (mergesort l))
+
+(define (group-by-identical l)
+  (let loop ((l   (sort-list l <))
+	     (acc '())
+	     (res '()))
+    (if (null? l)
+	(cons acc res)
+	(if (or (null? acc)
+		(equal? (car l) (car acc)))
+	    (loop (cdr l)
+		  (cons (car l) acc)
+		  res)
+	    (loop (cdr l)
+		  (list (car l))
+		  (cons acc res))))))
+
+(define (show-dice l)
+  (let loop ((l  (group-by-identical l))
+	     (s  "")
+	     (+? #f))
+    (if (null? l)
+	s
+	(loop (cdr l)
+	      (string-append
+	       s
+	       (if +? " + " "")
+	       (number->string (length (car l)))
+	       (if (= (caar l) 1) ; we don't need the d1 of Xd1
+		   ""
+		   (string-append "d" (number->string (caar l)))))
+	      #t))))

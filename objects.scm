@@ -6,10 +6,6 @@
 (define-method (object-info o) (object-name o))
 
 
-(define-class treasure (object)) ;; TODO more
-(define (new-treasure name) (make-treasure name 0 (lambda () #\T)))
-
-
 (define-class equipable-object (object))
 
 
@@ -28,7 +24,7 @@
 		 ")"))
 
 (define-class body-armor (armor)
-  (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor TODO have different display characters for each type of armor ?
+  (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor and have different display characters for each type of armor ?
 (define-method (max-dex-bonus (o body-armor)) (body-armor-max-dex-bonus o))
 (define-method (print (o body-armor)) #\&)
 (define (new-leather-armor)
@@ -52,18 +48,7 @@
 (define-method (object-info (o weapon))
   (string-append (object-name o)
 		 " (damage: "
-		 (let loop ((l  (weapon-damage-dice o))
-			    (s  "")
-			    (+? #f))
-		   (if (null? l)
-		       s
-		       (loop (cdr l)
-			     (string-append s
-					    (if +? " + " "")
-					    ; we don't need the Xd of Xd1
-					    (if (= (car l) 1) "" "1d") ;; TODO handle the case where we have '(6 6), print 2d6, not 1d6 + 1d6, to do that, sort the list of dice (highest first), then count how many consecutive are identical. to have things like 2d6+2, use 2 1 sided dice for the +2
-					    (number->string (car l)))
-			     #t)))
+		 (show-dice (weapon-damage-dice o))
 		 " "
 		 (symbol->string (weapon-damage-type o))
 		 ")"))
