@@ -77,7 +77,7 @@
 	  (let ((head (car hall)))
 	    (terminal-print
 	     (string-append (symbol->string (car    head))
-			    ":\t" ;; TODO alignement will be messed up anyways
+			    ":\t" ;; TODO alignment will be messed up anyways
 			    (number->string (cadr   head))
 			    "\tlevel "
 			    (number->string (caddr  head))

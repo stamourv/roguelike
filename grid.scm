@@ -78,7 +78,7 @@
   ;; same, but with diagonals
   (append (four-directions pos)
 	  (let ((x (point-x pos))
-		(y (point-y pos))) ;; TODO maybe have functions for these 4 other directions too ?
+		(y (point-y pos)))
 	    (list (new-point (- x 1) (- y 1)) (new-point (+ x 1) (- y 1))
 		  (new-point (- x 1) (+ y 1)) (new-point (+ x 1) (+ y 1))))))
 
@@ -141,24 +141,6 @@
    g)
   (draw-border-line))
 
-(define (string->grid s)
-  ;; the string must obviously give a rectangular shape
-  (let* ((rows (split-string s #\newline))
-	 (x    (length rows))
-	 (y    (string-length (car rows)))
-	 (g    (empty-grid x y)))
-    (grid-for-each (lambda (pos)
-		     (let ((x (point-x pos)) (y (point-y pos)))
-		       (grid-set! g pos
-				  (case (string-ref (list-ref rows x) y)
-				    ((#\ ) (new-empty-cell))
-				    ((#\+) (new-corner-wall))
-				    ((#\|) (new-vertical-wall))
-				    ((#\-) (new-horizontal-wall))
-				    ((#\#) (new-solid-wall)))))) ;; TODO add as we add
-		   g)
-    g))
-
 (define (set-cursor-on-grid grid pos)
   (let ((x (point-x pos))
 	(y (point-y pos)))
@@ -167,7 +149,7 @@
 	(cursor-position-set! (+ x 2) (+ y 2))
 	#f)))
 
-(define (octant c p) ;; TODO might have bugs, an algorithm built on top of it (the old shadow casting) failed, so it might be because of this (algorithm now in garbage)
+(define (octant c p) ;; TODO might have bugs, an algorithm built on top of it (the old shadow casting) failed, so it might be because of this (algorithm now in garbage) (not used for now)
   ;; returns in which octant p is with c as the center
   ;; octants are n, ne, e, se, s, sw, w, nw (or c if we are on the center)
   (let ((c-x (point-x c))

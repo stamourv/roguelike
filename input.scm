@@ -1,7 +1,8 @@
 (define (invalid-command) (display "Invalid command."))
 
 (define (which-direction?)
-  (read-char) ; should be [ TODO check
+  (if (not (eq? (read-char) #\[))
+      (invalid-command))
   (case (read-char)
     ((#\A) 'up)
     ((#\B) 'down)
@@ -48,7 +49,7 @@
       ((#\k) (kill)) ; insta-kill a monster
       ((#\:) (console))
 
-      ((#\space) (display "Nothing happened.\n")) ; noop TODO most roguelikes use .
+      ((#\space) (display "Nothing happens.\n")) ; noop
       ((#\q)     (quit))
       (else      (invalid-command)))))
 

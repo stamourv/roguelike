@@ -13,7 +13,7 @@
 
 (define (look grid pos) ;; TODO have a moveable cursor, and when enter is pressed, display the info of the location, pos is starting position of the cursor, if final cursor position is outside visibility, say I can't see there
   ;; TODO use the choose-direction command to control the cursor
-  (shell-command "setterm -cursor on") ;; TODO maybe just be able to look at immediate squares, and just use choose-direction, but we might want to identify something before we get closer (a monster, for example)
+  (shell-command "setterm -cursor on") ;; TODO maybe just be able to look at immediate squares, and just use direction-command, but we might want to identify something before we get closer (a monster, for example)
   (set-cursor-on-grid grid pos)
   (read-char) ;; TODO implement the rest, and it seems that pressing l then an arrow shows some weird text in the background about terminal options
   (shell-command "setterm -cursor ooff"))

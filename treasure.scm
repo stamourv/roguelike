@@ -55,29 +55,16 @@
 
     (if (foldl (lambda (acc new) (and acc (null? (cdr new))))
 	       #t possible-treasure)
-	(error "no possible treasure for this level")) ;; TODO make sure this can't happen
+	(error "no possible treasure for this level"))
     
     ;; place the chests randomly on the map
-    (let loop ((chests chests)
-	       (spaces (filter ;; TODO copied from stairs down placement code, abstract
-			(lambda (cell)
-			  ;; no one there, not in a corridor, and not in front
-			  ;; of a door
-			  (and
-			   (not (cell-occupant (grid-ref (floor-map floor)
-							cell)))
-			   (not (eq? 'corridor
-				     (room-type (get-room
-						 cell
-						 (floor-rooms floor)))))
-			   (not (next-to-a-door? (floor-map floor) cell))))
-			(floor-walkable-cells floor))))
+    (let loop ((chests chests))
       (if (not (null? chests))
-	  (let ((pos (random-element spaces)))
+	  (let ((pos (random-free-position floor)))
 	    (grid-set! (floor-map floor) pos (car chests))
 	    (floor-walkable-cells-set!
 	     floor (remove pos (floor-walkable-cells floor)))
-	    (loop (cdr chests) (remove pos spaces)))))
+	    (loop (cdr chests)))))
     
     ;; fill the chests
     (let loop ((pts treasure-points))

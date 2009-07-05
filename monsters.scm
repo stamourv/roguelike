@@ -28,9 +28,9 @@
 	       11 13 12 10 9 6
 	       '(8) #f #f 1
 	       (new-equipment
-		main-arm: (new-club)
-		off-arm:  (new-light-shield)
-		torso:    (new-leather-armor))
+		main-hand: (new-club)
+		off-hand:  (new-light-shield)
+		torso:     (new-leather-armor))
 	       1/3 (rush-behavior)))
 (define-method (print (m goblin)) #\g)
 
@@ -41,8 +41,8 @@
 	       9 13 10 10 9 8
 	       '(8) #f #f 1
 	       (new-equipment
-		main-arm: (new-shortspear)
-		torso:    (new-leather-armor))
+		main-hand: (new-shortspear)
+		torso:     (new-leather-armor))
 	       1/4 (rush-behavior)))
 (define-method (print (m kobold)) #\k)
 
@@ -53,8 +53,8 @@
 	       17 11 12 8 7 6
 	       '(8) #f #f 1
 	       (new-equipment
-		main-arm: (new-greataxe)
-		torso:    (new-studded-leather-armor))
+		main-hand: (new-greataxe)
+		torso:     (new-studded-leather-armor))
 	       1/2 (pursue-behavior)))
 (define-method (print (m orc)) #\o)
 
@@ -67,7 +67,7 @@
 	       "bat" #f
 	       1 15 10 2 14 4
 	       '(2) #f #f 0
-	       (new-equipment) ;; TODO will attack with the 1d4 unarmed strike, is that too much ? (actually, with the strength penalty, it's ridiculous)
+	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       1/10 (rush-behavior)))
 (define-method (print (m bat)) #\b)
 
@@ -77,7 +77,7 @@
 	       "rat" #f
 	       2 15 10 2 12 2
 	       '(2) #f #f 0
-	       (new-equipment) ;; TODO also has unarmed strike, should have a way to represent natural attacks, damage is ridiculous, once again
+	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       1/8 (rush-behavior)))
 (define-method (print (m rat)) #\r)
 
@@ -130,7 +130,7 @@
 (define (generate-encounters floor)
   (let* ((no                       (+ (floor-no floor) 1)) ; floor-no starts at 0
 	 (encounter-level-cap      (/ no 2)) ;; TODO maybe have it also a function of the player level ?
-	 (encounter-level-bottom   (max (/ no 4) ;; TODO TWEAK
+	 (encounter-level-bottom   (max (/ no 4)
 					(foldl min
 					       encounter-level-cap
 					       (map encounter-type-points
@@ -146,8 +146,8 @@
 					  (map encounter-type-points
 					       possible-encounter-types))))
     (if (null? possible-encounter-types)
-	(error "no possible encounters for this level")) ;; TODO make sure this can't happen, currently does for level 3. maybe just don't generate anything instead ?
-    (let loop ((pts            (* no 5)) ;; TODO tweak
+	(error "no possible encounters for this level"))
+    (let loop ((pts            (* no 5))
 	       (free-rooms     (floor-rooms floor))
 	       (floor-monsters '()))
       (if (and (>= pts actual-bottom)
@@ -195,4 +195,4 @@
 			  xp-same-level
 			  (max 0
 			       (ceiling (* xp-same-level
-					   (+ 1 (* 1/3 delta-level)))))))))) ;; TODO tweak
+					   (+ 1 (* 1/3 delta-level))))))))))

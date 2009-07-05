@@ -341,23 +341,22 @@
     ;; (not a corridor)
     ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
     (if stairs-down?
-	(let* ((rooms (floor-rooms new-floor))
-	       (pos   (random-element
-		       (filter
-			(lambda (cell)
-			  ;; not in a corridor, and not in front of a door
-			  (and
-			   (not (eq? 'corridor
-				     (room-type (get-room cell rooms))))
-			   (not (next-to-a-door? (floor-map new-floor) cell))))
-			       (floor-walkable-cells new-floor)))))
+	(let ((pos (random-free-position new-floor)))
 	  (grid-set! level pos (new-stairs-down))
-	  (floor-stairs-down-set! new-floor pos)
 	  (floor-walkable-cells-set!
-	   new-floor
-	   (remove pos (floor-walkable-cells new-floor)))))
+	   new-floor (remove pos (floor-walkable-cells new-floor)))
+	  (floor-stairs-down-set! new-floor pos)))
 
     ;; add everything else on top
     (generate-encounters new-floor)
     (generate-treasure   new-floor)
     new-floor))
+
+(define (random-free-position floor)
+  (let ((rooms (floor-rooms floor)))
+    (random-element
+     (filter (lambda (cell)
+	       ;; not in a corridor, and not in front of a door
+	       (and (not (eq? 'corridor (room-type (get-room cell rooms))))
+		    (not (next-to-a-door? (floor-map floor) cell))))
+	     (floor-walkable-cells floor)))))

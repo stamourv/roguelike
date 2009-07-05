@@ -3,7 +3,7 @@
   (slot: current-floor)
   (slot: floors-after)
   (slot: level)
-  (slot: experience) ;; TODO have a way to show level and experience
+  (slot: experience)
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player name #f
@@ -11,7 +11,7 @@
 			     '(10) ; hit dice
 			     #f #f
 			     1  ; base attack bonus
-			     (new-equipment main-arm: (new-club))
+			     (new-equipment main-hand: (new-club))
 			     '() #f '()
 			     1 0
 			     '())))
@@ -65,7 +65,7 @@
   (cursor-home)
   (clear-line)
   (display (string-append
-	    "Level "
+	    "Floor "
 	    (number->string
 	     (+ (floor-no (player-floor player)) 1))
 	    "\n"))
@@ -74,12 +74,12 @@
 
 
 (define (inventory)
-  (cursor-home) ;; TODO also done in choice, abstract ?
+  (cursor-home)
   (clear-to-bottom)
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (display (string-append where (if obj (object-info obj) "") "\n"))) ;; TODO the tab doesn't quite do it, torso is still too short
+     (display (string-append where (if obj (object-info obj) "") "\n")))
    (character-equipment player))
   (display
    (string-append "\nAC: " (number->string (get-armor-class player)) "\n"))
@@ -118,19 +118,19 @@
 			 (player-inventory player))))
     (choice objects
 	    (lambda (object)
-	      (let* ((place (cond ((weapon?     object) 'main-arm) ;; TODO weapons can go either in the main or the off hand, and also consider 2 handed weapons
-				  ((shield?     object) 'off-arm)
+	      (let* ((place (cond ((weapon?     object) 'main-hand)
+				  ((shield?     object) 'off-hand)
 				  ((body-armor? object) 'torso)))
 		     (old   ((case place
-			       ((main-arm) equipment-main-arm) ;; TODO string->symbol and co ?
-			       ((off-arm)  equipment-off-arm)
-			       ((torso)    equipment-torso))
+			       ((main-hand) equipment-main-hand) ;; TODO string->symbol and co ?
+			       ((off-hand)  equipment-off-hand)
+			       ((torso)     equipment-torso))
 			     e)))
 		(player-inventory-set! player (remove object objects))
 		((case place
-		   ((main-arm) equipment-main-arm-set!)
-		   ((off-arm)  equipment-off-arm-set!)
-		   ((torso)    equipment-torso-set!))
+		   ((main-hand) equipment-main-hand-set!)
+		   ((off-hand)  equipment-off-hand-set!)
+		   ((torso)     equipment-torso-set!))
 		 e object)
 		(if old
 		    (begin (display (string-append "\nPut "
@@ -146,31 +146,36 @@
     (choice objects
 	    (lambda (object)
 	      (cond ((weapon?     object)
-		     (equipment-main-arm-set! e #f))
+		     (equipment-main-hand-set! e #f))
 		    ((shield?     object)
-		     (equipment-off-arm-set!  e #f))
+		     (equipment-off-hand-set!  e #f))
 		    ((body-armor? object)
-		     (equipment-torso-set!    e #f)))
+		     (equipment-torso-set!     e #f)))
 	      (player-inventory-set! player
 				     (cons object (player-inventory player))))
 	    "You have nothing to take off." "Take off what?" "Took off ")))
 
-(define (cmd-open)
+(define (direction-command name f)
   (clear-to-bottom)
-  (display "Open in which direction? ")
+  (display (string-append name " in which direction? "))
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-ref grid ((eval dir) (character-pos player))))) ;; TODO lots in common with close, and anything else that would ask for a direction
-	  (open grid cell player)))))
-(define (cmd-close)
-  (clear-to-bottom)
-  (display "Close in which direction? ")
-  (let ((dir  (choose-direction))) ; evaluates to a function, or #f
-    (if dir
-	(let* ((grid (player-map player))
 	       (cell (grid-ref grid ((eval dir) (character-pos player)))))
-	  (close grid cell player)))))
+	  (f grid cell player)))))
+(define (cmd-open)  (direction-command "Open"  open))
+(define (cmd-close) (direction-command "Close" close))
+(define (kill) ; insta-kill something, for debugging purposes
+  (direction-command "Kill"
+		     (lambda (grid cell player)
+		       (cond ((cell-occupant cell)
+			      => (lambda (occ)
+				   (display (string-append "Killed the "
+							   (character-name occ)
+							   "\n"))
+				   (remove-monster occ)))
+			     (else (display
+				    "There is nothing to kill there.\n"))))))
 
 (define (stairs)
   (let ((cell (grid-ref (player-map player) (character-pos player))))
@@ -197,22 +202,6 @@
 		 (begin (place-player             player (car after))
 			(player-floors-after-set! player (cdr after)))))
 	    (else (display "There are no stairs here.\n"))))))
-
-(define (kill) ; insta-kill something TODO replace with a combat system
-  (clear-to-bottom)
-  (display "Kill in which direction? ")
-  (let ((dir (choose-direction))) ; evaluates to a function, or #f
-    (if dir
-	(let* ((pos  ((eval dir) (character-pos player)))
-	       (grid (player-map player))
-	       (cell (grid-ref grid pos)))
-	  (cond ((cell-occupant cell)
-		 => (lambda (occ)
-		      (display (string-append "Killed the "
-					      (character-name occ)
-					      "\n"))
-		      (remove-monster occ)))
-		(else (display "There is nothing to kill there.\n")))))))
 
 (define (add-experience xp)
   (let ((total (+ (player-experience player) xp))

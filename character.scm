@@ -35,7 +35,7 @@
 				 (max (max-dex-bonus
 				       (equipment-torso
 					(character-equipment char)))))
-			     (if max (min max dex) dex))))
+			     (if max (min (+ 10 (* 2 max)) dex) dex))))
                   ((con) character-con)
                   ((int) character-int)
                   ((wis) character-wis)
@@ -52,31 +52,31 @@
      (get-attribute-bonus 'dex c)))
 
 (define-type equipment
-  main-arm
-  off-arm ; shield or 2nd weapon ;; TODO no second weapon for now ;; TODO say hand instead of arm ?
+  main-hand
+  off-hand ; shield or 2nd weapon ;; TODO no second weapon for now
   torso) ;; TODO add more
-(define (new-equipment #!key (main-arm #f) (off-arm #f) (torso #f))
-  (make-equipment main-arm off-arm torso))
+(define (new-equipment #!key (main-hand #f) (off-hand #f) (torso #f))
+  (make-equipment main-hand off-hand torso))
 (define (equipment->list e)
-  (list (cons (equipment-main-arm e) "main arm")
-        (cons (equipment-off-arm  e) "off arm")
-        (cons (equipment-torso    e) "torso")))
+  (list (cons (equipment-main-hand e) "main hand")
+        (cons (equipment-off-hand  e) "off hand")
+        (cons (equipment-torso     e) "torso")))
 (define (for-each-equipped f e)
-  (f (equipment-main-arm e) "main arm: ")
-  (f (equipment-off-arm  e) "off arm:  ")
-  (f (equipment-torso    e) "torso:    "))
+  (f (equipment-main-hand e) "main hand: ")
+  (f (equipment-off-hand  e) "off hand:  ")
+  (f (equipment-torso     e) "torso:     "))
 
 
 (define (get-armor-class c)
   (let ((e (character-equipment c)))
     (+ 10
        (get-attribute-bonus 'dex c)
-       (get-ac (equipment-torso   e))
-       (get-ac (equipment-off-arm e))))) ;; TODO add more
+       (get-ac (equipment-torso    e))
+       (get-ac (equipment-off-hand e))))) ;; TODO add more
 
 (define (get-damage c)
-  (+ ((get-damage-fun (equipment-main-arm (character-equipment c))))
-     (get-attribute-bonus 'str c)))
+  (+ ((get-damage-fun (equipment-main-hand (character-equipment c))))
+     (get-attribute-bonus 'str c))) ;; TODO if a 2-handed weapon, add 1.5 times the strength
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
@@ -98,17 +98,17 @@
       (let ((roll ((dice 20))))
         (cond ((player? attacker)
                (display (string-append (character-name attacker)
-                                       " attacked the "
+                                       " attacks the "
                                        (character-name defender))))
               ((monster? attacker)
                (display (string-append "The "
                                        (character-name attacker)
-                                       " attacks " ;; TODO have everything either in the past tense or in the present tense
+                                       " attacks "
                                        (character-name defender)))))
         (if (>= (+ roll (get-melee-attack-bonus attacker))
 		(get-armor-class defender))
 	    (damage attacker defender)
-	    (display " and missed.\n"))))) ;; TODO depending on by how much it missed, say different things
+	    (display " and misses.\n"))))) ;; TODO depending on by how much it missed, say different things
 
 (define (damage attacker defender) ; returns #t if the opponent dies
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?

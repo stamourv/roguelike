@@ -34,10 +34,10 @@
 (define-class stairs (empty-cell))
 (define-class stairs-up   (stairs))
 (define (new-stairs-up)   (make-stairs-up   '() #f))
-(define-method (print (c stairs-up)) (walkable-cell-print c #\<))
+(define-method (print (c stairs-up))   (walkable-cell-print c #\<))
 (define-class stairs-down (stairs))
 (define (new-stairs-down) (make-stairs-down '() #f))
-(define-method (print (c stairs-up)) (walkable-cell-print c #\>))
+(define-method (print (c stairs-down)) (walkable-cell-print c #\>))
 
 (define-class wall (cell))
 (define-method (print (c wall)) #\+)
