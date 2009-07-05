@@ -62,7 +62,8 @@
 		  (loop))))))
 
 (define n-levels 3) ;; TODO change
-(define player (new-player (getenv "LOGNAME")))
+(define player #f) ; needed for level-generation
+(set! player (new-player (getenv "LOGNAME")))
 
 (define (quit)
   (display "\nHall of fame:\n\n") ;; TODO have in a function

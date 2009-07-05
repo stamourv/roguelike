@@ -230,7 +230,14 @@
 			(if res
 			    res
 			    (loop (add-random-feature
-				   (cons (random-position level) #f)))))))
+				   (cons (if player
+					     ;; if this is not the first floor,
+					     ;; the stairs up should be at the
+					     ;; same coordinates as the previous
+					     ;; floor's stairs down
+					     (character-pos player)
+					     (random-position level))
+					 #f)))))))
       ;; although unlikely, we might run out of walls (happened once, no
       ;; idea how)
       (if (or (> n 0) (null? walls))
