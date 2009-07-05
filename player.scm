@@ -191,6 +191,69 @@
 			     (else (display
 				    "There is nothing to kill there.\n"))))))
 
+(define (shoot) ;; TODO have shooting monsters too
+  (let* ((grid    (player-map player))
+	 (weapon  (equipment-main-hand (character-equipment player)))
+	 (targets (filter (lambda (m)
+			    (and (eq? (grid-ref (player-view player)
+						(character-pos m))
+				      'visible)
+				 (line-of-sight? grid
+						 (character-pos player)
+						 (character-pos m)
+						 #t)))
+			  (floor-monsters (player-floor player))))
+	 (n       (length targets)))
+    (cond
+     ((not (ranged-weapon? weapon))
+      (display "I can't shoot with that.\n"))
+     ((null? targets)
+      (display "There is nothing to shoot.\n"))
+     (else
+      (let ((grid (let ((grid (grid-copy grid)))
+		    (for-each
+		     (lambda (m n) ;; TODO this, like choice, won't scale over 10
+		       (grid-set!
+			grid
+			(character-pos m)
+			(new-display-cell
+			 (string-ref (number->string (+ n 1)) 0))))
+		     targets
+		     (iota n))
+		    grid)))
+	;; show which monsters are which numbers
+	(cursor-home) ;; TODO taken from show-state
+	(clear-to-bottom)	  
+	(cursor-notification-head)
+	(for-each (lambda (m n)
+		    (display-notification (number->string (+ n 1)) ": "
+					  (character-name m) "\n"))
+		  targets
+		  (iota n))
+	(display "\n")
+	(display-notification "q: Cancel\n")
+	;; show the map with the target numbers
+	(cursor-home)
+	(display (string-append
+		  "Floor "
+		  (number->string
+		   (+ (floor-no (player-floor player)) 1))
+		  "\n"))
+	(show-grid grid
+		   print-fun: (visibility-printer (player-view player)))
+	;; choose a target
+	(let ((nb (read-number n)))
+	  (if nb ;; TODO pick a target and shoot it, then call damage
+	      (let ((target (list-ref targets nb))
+		    (roll   ((dice 20))))
+		(display (string-append (character-name player) ;; TODO abstract with attack in character.scm
+					" shoots at the "
+					(character-name target)))
+		(if (>= (+ roll (get-ranged-attack-bonus player))
+			(get-armor-class target))
+		    (damage player target #f)
+		    (display " and misses.\n"))))))))))
+
 (define (stairs)
   (let ((cell (grid-ref (player-map player) (character-pos player))))
     (let ((current      (player-current-floor         player))

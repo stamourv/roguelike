@@ -74,11 +74,13 @@
        (get-ac (equipment-torso    e))
        (get-ac (equipment-off-hand e))))) ;; TODO add more
 
-(define (get-damage c)
+(define (get-damage c #!optional (add-strength? #t))
   (let ((weapon (equipment-main-hand (character-equipment c))))
     (+ ((get-damage-fun weapon))
        (* (get-attribute-bonus 'str c)
-	  (if (two-handed-weapon? weapon) 1.5 1)))))
+	  (cond ((not add-strength?)         0)
+		((two-handed-weapon? weapon) 1.5)
+		(else                        1))))))
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
@@ -94,7 +96,7 @@
               ((walkable-cell? new-cell)
                (attack occ (cell-occupant (grid-ref g new-pos))))))))
 
-(define (attack attacker defender)
+(define (attack attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty
   (if (not (and (monster? attacker)
                 (monster? defender))) ; monsters don't attack other monsters
       (let ((roll ((dice 20))))
@@ -112,8 +114,9 @@
 	    (damage attacker defender)
 	    (display " and misses.\n"))))) ;; TODO depending on by how much it missed, say different things
 
-(define (damage attacker defender) ; returns #t if the opponent dies
-  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
+;; returns #t if the opponent dies
+(define (damage attacker defender #!optional (melee? #t))
+  (let ((dmg (max (get-damage attacker melee?) 1))) ;; TODO could deal 0 damage ?
     (display (string-append " and deals " (number->string dmg)
 			    " damage"))
     (character-hp-set! defender (- (character-hp defender) dmg))

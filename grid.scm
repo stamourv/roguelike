@@ -29,6 +29,10 @@
   (+ (* (point-x pos) (grid-width g)) (point-y pos)))
 (define (grid-ref  g pos)   (vector-ref  (grid-cells g) (pos->index g pos)))
 (define (grid-set! g pos v) (vector-set! (grid-cells g) (pos->index g pos) v))
+(define (grid-copy g)
+  (make-grid (grid-height g)
+	     (grid-width  g)
+	     (vector-copy (grid-cells g))))
 
 (define (inside-grid? g pos)
   (let ((x (point-x pos))

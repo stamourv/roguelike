@@ -3,10 +3,11 @@
 (define treasure-table
   `((0.45
      ;; weapons
-     (0.25 . ,new-morningstar)
+     (0.2 . ,new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
      (0.1  . ,new-greataxe)
-     (0.4  . ,new-club)
-     (0.25 . ,new-shortspear))
+     (0.3  . ,new-club)
+     (0.15 . ,new-shortspear)
+     (0.25 . ,new-shortbow))
     (0.3
      ;; shields
      (1 . ,new-light-shield))
@@ -14,6 +15,7 @@
      ;; body armor
      (0.7 . ,new-leather-armor)
      (0.3 . ,new-studded-leather-armor))))
+;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
 ;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
 
 (define (generate-treasure floor)

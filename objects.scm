@@ -59,7 +59,7 @@
 (define (new-morningstar) (make-weapon "morningstar" 8  '(8)  'bludgeoning)) ;; TODO also piercing
 (define (new-shortspear)  (make-weapon "shortspear"  1  '(6)  'piercing))
 
-(define-class two-handed-weapon (weapon))
+(define-class two-handed-weapon (weapon)) ;; TODO have a different character to display two-handed weapons ? maybe / or \
 (define-class off-hand-placeholder (object))
 (define (new-off-hand-placeholder)
   (make-off-hand-placeholder "<two-handed weapon>" 0))
@@ -67,3 +67,5 @@
 (define (new-greataxe) (make-two-handed-weapon "greataxe" 20 '(12) 'slashing))
 
 (define-class ranged-weapon (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed
+(define-method (print (o ranged-weapon)) #\))
+(define (new-shortbow) (make-ranged-weapon "shortbow" 30 '(6) 'piercing))

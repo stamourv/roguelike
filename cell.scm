@@ -96,3 +96,9 @@
       (begin (chest-open?-set! chest #t)
 	     (display "Chest opened.\n"))))
 (define-method (walkable-cell? (c chest)) (chest-open? c))
+
+;; used to display special information, for instance when taking aim
+(define-class display-cell (cell)
+  (slot: char))
+(define (new-display-cell c) (make-display-cell #f #f c))
+(define-method (print (c display-cell)) (display-cell-char c))

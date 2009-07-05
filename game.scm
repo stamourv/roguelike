@@ -23,8 +23,8 @@
 (random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)
 (shell-command "setterm -cursor off")
-;; clear the screen. ugly, but the clear terminal code does not seem to be
-;; supported by gambit
+;; strangely, clear-to-bottom does not clear the bottom of the screen as it
+;; should
 (for-each (lambda (dummy) (display "\n")) (iota 50))
 
 ;; list of pairs (name . score), sorted by descending order of score

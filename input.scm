@@ -40,6 +40,8 @@
       ((#\c) (cmd-close))
       ((#\t) (stairs))
 
+      ((#\s) (shoot))
+
       ;; help
       ((#\?) (show-help))
       ((#\n) (info grid pos))
@@ -58,6 +60,17 @@
     ((#\esc) (which-direction?))
     (else    (invalid-command) #f)))
 
+(define (read-number n) ; read a number up to n, or q to cancel
+  (let loop ((nb (read-char)))
+    (cond ((eq? nb #\q)
+	   #f) ; cancel
+	  ((not (and (char>=? nb #\1)
+		     (<= (- (char->integer nb) (char->integer #\0)) n)))
+	   (loop (read-char)))
+	  (else
+	   (- (char->integer nb)
+	      (char->integer #\0) 1)))))
+
 (define (choice objects f null-message question feedback)
   (if (null? objects)
       (display (string-append null-message "\n"))
@@ -65,29 +78,20 @@
 	       (clear-to-bottom)
 	       (display question)
 	       (display "\nq: Cancel\n")
-	       (let loop ((objects objects)
-			  (i       1))
-		 (if (not (null? objects))
-		     (begin (display (string-append
-				      (number->string i) ": "
-				      (object-info (car objects)) "\n"))
-			    (loop (cdr objects) (+ i 1)))))
-	       (let loop ((nb (read-char)))
-		 (cond ((eq? nb #\q)
-			#f) ; cancel
-		       ((not (and (char>=? nb #\1)
-				  (<= (- (char->integer nb) (char->integer #\0))
-				      (length objects))))
-			(loop (read-char)))
-		       (else
-			(let ((object (list-ref objects
-						(- (char->integer nb)
-						   (char->integer #\0) 1))))
-			  (show-state)
-			  (f object)
-			  (display (string-append feedback
-						  (object-name object)
-						  ".\n")))))))))
+	       (for-each (lambda (o i)
+			   (display (string-append
+				     (number->string (+ i 1)) ": "
+				     (object-info o) "\n")))
+			 objects
+			 (iota (length objects)))
+	       (let ((nb (read-number (length objects))))
+		 (if nb
+		     (let ((object (list-ref objects nb)))
+		       (show-state)
+		       (f object)
+		       (display (string-append feedback
+					       (object-name object)
+					       ".\n"))))))))
 
 ;; console from which arbitrary expressions can be evaluated
 (define (console)

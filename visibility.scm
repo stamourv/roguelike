@@ -2,7 +2,7 @@
   (empty-grid (grid-height g) (grid-width g)
 	      cell-fun: (lambda (pos) 'unknown)))
 
-(define (line-of-sight? g a b)
+(define (line-of-sight? g a b #!optional (monsters-opaque? #f))
   ;; using Bresenham's algorithm to draw a line between a and b, see if we
   ;; hit any opaque objects
   ;; see: http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -27,12 +27,15 @@
 	  (let loop ((error        0)
 		     (x            x0)
 		     (y            y0))
-	    (let ((pos   (if steep (new-point y  x)  (new-point x  y)))
-		  
-		  (error (+ error delta-err)))
+	    (let* ((pos   (if steep (new-point y x) (new-point x y)))
+		   
+		   (error (+ error delta-err))
+		   (cell  (grid-ref g pos)))
 	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
 	      (cond ((equal? pos dest)          #t) ; we see it
-		    ((and (opaque-cell? (grid-ref g pos))
+		    ((and (or (opaque-cell? cell)
+			      (and monsters-opaque?
+				   (monster? (cell-occupant cell))))
 			  (not (equal? pos start))) #f) ; we hit an obstacle
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
