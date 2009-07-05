@@ -116,10 +116,11 @@
 (define encounter-types ;; TODO have weights, since some would be more common, make it so it can use random-choice
   (map new-encounter-type ;; TODO have a "language" to define encounters types, maybe make the probability a function of the level-no ?
        `((,new-bat ,new-bat ,new-bat)
+	 (,new-bat ,new-bat ,new-bat ,new-bat)
 	 (,new-rat ,new-rat)
 	 (,new-rat ,new-rat ,new-rat)
 	 (,new-rat ,new-rat ,new-rat ,new-rat)
-	 (,new-kobold ,new-kobold)
+	 (,new-kobold ,new-kobold ,new-kobold)
 	 (,new-kobold ,new-kobold ,new-kobold ,new-kobold)
 	 (,new-goblin ,new-goblin)
 	 (,new-goblin ,new-goblin ,new-goblin)
@@ -127,22 +128,25 @@
 	 (,new-orc ,new-goblin ,new-goblin))))
 
 
+(define (possible-encounters no)
+  (let* ((encounter-level-cap (/ no 2.5))
+	 (encounter-level-bottom
+	  (max (/ no 4)
+	       (foldl min
+		      encounter-level-cap
+		      (map encounter-type-points
+			   encounter-types)))))
+    (filter (lambda (e)
+	      (let ((pts (encounter-type-points e)))
+		(and (>= pts encounter-level-bottom)
+		     (<= pts encounter-level-cap))))
+	    encounter-types)))
+
 (define (generate-encounters floor)
-  (let* ((no                       (+ (floor-no floor) 1)) ; floor-no starts at 0
-	 (encounter-level-cap      (/ no 2)) ;; TODO maybe have it also a function of the player level ?
-	 (encounter-level-bottom   (max (/ no 4) ;; TODO make it so kobolds can't end up on the first floor
-					(foldl min
-					       encounter-level-cap
-					       (map encounter-type-points
-						    encounter-types))))
-	 (possible-encounter-types (filter
-				    (lambda (e)
-				      (let ((pts (encounter-type-points e)))
-					(and (>= pts encounter-level-bottom)
-					     (<= pts encounter-level-cap))))
-				    encounter-types))
+  (let* ((no                       (+ (floor-no floor) 1))
+	 (possible-encounter-types (possible-encounters no))
 	 (actual-bottom            (foldl min
-					  encounter-level-cap
+					  no ; generous upper bound
 					  (map encounter-type-points
 					       possible-encounter-types))))
     (if (null? possible-encounter-types)

@@ -22,7 +22,8 @@
 	 (hp (max (+ (if max?
 			 (foldl + 0 hd)
 			 ((apply dice hd)))
-		     (get-attribute-bonus 'con character))
+		     (* (get-attribute-bonus 'con character)
+			(length hd)))
 		  1)))
     (character-max-hp-set! character hp)
     (character-hp-set!     character hp)))
@@ -96,7 +97,7 @@
               ((walkable-cell? new-cell)
                (attack occ (cell-occupant (grid-ref g new-pos))))))))
 
-(define (attack attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty
+(define (attack attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
   (if (not (and (monster? attacker)
                 (monster? defender))) ; monsters don't attack other monsters
       (let ((roll ((dice 20))))
