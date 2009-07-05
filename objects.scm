@@ -5,6 +5,8 @@
 (define-generic object-info)
 (define-method (object-info o) (object-name o))
 
+(define-generic removable?)
+(define-method (removable? o) #t)
 
 (define-class equipable-object (object))
 
@@ -54,6 +56,14 @@
 		 ")"))
 ;; TODO have small version of items ? (small weapons do less damage) goblins now have clubs instead of small morningstars
 (define (new-club)        (make-weapon "club"        1  '(6)  'bludgeoning))
-(define (new-greataxe)    (make-weapon "greataxe"    20 '(12) 'slashing))
 (define (new-morningstar) (make-weapon "morningstar" 8  '(8)  'bludgeoning)) ;; TODO also piercing
 (define (new-shortspear)  (make-weapon "shortspear"  1  '(6)  'piercing))
+
+(define-class two-handed-weapon (weapon))
+(define-class off-hand-placeholder (object))
+(define (new-off-hand-placeholder)
+  (make-off-hand-placeholder "<two-handed weapon>" 0))
+(define-method (removable? (o off-hand-placeholder)) #f)
+(define (new-greataxe) (make-two-handed-weapon "greataxe" 20 '(12) 'slashing))
+
+(define-class ranged-weapon (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed

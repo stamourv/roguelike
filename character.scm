@@ -75,8 +75,10 @@
        (get-ac (equipment-off-hand e))))) ;; TODO add more
 
 (define (get-damage c)
-  (+ ((get-damage-fun (equipment-main-hand (character-equipment c))))
-     (get-attribute-bonus 'str c))) ;; TODO if a 2-handed weapon, add 1.5 times the strength
+  (let ((weapon (equipment-main-hand (character-equipment c))))
+    (+ ((get-damage-fun weapon))
+       (* (get-attribute-bonus 'str c)
+	  (if (two-handed-weapon? weapon) 1.5 1)))))
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the

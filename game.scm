@@ -6,10 +6,10 @@
 (include "utilities.scm") ;; TODO have a makefile, and separate compilation
 (include "grid.scm")
 (include "cell.scm")
+(include "objects.scm")
 (include "character.scm")
 (include "player.scm")
 (include "behavior.scm")
-(include "objects.scm")
 (include "monsters.scm")
 (include "treasure.scm")
 (include "dungeon.scm")

@@ -12,7 +12,7 @@
 					 ((blue)  "34") ((magenta) "35")
 					 ((cyan)  "36") ((white)   "37"))
 				   "m"))
-  (display text) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc)
+  (display text) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc) maybe it's just my xterm that is badly configured
   (terminal-command "[0m")) ; reset
 (define (clear-line)      (terminal-command "[K"))
 (define (clear-to-bottom) (terminal-command "[J"))

@@ -53,7 +53,7 @@
 	       17 11 12 8 7 6
 	       '(8) #f #f 1
 	       (new-equipment
-		main-hand: (new-greataxe)
+		main-hand: (new-greataxe) ;; TODO handle two-handed weapons and placeholders for monsters ? since they can't change their equipment, and since they are used as two-handed weapons anyway (1.5 times the strength bonus), not really necessary
 		torso:     (new-studded-leather-armor))
 	       1/2 (pursue-behavior)))
 (define-method (print (m orc)) #\o)
@@ -182,7 +182,8 @@
   (let* ((floor (player-floor player))
 	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
     ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
-    (for-each-equipped (lambda (obj where) (if obj (add-object cell obj)))
+    (for-each-equipped (lambda (obj where)
+			 (if (and obj (removable? obj)) (add-object cell obj)))
 		       (character-equipment monster))
     ;; remove the monster
     (cell-occupant-set! cell #f)

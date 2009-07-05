@@ -118,35 +118,49 @@
 			 (player-inventory player))))
     (choice objects
 	    (lambda (object)
-	      (let* ((place (cond ((weapon?     object) 'main-hand)
+	      (let* ((place (cond ((weapon?     object) 'main-hand) ;; TODO string->symbol and co ?
 				  ((shield?     object) 'off-hand)
 				  ((body-armor? object) 'torso)))
 		     (old   ((case place
-			       ((main-hand) equipment-main-hand) ;; TODO string->symbol and co ?
+			       ((main-hand) equipment-main-hand)
 			       ((off-hand)  equipment-off-hand)
 			       ((torso)     equipment-torso))
 			     e)))
+		(define (back-in-inventory o)
+		  (display (string-append "Put " (object-name o)
+					  " back in inventory.\n"))
+		  (player-inventory-set!
+		   player (cons o (player-inventory player))))
 		(player-inventory-set! player (remove object objects))
 		((case place
 		   ((main-hand) equipment-main-hand-set!)
 		   ((off-hand)  equipment-off-hand-set!)
 		   ((torso)     equipment-torso-set!))
 		 e object)
-		(if old
-		    (begin (display (string-append "\nPut "
-						   (object-name old)
-						   " back in inventory.\n"))
-			   (player-inventory-set!
-			    player
-			    (cons old (player-inventory player)))))))
+		(cond ((and old (not (off-hand-placeholder? old))) ;; TODO generalize with all non-removable items
+		       (back-in-inventory old))
+		      ((two-handed-weapon? old)
+		       (equipment-off-hand-set! e #f)) ; remove the placeholder
+		      ((off-hand-placeholder? old)
+		       ;; we have to remove the two-handed weapon itself
+		       (back-in-inventory (equipment-main-hand e))
+		       (equipment-main-hand-set! e #f)))
+		(if (two-handed-weapon? object)
+		    (let ((old-off (equipment-off-hand e)))
+		      (if old-off (back-in-inventory old-off))
+		      (equipment-off-hand-set! e (new-off-hand-placeholder))))))
 	    "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off)
   (let* ((e       (character-equipment player))
-	 (objects (filter identity (map car (equipment->list e)))))
+	 (objects (filter (lambda (obj) (and obj (removable? obj)))
+			  (map car (equipment->list e)))))
     (choice objects
 	    (lambda (object)
 	      (cond ((weapon?     object)
-		     (equipment-main-hand-set! e #f))
+		     (equipment-main-hand-set! e #f)
+		     (if (two-handed-weapon? object)
+			 ;; remove the placeholder
+			 (equipment-off-hand-set! e #f)))
 		    ((shield?     object)
 		     (equipment-off-hand-set!  e #f))
 		    ((body-armor? object)
