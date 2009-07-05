@@ -147,7 +147,8 @@
 		       (equipment-main-hand-set! e #f)))
 		(if (two-handed-weapon? object)
 		    (let ((old-off (equipment-off-hand e)))
-		      (if old-off (back-in-inventory old-off))
+		      (if (and old-off (not (off-hand-placeholder? old-off)))
+			  (back-in-inventory old-off))
 		      (equipment-off-hand-set! e (new-off-hand-placeholder))))))
 	    "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off)
@@ -243,7 +244,7 @@
 		   print-fun: (visibility-printer (player-view player)))
 	;; choose a target
 	(let ((nb (read-number n)))
-	  (if nb ;; TODO pick a target and shoot it, then call damage
+	  (if nb
 	      (let ((target (list-ref targets nb))
 		    (roll   ((dice 20))))
 		(display (string-append (character-name player) ;; TODO abstract with attack in character.scm
@@ -251,7 +252,7 @@
 					(character-name target)))
 		(if (>= (+ roll (get-ranged-attack-bonus player))
 			(get-armor-class target))
-		    (damage player target #f)
+		    (damage player target)
 		    (display " and misses.\n"))))))))))
 
 (define (stairs)

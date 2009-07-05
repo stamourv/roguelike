@@ -130,7 +130,7 @@
 (define (generate-encounters floor)
   (let* ((no                       (+ (floor-no floor) 1)) ; floor-no starts at 0
 	 (encounter-level-cap      (/ no 2)) ;; TODO maybe have it also a function of the player level ?
-	 (encounter-level-bottom   (max (/ no 4)
+	 (encounter-level-bottom   (max (/ no 4) ;; TODO make it so kobolds can't end up on the first floor
 					(foldl min
 					       encounter-level-cap
 					       (map encounter-type-points

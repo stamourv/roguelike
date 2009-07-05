@@ -74,13 +74,13 @@
        (get-ac (equipment-torso    e))
        (get-ac (equipment-off-hand e))))) ;; TODO add more
 
-(define (get-damage c #!optional (add-strength? #t))
+(define (get-damage c)
   (let ((weapon (equipment-main-hand (character-equipment c))))
     (+ ((get-damage-fun weapon))
-       (* (get-attribute-bonus 'str c)
-	  (cond ((not add-strength?)         0)
-		((two-handed-weapon? weapon) 1.5)
-		(else                        1))))))
+       (floor (* (get-attribute-bonus 'str c)
+		 (cond ((ranged-weapon?     weapon) 0)
+		       ((two-handed-weapon? weapon) 3/2)
+		       (else                        1)))))))
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns the position of the
@@ -115,8 +115,8 @@
 	    (display " and misses.\n"))))) ;; TODO depending on by how much it missed, say different things
 
 ;; returns #t if the opponent dies
-(define (damage attacker defender #!optional (melee? #t))
-  (let ((dmg (max (get-damage attacker melee?) 1))) ;; TODO could deal 0 damage ?
+(define (damage attacker defender)
+  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
     (display (string-append " and deals " (number->string dmg)
 			    " damage"))
     (character-hp-set! defender (- (character-hp defender) dmg))
