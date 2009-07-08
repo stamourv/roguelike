@@ -2,10 +2,10 @@
   (let loop ((n (- n 1)) (l '()))
     (if (< n 0) l (loop (- n 1) (cons n l)))))
 
-;; (define (fold f base lst)
-;;   (if (null? lst)
-;;       base
-;;       (fold f (f base (car lst)) (cdr lst))))
+(define (fold f base lst)
+  (if (null? lst)
+      base
+      (fold f (f base (car lst)) (cdr lst))))
 
 (define (filter p l)
   (cond ((null? l)   '())
