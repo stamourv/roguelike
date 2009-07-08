@@ -61,7 +61,7 @@
 
 (define-class animal (monster))
 
-(define-class bat (animal))
+(define-class bat (animal)) ;; TODO actually just as annoying and dangerous as rats, so up the challenge rating ?
 (define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
   (new-monster make-bat
 	       "bat" #f
@@ -97,7 +97,7 @@
 (define (new-encounter encounter-type) ; actually creates the monsters
   (make-encounter (map call (encounter-type-monsters encounter-type))))
 (define (encounter-points e)
-  (foldl + 0 (map monster-challenge-rating (encounter-monsters e))))
+  (fold + 0 (map monster-challenge-rating (encounter-monsters e))))
 
 (define (new-encounter-type
 	 monsters
@@ -132,10 +132,10 @@
   (let* ((encounter-level-cap (/ no 2.5))
 	 (encounter-level-bottom
 	  (max (/ no 4)
-	       (foldl min
-		      encounter-level-cap
-		      (map encounter-type-points
-			   encounter-types)))))
+	       (fold min
+		     encounter-level-cap
+		     (map encounter-type-points
+			  encounter-types)))))
     (filter (lambda (e)
 	      (let ((pts (encounter-type-points e)))
 		(and (>= pts encounter-level-bottom)
@@ -145,10 +145,10 @@
 (define (generate-encounters floor)
   (let* ((no                       (+ (floor-no floor) 1))
 	 (possible-encounter-types (possible-encounters no))
-	 (actual-bottom            (foldl min
-					  no ; generous upper bound
-					  (map encounter-type-points
-					       possible-encounter-types))))
+	 (actual-bottom            (fold min
+					 no ; generous upper bound
+					 (map encounter-type-points
+					      possible-encounter-types))))
     (if (null? possible-encounter-types)
 	(error "no possible encounters for this level"))
     (let loop ((pts            (* no 5))

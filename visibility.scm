@@ -103,11 +103,11 @@
        (lambda (pos)
 	 (if (and (opaque-cell? (grid-ref g pos))
 		  (eq? (grid-ref view pos) 'unknown)
-		  (foldl (lambda (acc new)
-			   (or acc
-			       (and (inside-grid? g new)
-				    (not (opaque-cell? (grid-ref g new)))
-				    (eq? (grid-ref view new) 'visible))))
+		  (fold (lambda (acc new)
+			  (or acc
+			      (and (inside-grid? g new)
+				   (not (opaque-cell? (grid-ref g new)))
+				   (eq? (grid-ref view new) 'visible))))
 			 #f (eight-directions pos)))
 	     (grid-set! view pos 'visited)))
        view))))

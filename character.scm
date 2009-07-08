@@ -20,7 +20,7 @@
 (define (init-hp character #!optional max?)
   (let* ((hd (character-hit-dice character))
 	 (hp (max (+ (if max?
-			 (foldl + 0 hd)
+			 (fold + 0 hd)
 			 ((apply dice hd)))
 		     (* (get-attribute-bonus 'con character)
 			(length hd)))

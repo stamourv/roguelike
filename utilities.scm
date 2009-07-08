@@ -2,10 +2,10 @@
   (let loop ((n (- n 1)) (l '()))
     (if (< n 0) l (loop (- n 1) (cons n l)))))
 
-(define (foldl f base lst)
-  (if (null? lst)
-      base
-      (foldl f (f base (car lst)) (cdr lst))))
+;; (define (fold f base lst)
+;;   (if (null? lst)
+;;       base
+;;       (fold f (f base (car lst)) (cdr lst))))
 
 (define (filter p l)
   (cond ((null? l)   '())
@@ -111,7 +111,7 @@
 ;; returns a thunk that simulated the requested dice roll
 (define (dice . kinds)
   (lambda ()
-    (foldl (lambda (acc new) (+ acc (random-integer new) 1)) 0 kinds)))
+    (fold (lambda (acc new) (+ acc (random-integer new) 1)) 0 kinds)))
 
 ;; written by Marc Feeley
 (define (sort-list l <?)

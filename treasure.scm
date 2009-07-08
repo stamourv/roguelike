@@ -21,7 +21,7 @@
 (define (possible-treasure no)
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
-			       (foldl
+			       (fold
 				min
 				treasure-cap
 				(map (lambda (i) (object-gp-value ((cdr i))))
@@ -35,8 +35,8 @@
 			       (and (>= value treasure-bottom)
 				    (<= value treasure-cap))))
 			   (cdr cat)))
-		  (factor (foldl (lambda (acc new) (+ acc (car new)))
-				 0 new-items)))
+		  (factor (fold (lambda (acc new) (+ acc (car new)))
+				0 new-items)))
 	     ;; recalculate the probabilities
 	     ;; note: the probability of each category remains unchanged TODO change it ?
 	     (cons (car cat)
@@ -48,16 +48,16 @@
   (let* ((no              (+ (floor-no floor) 1))
 	 (treasure-points (* 100 no)) ; in gp TODO tweak
 	 (possible        (possible-treasure no))
-	 (actual-bottom (foldl min ; lowest value of the possible treasure
-			       treasure-points ; generous upper bound
-			       (map (lambda (i) (object-gp-value ((cdr i))))
-				    (apply append
-					   (map cdr possible)))))
+	 (actual-bottom (fold min ; lowest value of the possible treasure
+			      treasure-points ; generous upper bound
+			      (map (lambda (i) (object-gp-value ((cdr i))))
+				   (apply append
+					  (map cdr possible)))))
 	 ;; the number of chests is level number independent
 	 (chests (map (lambda (x) (new-chest '())) ; will be filled later
 		      (iota (random-between 4 8)))))
 
-    (if (foldl (lambda (acc new) (and acc (null? (cdr new)))) #t possible)
+    (if (fold (lambda (acc new) (and acc (null? (cdr new)))) #t possible)
 	(error "no possible treasure for this level"))
     
     ;; place the chests randomly on the map

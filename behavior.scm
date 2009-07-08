@@ -60,13 +60,13 @@
 	      (if parent
 		  (loop parent pos)
 		  prev)))
-	  (let* ((next (foldl (lambda (best new) ; least expensive neighbor
-				(if (< (car (grid-ref costs new))
-				       (car (grid-ref costs best)))
-				    new
-				    best))
-			      (car queue)
-			      queue))
+	  (let* ((next (fold (lambda (best new) ; least expensive neighbor
+			       (if (< (car (grid-ref costs new))
+				      (car (grid-ref costs best)))
+				   new
+				   best))
+			     (car queue)
+			     queue))
 		 (queue (remove next queue))
 		 (neighbors
 		  (filter

@@ -53,10 +53,10 @@
 		      ((east) y)
 		      ((west) (+ (- y width) 1))
 		      (else   (- y (floor (/ width 2)))))))
-	(if (foldl ; can this new feature fit ?
+	(if (fold ; can this new feature fit ?
 	     (lambda (acc x)
 	       (and acc
-		    (foldl
+		    (fold
 		     (lambda (acc y)
 		       (let ((p (new-point (+ x pos-x) (+ y pos-y))))
 			 (and acc
@@ -113,8 +113,8 @@
 	;; large rooms may have pillars
 	(if (and room (< (random-real) 0.6))
 	    (let* ((cells       (room-cells room))
-		   (top-left-x   (foldl min level-height (map point-x cells)))
-		   (top-left-y   (foldl min level-width  (map point-y cells)))
+		   (top-left-x   (fold min level-height (map point-x cells)))
+		   (top-left-y   (fold min level-width  (map point-y cells)))
 		   (n-pillars-x (if (< height 10) 1 2))
 		   (n-pillars-y (if (< width  10) 1 2))
 		   (pts-x       (cond ((= n-pillars-x 1)
@@ -262,7 +262,7 @@
 	 ;; right, or the other way around
 	 (if (and (not (door?      (grid-ref level pos))) ; not already a door
 		  (not (stairs-up? (grid-ref level pos)))
-		  (foldl (lambda (acc cell)
+		  (fold (lambda (acc cell)
 			   (and acc (inside-grid? level cell)))
 			 #t around)
 		  (let ((c-up    (grid-ref level up))
@@ -309,7 +309,7 @@
 					  (door? (grid-ref level pos)))
 					walls))
 		    (door-candidate
-		     (foldl
+		     (fold
 		      ;; we want the candidate farthest from the existing door
 		      ;; if there are no suitable candidates, we just choose
 		      ;; the existing door
@@ -326,7 +326,7 @@
 			 ;; to open a door, both sides must be clear
 			 (let ((sides (wall-perpendicular level wall)))
 			   (and (not (null? sides))
-				(foldl
+				(fold
 				 (lambda (acc new)
 				   (and acc
 					(inside-grid? level new)
