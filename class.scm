@@ -1,6 +1,47 @@
 ;; Very simple object system which focuses on runtime speed.
 
-(include "class_.scm")
+;; utilitary macros for the object system
+(define-macro (init-header)
+  (eval '(begin
+           (define (symbol-append s1 . ss)
+             (string->symbol (apply string-append
+                                    (symbol->string s1)
+                                    (map symbol->string ss))))
+           (define (gen-instantiator-name name)
+             
+             (symbol-append 'make- name '-instance)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Generic constructors (new)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-macro (new class-name . params)
+  `(init! (,(gen-instantiator-name class-name)) ,@params))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utilities
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-macro (update! obj class field f)
+  (let ((objval (gensym 'objval)))
+   `(let ((,objval ,obj))
+      (,(gen-setter-name class field) ,objval
+       (,f (,(gen-accessor-name class field) ,objval))))))
+
+(define-macro (set-fields! obj class field-val-list)
+  (let ((obj-ptr (gensym 'obj)))
+    `(let ((,obj-ptr ,obj))
+       ,@(map (lambda (field-val)
+                (if (not (and (list? field-val)
+                              (= (length field-val) 2)))
+                    (error "invalid set-fields! field syntax"))
+                (let ((field-name (car field-val))
+                      (val        (cadr field-val)))
+                  `(,(gen-setter-name class field-name) ,obj-ptr ,val)))
+              field-val-list)
+       ,obj-ptr)))
+(init-header)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -13,8 +54,73 @@
   ;; macro exp time librairy
   (eval
    '(begin
-      (include "scm-lib-macro.scm")
-      (include "scm-lib.scm")
+      ;; Will return lists of the values resulting in the application of f
+      ;; to each of the lists members
+      ;; eg: (map-values (lambda (x y) (values (+ x y) (* x y))) '(1 2 3) '(4 5 6))
+      (define (map-values f l . ls)
+	(if (not (pair? l))
+	    'dummy
+	    (receive (v1 . vs) (apply f (map car (cons l ls)))
+		     (receive (v1s . vss)
+			      (apply map-values f (map cdr (cons l ls)))
+			      (apply values
+				     (map cons (cons v1 vs)
+					  (if (pair? (cdr l))
+					      (cons v1s vss)
+					      (map (lambda (x) '())
+						   (cons v1 vs)))))))))
+      (define (filter pred list)
+	(cond
+	 ((not (pair? list)) '())
+	 ((pred (car list)) (cons (car list) (filter pred (cdr list))))
+	 (else (filter pred (cdr list)))))
+      (define (quick-sort smaller? equal? greater? lst)
+	(if (or (not (pair? lst))
+		(null? (cdr lst)))
+	    lst
+	    (let ((pivot (car lst)))
+	      (append (quick-sort smaller? equal? greater?
+				  (filter (lambda (x) (smaller? x pivot))
+					  lst))
+		      (filter (lambda (x) (equal? x pivot)) lst)
+		      (quick-sort smaller? equal? greater?
+				  (filter (lambda (x) (greater? x pivot))
+					  lst))))))
+      (define (drop lst n)
+	(if (or (< n 1) (not (pair? lst)))
+	    lst
+	    (drop (cdr lst) (- n 1))))
+      (define (take-right lst n)
+	(let lp ((lag lst)  (lead (drop lst n)))
+	  (if (pair? lead)
+	      (lp (cdr lag) (cdr lead))
+	      lag)))
+      (define (fold-l f acc list)
+	(if (not (pair? list))
+	    acc
+	    (fold-l f (f acc (car list)) (cdr list))))
+      (define (generic-member comparator el list)
+	(cond
+	 ((not (pair? list)) #f)
+	 ((comparator el (car list)) list)
+	 (else (generic-member comparator el (cdr list)))))
+      (define (generic-union comparator l1 l2)
+	(let loop ((l1 l1) (acc l2))
+	  (if (not (pair? l1))
+	      acc
+	      (if (generic-member comparator (car l1) l2)
+		  (loop (cdr l1) acc)
+		  (loop (cdr l1) (cons (car l1) acc))))))
+      (define (generic-multi-union comp . ls)
+	(fold-l (lambda (acc-set set) (generic-union comp acc-set set))
+		'()
+		ls))
+      (define (rcons x y) (cons y x))
+      (define (exists pred list)
+	(cond
+	 ((not (pair? list)) #f)
+	 ((pred (car list)) (car list))
+	 (else  (exists pred (cdr list)))))
       
       ;; method expansion mode
       (define mode 'iterative) ; iterative as default
