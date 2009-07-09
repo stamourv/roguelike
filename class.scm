@@ -54,21 +54,6 @@
   ;; macro exp time librairy
   (eval
    '(begin
-      ;; Will return lists of the values resulting in the application of f
-      ;; to each of the lists members
-      ;; eg: (map-values (lambda (x y) (values (+ x y) (* x y))) '(1 2 3) '(4 5 6))
-      (define (map-values f l . ls)
-	(if (not (pair? l))
-	    'dummy
-	    (receive (v1 . vs) (apply f (map car (cons l ls)))
-		     (receive (v1s . vss)
-			      (apply map-values f (map cdr (cons l ls)))
-			      (apply values
-				     (map cons (cons v1 vs)
-					  (if (pair? (cdr l))
-					      (cons v1s vss)
-					      (map (lambda (x) '())
-						   (cons v1 vs)))))))))
       (define (filter pred list)
 	(cond
 	 ((not (pair? list)) '())
@@ -86,41 +71,6 @@
 		      (quick-sort smaller? equal? greater?
 				  (filter (lambda (x) (greater? x pivot))
 					  lst))))))
-      (define (drop lst n)
-	(if (or (< n 1) (not (pair? lst)))
-	    lst
-	    (drop (cdr lst) (- n 1))))
-      (define (take-right lst n)
-	(let lp ((lag lst)  (lead (drop lst n)))
-	  (if (pair? lead)
-	      (lp (cdr lag) (cdr lead))
-	      lag)))
-      (define (fold-l f acc list)
-	(if (not (pair? list))
-	    acc
-	    (fold-l f (f acc (car list)) (cdr list))))
-      (define (generic-member comparator el list)
-	(cond
-	 ((not (pair? list)) #f)
-	 ((comparator el (car list)) list)
-	 (else (generic-member comparator el (cdr list)))))
-      (define (generic-union comparator l1 l2)
-	(let loop ((l1 l1) (acc l2))
-	  (if (not (pair? l1))
-	      acc
-	      (if (generic-member comparator (car l1) l2)
-		  (loop (cdr l1) acc)
-		  (loop (cdr l1) (cons (car l1) acc))))))
-      (define (generic-multi-union comp . ls)
-	(fold-l (lambda (acc-set set) (generic-union comp acc-set set))
-		'()
-		ls))
-      (define (rcons x y) (cons y x))
-      (define (exists pred list)
-	(cond
-	 ((not (pair? list)) #f)
-	 ((pred (car list)) (car list))
-	 (else  (exists pred (cdr list)))))
       
       ;; method expansion mode
       (define mode 'iterative) ; iterative as default
@@ -168,6 +118,26 @@
       (define (class-info-desc info) (vector-ref info 1))
       
       (define (make-class-desc id supers num-fields)
+	(define (fold-l f acc list)
+	  (if (not (pair? list))
+	      acc
+	      (fold-l f (f acc (car list)) (cdr list))))
+	(define (generic-member comparator el list)
+	  (cond
+	   ((not (pair? list)) #f)
+	   ((comparator el (car list)) list)
+	   (else (generic-member comparator el (cdr list)))))
+	(define (generic-union comparator l1 l2)
+	  (let loop ((l1 l1) (acc l2))
+	    (if (not (pair? l1))
+		acc
+		(if (generic-member comparator (car l1) l2)
+		    (loop (cdr l1) acc)
+		    (loop (cdr l1) (cons (car l1) acc))))))
+	(define (generic-multi-union comp . ls)
+	  (fold-l (lambda (acc-set set) (generic-union comp acc-set set))
+		  '()
+		  ls))
         ;; add 2 to include place holders for the id and supers
         (let ((desc (make-vector (+ num-fields 2) 'unknown-slot))
               (all-supers
@@ -393,6 +363,15 @@
       `(let ((,i instance-index))
          (set! instance-index (+ instance-index 1))
          ,i))
+    (define (drop lst n)
+      (if (or (< n 1) (not (pair? lst)))
+	  lst
+	  (drop (cdr lst) (- n 1))))
+    (define (take-right lst n)
+      (let lp ((lag lst)  (lead (drop lst n)))
+	(if (pair? lead)
+	    (lp (cdr lag) (cdr lead))
+	    lag)))
     (let* ((instance-index 1) ; 0 -> class-desc
            (desc (make-class-desc
                   name supers
@@ -618,6 +597,21 @@
                  (type (cadr arg)))
              (values var type)))
           (else (values arg any-type))))
+  ;; Will return lists of the values resulting in the application of f
+  ;; to each of the lists members
+  ;; eg: (map-values (lambda (x y) (values (+ x y) (* x y))) '(1 2 3) '(4 5 6))
+  (define (map-values f l . ls)
+    (if (not (pair? l))
+	'dummy
+	(receive (v1 . vs) (apply f (map car (cons l ls)))
+		 (receive (v1s . vss)
+			  (apply map-values f (map cdr (cons l ls)))
+			  (apply values
+				 (map cons (cons v1 vs)
+				      (if (pair? (cdr l))
+					  (cons v1s vss)
+					  (map (lambda (x) '())
+					       (cons v1 vs)))))))))
   ;; Returns 2 values: the ordrered list of arguments and the ordered
   ;; list of their types.
   (define (parse-args args) (map-values parse-arg args))
@@ -674,6 +668,7 @@
 (define (generic-function-instances gf)        (vector-ref gf 2))
 (define (generic-function-sorted-instances gf) (vector-ref gf 3))
 (define (generic-function-instances-list gf)
+  (define (rcons x y) (cons y x))
   (##table-foldl rcons '() (lambda (k v) v)
                  (generic-function-instances gf)))
 (define (generic-function-get-instance gf types)
@@ -800,6 +795,11 @@
 (define (find-polymorphic-instance? genfun types)
   (let ((args-nb (length types))
         (sorted-instances (generic-function-sorted-instances genfun)))
+    (define (exists pred list)
+      (cond
+       ((not (pair? list)) #f)
+       ((pred (car list)) (car list))
+       (else  (exists pred (cdr list)))))
     (exists (lambda (method) (equivalent-types? (method-types method)
                                                 types))
             (filter (lambda (i) (= (length (method-types i)) args-nb))
