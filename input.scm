@@ -35,6 +35,7 @@
       ((#\i) (inventory))
       ((#\e) (equip))
       ((#\r) (take-off))
+      ((#\D) (cmd-drink))
 
       ((#\o) (cmd-open))
       ((#\c) (cmd-close))

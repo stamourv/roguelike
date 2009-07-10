@@ -50,7 +50,8 @@
   (display-notification (character-name player) "\n")
   (display-notification "level " (number->string (player-level player)) "\n")
   (display-notification (number->string (player-experience player)) " xp pts\n")
-  (display-notification (number->string (character-hp player)) " hp\n")
+  (display-notification (number->string (character-hp player)) "/"
+			(number->string (character-max-hp player)) " hp\n")
   (display-notification "AC: "  (number->string (get-armor-class player)) "\n")
   (display-notification "str: " (number->string (character-str player))
 			"	"
@@ -169,6 +170,16 @@
 	      (player-inventory-set! player
 				     (cons object (player-inventory player))))
 	    "You have nothing to take off." "Take off what?" "Took off ")))
+
+(define (cmd-drink)
+  (let* ((e       (character-equipment player))
+	 (objects (player-inventory player)))
+    (choice objects
+	    (lambda (object)
+	      (drink object)
+	      (player-inventory-set! player (remove object objects)))
+	    "You have nothing to drink." "Drink what?" "Drank ")))
+
 
 (define (direction-command name f)
   (clear-to-bottom)

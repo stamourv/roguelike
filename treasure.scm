@@ -1,24 +1,27 @@
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
 (define treasure-table
-  `((0.45
+  `((0.43
      ;; weapons
      (0.2 . ,new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
      (0.1  . ,new-greataxe)
      (0.3  . ,new-club)
      (0.15 . ,new-shortspear)
      (0.25 . ,new-shortbow))
-    (0.3
+    (0.25
      ;; shields
      (1 . ,new-light-shield))
-    (0.25
+    (0.22
      ;; body armor
      (0.7 . ,new-leather-armor)
-     (0.3 . ,new-studded-leather-armor))))
+     (0.3 . ,new-studded-leather-armor))
+    (0.1
+     ;; potions
+     (1 . ,new-light-healing-potion))))
 ;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
 ;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
 
-(define (possible-treasure no)
+(define (possible-treasure no) ;; TODO maybe be like nethack, and have the same item possibilities, regardless of level ?
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
 			       (fold

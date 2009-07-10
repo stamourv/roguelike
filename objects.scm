@@ -69,3 +69,18 @@
 (define-class ranged-weapon (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed
 (define-method (print (o ranged-weapon)) #\))
 (define (new-shortbow) (make-ranged-weapon "shortbow" 30 '(6) 'piercing))
+
+
+(define-class potion (object) ;; TODO have randomly assigned colors, and show a message about the true nature of the potion when drunk (and maybe even set! the new-X functions to give them their proper name (and rename all in inventory))
+  (slot: thunk))
+(define-method (print (o potion)) #\;)
+(define-generic drink)
+(define-method (drink o)          (display "I can't drink that."))
+(define-method (drink (o potion)) ((potion-thunk o)))
+(define (new-light-healing-potion)
+  (make-potion "light healing potion" 50 ;; TODO at this price, is oly seen on the 3rd level. might be nice to see on the second
+	       (lambda ()
+		 (character-hp-set! player
+				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
+					 (character-max-hp player))))))
+;; TODO have more potions, so that random colors 
