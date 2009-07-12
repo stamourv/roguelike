@@ -1,6 +1,8 @@
 (define-class character ()
   (slot: name)
+  
   (slot: pos)
+  (slot: floor-no)
 
   (slot: str) ;; TODO have a profile type to store all that ?
   (slot: dex)
@@ -14,6 +16,7 @@
   (slot: hp)
   
   (slot: base-attack-bonus)
+  (slot: speed) ; number of seconds needed to do a turn
 
   (slot: equipment))
 

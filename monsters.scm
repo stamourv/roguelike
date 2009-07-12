@@ -5,17 +5,17 @@
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
 ;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
-(define-macro (new-monster f name pos
+(define-macro (new-monster f name pos floor-no
 			   str dex con int wis cha
 			   hit-dice max-hp hp
-			   base-attack-bonus
+			   base-attack-bonus speed
 			   equipment
 			   challenge-rating behavior)
   (let ((m (gensym)))
-    `(let ((,m (,f ,name ,pos
+    `(let ((,m (,f ,name ,pos ,floor-no
 		   ,str ,dex ,con ,int ,wis ,cha
 		   ,hit-dice ,max-hp ,hp
-		   ,base-attack-bonus
+		   ,base-attack-bonus ,speed
 		   ,equipment
 		   ,challenge-rating ,behavior)))
        (init-hp ,m)
@@ -24,9 +24,9 @@
 (define-class goblin (monster))
 (define (new-goblin)
   (new-monster make-goblin
-	       "goblin" #f ;; TODO add ranged versions too
+	       "goblin" #f #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6
-	       '(8) #f #f 1
+	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-club)
 		off-hand:  (new-light-shield)
@@ -37,9 +37,9 @@
 (define-class kobold (monster))
 (define (new-kobold)
   (new-monster make-kobold
-	       "kobold" #f
+	       "kobold" #f #f
 	       9 13 10 10 9 8
-	       '(8) #f #f 1
+	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-shortspear)
 		torso:     (new-leather-armor))
@@ -49,9 +49,9 @@
 (define-class orc (monster))
 (define (new-orc)
   (new-monster make-orc
-	       "orc" #f
+	       "orc" #f #f
 	       17 11 12 8 7 6
-	       '(8) #f #f 1
+	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-greataxe) ;; TODO handle two-handed weapons and placeholders for monsters ? since they can't change their equipment, and since they are used as two-handed weapons anyway (1.5 times the strength bonus), not really necessary
 		torso:     (new-studded-leather-armor))
@@ -64,9 +64,9 @@
 (define-class bat (animal)) ;; TODO actually just as annoying and dangerous as rats, so up the challenge rating ?
 (define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
   (new-monster make-bat
-	       "bat" #f
+	       "bat" #f #f
 	       1 15 10 2 14 4
-	       '(2) #f #f 0
+	       '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       1/10 (rush-behavior)))
 (define-method (print (m bat)) #\b)
@@ -74,9 +74,9 @@
 (define-class rat (animal))
 (define (new-rat)
   (new-monster make-rat
-	       "rat" #f
+	       "rat" #f #f
 	       2 15 10 2 12 2
-	       '(2) #f #f 0
+	       '(2) #f #f 0 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       1/8 (rush-behavior)))
 (define-method (print (m rat)) #\r)
@@ -169,6 +169,7 @@
 		  (if (not (null? monsters))
 		      (let ((cell (random-element space))
 			    (mon  (car monsters)))
+			(character-floor-no-set! mon no)
 			(cell-occupant-set! (grid-ref (floor-map floor) cell)
 					    mon)
 			(character-pos-set! mon cell)

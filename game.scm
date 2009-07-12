@@ -16,6 +16,7 @@
 (include "visibility.scm")
 (include "terminal.scm")
 (include "input.scm")
+(include "scheduler.scm")
 (include "help.scm")
 
 (define debug #f)
@@ -47,19 +48,11 @@
 
 
 (define (game)
+  (reschedule player)
   (let loop ()
-    (cond ((<= (character-hp player) 0)
-	   (display "You die.\n")
-	   (quit))
-	  (else (let ((floor (player-floor player)))
-		  (update-visibility)
-		  (show-state)
-		  (read-command) ; side-effects the player
-		  (for-each (lambda (m)
-			      ((behavior-fun (monster-behavior m))
-			       m floor (character-pos player)))
-			    (floor-monsters floor))
-		  (loop))))))
+    (for-each turn (find-next-active))
+    (set! turn-no (+ turn-no 1))
+    (loop)))
 
 (define n-levels 3) ;; TODO change
 (define player #f) ; needed for level-generation
@@ -70,7 +63,7 @@
   (let* ((name         (string->symbol (player-name player)))
 	 (xp           (player-experience player))
 	 (level        (player-level player))
-	 (floor-no     (+ (floor-no (player-floor player)) 1))
+	 (floor-no     (character-floor-no player))
 	 (current-game (list name xp level floor-no)))
     (let loop ((hall (update-hall-of-fame name xp level floor-no))
 	       (highlight? #t))

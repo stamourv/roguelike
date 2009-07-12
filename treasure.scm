@@ -21,7 +21,7 @@
 ;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
 ;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
 
-(define (possible-treasure no) ;; TODO maybe be like nethack, and have the same item possibilities, regardless of level ?
+(define (possible-treasure no) ;; TODO maybe be like nethack, and have the same item possibilities, regardless of level ? if so, just use the DM's guide tables
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
 			       (fold

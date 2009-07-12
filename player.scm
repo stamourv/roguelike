@@ -6,11 +6,12 @@
   (slot: experience)
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
-  (let ((player (make-player name #f
+  (let ((player (make-player name #f #f
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     '(10) ; hit dice
 			     #f #f
-			     1  ; base attack bonus
+			     1 ; base attack bonus
+			     6 ; speed, 6 seconds for a turn
 			     (new-equipment main-hand: (new-club))
 			     '() #f '()
 			     1 0
@@ -39,10 +40,18 @@
 (define (place-player
 	 player player-floor
 	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
-  (let ((map (floor-map (player-floor-floor player-floor))))
+  (let* ((floor (player-floor-floor player-floor))
+	 (map   (floor-map floor)))
     (cell-occupant-set!        (grid-ref map start-pos) player)
     (character-pos-set!        player start-pos)
-    (player-current-floor-set! player player-floor)))
+    (player-current-floor-set! player player-floor)
+    (character-floor-no-set!   player (+ (floor-no floor) 1))
+    (set! turn-no 0)
+    (set! turn-id 0)
+    (set! turn-queue '())
+    ;; no need to reschedule the player, since he will get rescheduled at the
+    ;; end of his turn
+    (for-each reschedule (floor-monsters floor))))
 
 
 (define (show-state)

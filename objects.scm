@@ -83,4 +83,4 @@
 		 (character-hp-set! player
 				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
 					 (character-max-hp player))))))
-;; TODO have more potions, so that random colors 
+;; TODO have more potions, so that random colors actually matter
