@@ -59,9 +59,7 @@
 		    (fold
 		     (lambda (acc y)
 		       (let ((p (new-point (+ x pos-x) (+ y pos-y))))
-			 (and acc
-			      (inside-grid? level p)
-			      (wall? (grid-ref level p)))))
+			 (and acc (wall? (grid-ref-check level p)))))
 		     #t (iota width))))
 	     #t (iota height))
 	    
@@ -182,8 +180,7 @@
 			 (directions '(south north east west)))
 		(cond ((null? around) ; walls all around
 		       (random-element '(north south west east)))
-		      ((and (inside-grid? level (car around))
-			    (walkable-cell? (grid-ref level (car around))))
+		      ((walkable-cell? (grid-ref-check level (car around)))
 		       ;; there is a free space in that direction, we must
 		       ;; expand the opposite way
 		       (car directions))
@@ -329,8 +326,8 @@
 				(fold
 				 (lambda (acc new)
 				   (and acc
-					(inside-grid? level new)
-					(walkable-cell? (grid-ref level new))))
+					(walkable-cell? (grid-ref-check level
+									new))))
 				 #t sides))))
 		       walls))))
 	       (if (not (eq? door-candidate current-door))
@@ -353,6 +350,57 @@
 	  (floor-walkable-cells-set!
 	   new-floor (remove pos (floor-walkable-cells new-floor)))
 	  (floor-stairs-down-set! new-floor pos)))
+
+    ;; replace generic corner walls by the appropriate wall cell, for
+    ;; aesthetic reasons
+    (grid-for-each
+     (lambda (pos)
+       (let ((cell (grid-ref level pos)))
+	 (if (corner-wall? cell)
+	     (let* ((four-dirs (four-directions pos))
+		    (up        (grid-ref-check level (list-ref four-dirs 0)))
+		    (down      (grid-ref-check level (list-ref four-dirs 1)))
+		    (left      (grid-ref-check level (list-ref four-dirs 2)))
+		    (right     (grid-ref-check level (list-ref four-dirs 3))))
+	       (define (wall-or-door? c)
+		 (and (or (wall? c) (door? c))
+		      (not (solid-wall? c)))) ; for the dungeon edges
+	       (grid-set!
+		level pos
+		((cond ((and (wall-or-door? up)   (wall-or-door? down)
+			     (wall-or-door? left) (wall-or-door? right)) ;; TODO there are still issues with that. if we have 2 rooms side by side, but with no common wall, a corner that would normally be a T could be a cross, since it would see the other wall running behind, even if it's not connected
+			new-corner-wall)
+		       ((and (wall-or-door? down)
+			     (wall-or-door? left)
+			     (wall-or-door? right))
+			new-north-tee-wall)
+		       ((and (wall-or-door? up)
+			     (wall-or-door? left)
+			     (wall-or-door? right))
+			new-south-tee-wall)
+		       ((and (wall-or-door? up)
+			     (wall-or-door? down)
+			     (wall-or-door? right))
+			new-west-tee-wall)
+		       ((and (wall-or-door? up)
+			     (wall-or-door? down)
+			     (wall-or-door? left))
+			new-east-tee-wall)
+		       ((and (wall-or-door? down) (wall-or-door? right))
+			new-north-west-wall)
+		       ((and (wall-or-door? down) (wall-or-door? left))
+			new-north-east-wall)
+		       ((and (wall-or-door? up)   (wall-or-door? right))
+			new-south-west-wall)
+		       ((and (wall-or-door? up)   (wall-or-door? left))
+			new-south-east-wall)
+		       ((and (wall-or-door? up)   (wall-or-door? down))
+			new-vertical-wall)
+		       ((and (wall-or-door? left) (wall-or-door? right))
+			new-horizontal-wall)
+		       (else
+			new-pillar))))))))
+     level)
 
     ;; add everything else on top
     (generate-encounters new-floor)

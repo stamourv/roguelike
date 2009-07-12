@@ -25,10 +25,14 @@
 						    (modulo   p width))))
 		   (iota (* height width))))))
 ;; in all cases, x is the row, y is the column
-(define (pos->index g pos)
+(define (pos->index     g pos)
   (+ (* (point-x pos) (grid-width g)) (point-y pos)))
-(define (grid-ref  g pos)   (vector-ref  (grid-cells g) (pos->index g pos)))
-(define (grid-set! g pos v) (vector-set! (grid-cells g) (pos->index g pos) v))
+(define (grid-ref       g pos)
+  (vector-ref (grid-cells g) (pos->index g pos)))
+(define (grid-ref-check g pos)
+  (if (inside-grid? g pos) (grid-ref g pos) #f))
+(define (grid-set!      g pos v)
+  (vector-set! (grid-cells g) (pos->index g pos) v))
 (define (grid-copy g)
   (make-grid (grid-height g)
 	     (grid-width  g)
@@ -109,9 +113,7 @@
 
 (define (next-to-a-door? g pos)
   (fold (lambda (acc new)
-	  (or acc
-	      (and (inside-grid? g new)
-		   (door? (grid-ref g new)))))
+	  (or acc (door? (grid-ref-check g new))))
 	#f (four-directions pos)))
 
 (define (grid-find g p)

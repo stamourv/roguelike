@@ -39,21 +39,54 @@
 (define (new-stairs-down) (make-stairs-down '() #f))
 (define-method (print (c stairs-down)) (walkable-cell-print c #\>))
 
+
 (define-class wall (cell))
 (define-method (print (c wall)) #\+)
 (define-method (opaque-cell? (c wall)) #t)
+
+(define double-walls? #f)
+
 (define-class vertical-wall   (wall))
 (define (new-vertical-wall)   (make-vertical-wall   '() #f))
-(define-method (print (c vertical-wall))   #\|)
+(define-method (print (c vertical-wall))   (if double-walls? #\u2551 #\u2502))
 (define-class horizontal-wall (wall))
 (define (new-horizontal-wall) (make-horizontal-wall '() #f))
-(define-method (print (c horizontal-wall)) #\-)
+(define-method (print (c horizontal-wall)) (if double-walls? #\u2550 #\u2500))
 (define-class corner-wall     (wall))
+
 (define (new-corner-wall)     (make-corner-wall     '() #f))
-(define-class solid-wall      (wall))
-(define (new-solid-wall)      (make-solid-wall      '() #f))
-(define-class pillar          (wall))
-(define (new-pillar)          (make-pillar          '() #f))
+(define-method (print (c corner-wall))     (if double-walls? #\u256c #\u253c))
+
+(define-class north-east-wall (wall))
+(define (new-north-east-wall) (make-north-east-wall '() #f))
+(define-method (print (c north-east-wall)) (if double-walls? #\u2557 #\u2510))
+(define-class north-west-wall (wall))
+(define (new-north-west-wall) (make-north-west-wall '() #f))
+(define-method (print (c north-west-wall)) (if double-walls? #\u2554 #\u250c))
+(define-class south-east-wall (wall))
+(define (new-south-east-wall) (make-south-east-wall '() #f))
+(define-method (print (c south-east-wall)) (if double-walls? #\u255d #\u2518))
+(define-class south-west-wall (wall))
+(define (new-south-west-wall) (make-south-west-wall '() #f))
+(define-method (print (c south-west-wall)) (if double-walls? #\u255a #\u2514))
+
+(define-class north-tee-wall (wall))
+(define (new-north-tee-wall) (make-north-tee-wall '() #f))
+(define-method (print (c north-tee-wall)) (if double-walls? #\u2566 #\u252c))
+(define-class south-tee-wall (wall))
+(define (new-south-tee-wall) (make-south-tee-wall '() #f))
+(define-method (print (c south-tee-wall)) (if double-walls? #\u2569 #\u2534))
+(define-class east-tee-wall  (wall))
+(define (new-east-tee-wall)  (make-east-tee-wall  '() #f))
+(define-method (print (c east-tee-wall))  (if double-walls? #\u2563 #\u2524))
+(define-class west-tee-wall  (wall))
+(define (new-west-tee-wall)  (make-west-tee-wall  '() #f))
+(define-method (print (c west-tee-wall))  (if double-walls? #\u2560 #\u251c))
+
+(define-class solid-wall (wall)) ;; TODO there are still behind stairs, is it bad ?
+(define (new-solid-wall) (make-solid-wall '() #f))
+(define-class pillar     (wall))
+(define (new-pillar)     (make-pillar     '() #f))
 
 
 (define-generic open)
