@@ -50,7 +50,7 @@
 (define (game)
   (reschedule player)
   (let loop ()
-    (for-each turn (find-next-active))
+    (for-each call (find-next-active))
     (set! turn-no (+ turn-no 1))
     (loop)))
 

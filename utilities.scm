@@ -25,7 +25,8 @@
 
 (define (call x) (x))
 
-(define (identity x) x)
+(define (identity x)  x)
+(define (call     x) (x))
 
 ;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 (define-type set
