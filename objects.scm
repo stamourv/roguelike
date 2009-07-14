@@ -83,4 +83,18 @@
 		 (character-hp-set! player
 				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
 					 (character-max-hp player))))))
+(define (new-bulls-strength-potion)
+  (make-potion "bull's strength potion" 300 ;; TODO at this price, will take a while to see
+	       (lambda ()
+		 (character-str-set! player (+ (character-str player) 4))
+		 (alter-stat player 'str)
+		 (schedule
+		  (lambda ()
+		    (character-str-set! player (- (character-str player) 4))
+		    (restore-stat player 'str))
+		  (+ turn-no 180))))) ; 3 minutes/level @ level 3
 ;; TODO have more potions, so that random colors actually matter
+
+(define-class food (object)
+  (slot: thunk))
+;; TODO add some, should be cheaper thatn potions, but should heal less

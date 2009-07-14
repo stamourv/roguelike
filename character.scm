@@ -11,6 +11,10 @@
   (slot: wis)
   (slot: cha)
 
+  ;; table that contains, for each stat, how many temporary effects are
+  ;; affecting it. if this non-zero, the stat will be displayed differently
+  (slot: altered-stats)
+  
   (slot: hit-dice)
   (slot: max-hp)
   (slot: hp)
@@ -47,6 +51,16 @@
                 char)
                10)
             2))
+
+;; to note that a stat is altered by a temporary effect
+(define (alter-stat    char stat)
+  (let ((alt (character-altered-stats char)))
+    (table-set! alt stat (+ (table-ref alt stat 0) 1))))
+(define (restore-stat  char stat)
+  (let ((alt (character-altered-stats char)))
+    (table-set! alt stat (- (table-ref alt stat) 1))))
+(define (altered-stat? char stat)
+  (> (table-ref (character-altered-stats char) stat 0) 0))
 
 (define (get-melee-attack-bonus  c)
   (+ (character-base-attack-bonus c)

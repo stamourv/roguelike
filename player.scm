@@ -2,12 +2,15 @@
   (slot: floors-before) ; pairs (map . view)
   (slot: current-floor)
   (slot: floors-after)
+
   (slot: level)
   (slot: experience)
+    
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player name #f #f
 			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
+			     (make-table)
 			     '(10) ; hit dice
 			     #f #f
 			     1 ; base attack bonus
@@ -62,15 +65,36 @@
   (display-notification (number->string (character-hp player)) "/"
 			(number->string (character-max-hp player)) " hp\n")
   (display-notification "AC: "  (number->string (get-armor-class player)) "\n")
-  (display-notification "str: " (number->string (character-str player))
-			"	"
-			"int: " (number->string (character-int player)) "\n")
-  (display-notification "dex: " (number->string (character-dex player))
-			"	"
-			"wis: " (number->string (character-wis player)) "\n")
-  (display-notification "con: " (number->string (character-con player))
-			"	"
-			"cha: " (number->string (character-cha player)) "\n")
+  
+  (display-notification "str: ")
+  (if (altered-stat? player 'str) (terminal-colors 'white 'black))
+  (display (number->string (character-str player)))
+  (terminal-reset)
+  (display "	int: ")
+  (if (altered-stat? player 'int) (terminal-colors 'white 'black))
+  (display (number->string (character-int player)))
+  (terminal-reset)
+  (display "\n")
+  
+  (display-notification "dex: ")
+  (if (altered-stat? player 'dex) (terminal-colors 'white 'black))
+  (display (number->string (character-dex player)))
+  (terminal-reset)
+  (display "	wis: ")
+  (if (altered-stat? player 'wis) (terminal-colors 'white 'black))
+  (display (number->string (character-wis player)))
+  (terminal-reset)
+  (display "\n")
+  
+  (display-notification "con: ")
+  (if (altered-stat? player 'con) (terminal-colors 'white 'black))
+  (display (number->string (character-con player)))
+  (terminal-reset)
+  (display "	cha: ")
+  (if (altered-stat? player 'cha) (terminal-colors 'white 'black))
+  (display (number->string (character-cha player)))
+  (terminal-reset)
+  (display "\n")
   
   (cursor-home)
   (clear-line)

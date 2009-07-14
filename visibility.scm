@@ -81,7 +81,8 @@
 		   (list east north west south)))))
 	(if (not (null? queue))
 	    (let ((new (car queue)))
-	      (if (and (not (eq? (grid-ref-check view new)
+	      (if (and (inside-grid? view new)
+		       (not (eq? (grid-ref view new)
 				 'visible)) ; already seen
 		       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
 		       ;; do we have line of sight ? helps restrict the
