@@ -5,19 +5,9 @@
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
 ;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
-(define-macro (new-monster f name pos floor-no
-			   str dex con int wis cha altered-stats
-			   hit-dice max-hp hp
-			   base-attack-bonus speed
-			   equipment
-			   challenge-rating behavior)
+(define-macro (new-monster f . args)
   (let ((m (gensym)))
-    `(let ((,m (,f ,name ,pos ,floor-no
-		   ,str ,dex ,con ,int ,wis ,cha ,altered-stats
-		   ,hit-dice ,max-hp ,hp
-		   ,base-attack-bonus ,speed
-		   ,equipment
-		   ,challenge-rating ,behavior)))
+    `(let ((,m (,f ,@args)))
        (init-hp ,m)
        ,m)))
 
