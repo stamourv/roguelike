@@ -71,11 +71,11 @@
 		   (grid-set!
 		    level p
 		    ;; find out the appropriate cell type
-		    ((cond ((or (corner-wall? (grid-ref level p))
+		    ((cond ((or (four-corner-wall? (grid-ref level p))
 				(and (or (= x 0) (= x (- height 1)))
 				     (or (= y 0) (= y (- width 1)))))
 			    ;; one of the four corners
-			    new-corner-wall)
+			    new-four-corner-wall)
 			   ((or (= x 0) (= x (- height 1)))
 			    ;; horizontal-wall
 			    (set! new-walls (cons p new-walls))
@@ -150,7 +150,7 @@
     ;; given
     (define (add-door cell #!optional direction)
       ;; add the doorposts
-      (for-each (lambda (post) (grid-set! level post (new-corner-wall)))
+      (for-each (lambda (post) (grid-set! level post (new-four-corner-wall)))
 		(wall-parrallel level cell))
       ;; connect the two rooms
       (let* ((sides (wall-perpendicular level cell))
@@ -271,16 +271,16 @@
 			     (a     (get-room a rooms))
 			     (b     (get-room b rooms)))
 			(not (connected? a b))))
-		    (or (and (corner-wall?      c-up)
-			     (corner-wall?      c-down)
+		    (or (and (four-corner-wall? c-up)
+			     (four-corner-wall? c-down)
 			     (walkable-cell?    c-left)
 			     (walkable-cell?    c-right)
 			     ;; must not be connected already
 			     (connection-check  left right)
 			     (begin (set! direction 'vertical)
 				    #t))
-			(and (corner-wall?      c-left)
-			     (corner-wall?      c-right)
+			(and (four-corner-wall? c-left)
+			     (four-corner-wall? c-right)
 			     (walkable-cell?    c-up)
 			     (walkable-cell?    c-down)
 			     (connection-check  up down)
@@ -356,12 +356,12 @@
     (grid-for-each
      (lambda (pos)
        (let ((cell (grid-ref level pos)))
-	 (if (corner-wall? cell)
-	     (let* ((four-dirs (four-directions pos))
-		    (up        (grid-ref-check level (list-ref four-dirs 0)))
-		    (down      (grid-ref-check level (list-ref four-dirs 1)))
-		    (left      (grid-ref-check level (list-ref four-dirs 2)))
-		    (right     (grid-ref-check level (list-ref four-dirs 3))))
+	 (if (four-corner-wall? cell)
+	     (let* ((four  (four-directions pos))
+		    (up    (grid-ref-check level (list-ref four 0)))
+		    (down  (grid-ref-check level (list-ref four 1)))
+		    (left  (grid-ref-check level (list-ref four 2)))
+		    (right (grid-ref-check level (list-ref four 3))))
 	       (define (wall-or-door? c)
 		 (and (or (wall? c) (door? c))
 		      (not (solid-wall? c)))) ; for the dungeon edges
@@ -369,7 +369,7 @@
 		level pos
 		((cond ((and (wall-or-door? up)   (wall-or-door? down)
 			     (wall-or-door? left) (wall-or-door? right)) ;; TODO there are still issues with that. if we have 2 rooms side by side, but with no common wall, a corner that would normally be a T could be a cross, since it would see the other wall running behind, even if it's not connected
-			new-corner-wall)
+			new-four-corner-wall)
 		       ((and (wall-or-door? down)
 			     (wall-or-door? left)
 			     (wall-or-door? right))
