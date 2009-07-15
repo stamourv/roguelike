@@ -86,15 +86,16 @@
 (define (new-bulls-strength-potion)
   (make-potion "bull's strength potion" 300 ;; TODO at this price, will take a while to see
 	       (lambda ()
-		 (character-str-set! player (+ (character-str player) 4))
-		 (alter-stat player 'str)
-		 (schedule
-		  (lambda ()
-		    (character-str-set! player (- (character-str player) 4))
-		    (restore-stat player 'str))
-		  (+ turn-no 180))))) ; 3 minutes/level @ level 3
+		 (alter-attr player 'str 4 180)))) ; 3 minutes/level @ level 3
+(define (new-cats-grace-potion)
+  (make-potion "cat's grace potion" 300
+	       (lambda ()
+		 (alter-attr player 'dex 4 180))))
+(define (new-bears-endurance-potion) ;; TODO temp hit points
+  #f)
+;; TODO add others for int, wis, cha once they get useful
 ;; TODO have more potions, so that random colors actually matter
 
 (define-class food (object)
   (slot: thunk))
-;; TODO add some, should be cheaper thatn potions, but should heal less
+;; TODO add some, should be cheaper than potions, but should heal less

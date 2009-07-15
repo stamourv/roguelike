@@ -11,9 +11,10 @@
   (slot: wis)
   (slot: cha)
 
-  ;; table that contains, for each stat, how many temporary effects are
-  ;; affecting it. if this non-zero, the stat will be displayed differently
-  (slot: altered-stats)
+  ;; table that contains, for each attribute, how many temporary effects are
+  ;; affecting it. if this non-zero, the attribute will be displayed
+  ;; differently
+  (slot: altered-attrs)
   
   (slot: hit-dice)
   (slot: max-hp)
@@ -35,32 +36,52 @@
     (character-max-hp-set! character hp)
     (character-hp-set!     character hp)))
 
+(define (attribute-getter attr)
+  (lambda (char)
+    (case attr
+      ((str) (character-str char))
+      ((dex) (character-dex char))
+      ((con) (character-con char))
+      ((int) (character-int char))
+      ((wis) (character-wis char))
+      ((cha) (character-cha char)))))
+(define (attribute-setter attr)
+  (lambda (char val)
+    (case attr
+      ((str) (character-str-set! char val))
+      ((dex) (character-dex-set! char val))
+      ((con) (character-con-set! char val))
+      ((int) (character-int-set! char val))
+      ((wis) (character-wis-set! char val))
+      ((cha) (character-cha-set! char val)))))
+
 (define (get-attribute-bonus attr char)
-  (quotient (- ((case attr
-                  ((str) character-str)
-                  ((dex) (lambda (char)
-			   (let ((dex (character-dex char))
-				 (max (max-dex-bonus
-				       (equipment-torso
-					(character-equipment char)))))
-			     (if max (min (+ 10 (* 2 max)) dex) dex))))
-                  ((con) character-con)
-                  ((int) character-int)
-                  ((wis) character-wis)
-                  ((cha) character-cha))
+  (quotient (- ((if (eq? attr 'dex)
+		    (lambda (char)
+		      (let ((dex (character-dex char))
+			    (max (max-dex-bonus
+				  (equipment-torso
+				   (character-equipment char)))))
+			(if max (min (+ 10 (* 2 max)) dex) dex)))
+		    (attribute-getter attr))
                 char)
                10)
             2))
 
-;; to note that a stat is altered by a temporary effect
-(define (alter-stat    char stat)
-  (let ((alt (character-altered-stats char)))
-    (table-set! alt stat (+ (table-ref alt stat 0) 1))))
-(define (restore-stat  char stat)
-  (let ((alt (character-altered-stats char)))
-    (table-set! alt stat (- (table-ref alt stat) 1))))
-(define (altered-stat? char stat)
-  (> (table-ref (character-altered-stats char) stat 0) 0))
+;; to note that an attribute is altered by a temporary effect
+(define (alter-attr    char attr n duration)
+  (let ((alt    (character-altered-attrs char))
+	(getter (attribute-getter attr))
+	(setter (attribute-setter attr)))
+    (table-set! alt attr (+ (table-ref alt attr 0) 1))
+    (setter char (+ (getter char) n))
+    (schedule
+     (lambda ()
+       (setter char (- (getter char) 4))
+       (table-set! alt attr (- (table-ref alt attr) 1)))
+     (+ turn-no duration))))
+(define (altered-attr? char attr)
+  (> (table-ref (character-altered-attrs char) attr 0) 0))
 
 (define (get-melee-attack-bonus  c)
   (+ (character-base-attack-bonus c)
