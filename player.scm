@@ -62,8 +62,13 @@
   (display-notification (character-name player) "\n")
   (display-notification "level " (number->string (player-level player)) "\n")
   (display-notification (number->string (player-experience player)) " xp pts\n")
-  (display-notification (number->string (character-hp player)) "/"
-			(number->string (character-max-hp player)) " hp\n")
+  (display-notification "")
+  (if (altered-attr? player 'hp) (terminal-colors 'white 'black)) ;; TODO abstract that
+  (display (number->string (character-hp player)))
+  (terminal-reset)
+  (display
+   (string-append "/" (number->string (character-max-hp player)) " hp\n"))
+  
   (display-notification "AC: "  (number->string (get-armor-class player)) "\n")
   
   (display-notification "str: ")

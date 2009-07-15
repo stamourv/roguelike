@@ -44,7 +44,8 @@
       ((con) (character-con char))
       ((int) (character-int char))
       ((wis) (character-wis char))
-      ((cha) (character-cha char)))))
+      ((cha) (character-cha char))
+      ((hp)  (character-hp  char)))))
 (define (attribute-setter attr)
   (lambda (char val)
     (case attr
@@ -53,7 +54,8 @@
       ((con) (character-con-set! char val))
       ((int) (character-int-set! char val))
       ((wis) (character-wis-set! char val))
-      ((cha) (character-cha-set! char val)))))
+      ((cha) (character-cha-set! char val))
+      ((hp)  (character-hp-set!  char val)))))
 
 (define (get-attribute-bonus attr char)
   (quotient (- ((if (eq? attr 'dex)
@@ -77,7 +79,7 @@
     (setter char (+ (getter char) n))
     (schedule
      (lambda ()
-       (setter char (- (getter char) 4))
+       (setter char (- (getter char) n))
        (table-set! alt attr (- (table-ref alt attr) 1)))
      (+ turn-no duration))))
 (define (altered-attr? char attr)

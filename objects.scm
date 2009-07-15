@@ -91,8 +91,11 @@
   (make-potion "cat's grace potion" 300
 	       (lambda ()
 		 (alter-attr player 'dex 4 180))))
-(define (new-bears-endurance-potion) ;; TODO temp hit points
-  #f)
+(define (new-bears-endurance-potion)
+  (make-potion "bear's endurance potion" 300
+	       (lambda ()
+		 (alter-attr player 'con 4 180)
+		 (alter-attr player 'hp  (* (player-level player) 2) 180))))
 ;; TODO add others for int, wis, cha once they get useful
 ;; TODO have more potions, so that random colors actually matter
 
