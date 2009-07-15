@@ -15,7 +15,7 @@
 (define (new-goblin)
   (new-monster make-goblin
 	       "goblin" #f #f ;; TODO add ranged versions too
-	       11 13 12 10 9 6 (make-table)
+	       11 13 12 10 9 6 (make-table) 0
 	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-club)
@@ -28,7 +28,7 @@
 (define (new-kobold)
   (new-monster make-kobold
 	       "kobold" #f #f
-	       9 13 10 10 9 8 (make-table)
+	       9 13 10 10 9 8 (make-table) 0
 	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-shortspear)
@@ -40,7 +40,7 @@
 (define (new-orc)
   (new-monster make-orc
 	       "orc" #f #f
-	       17 11 12 8 7 6 (make-table)
+	       17 11 12 8 7 6 (make-table) 0
 	       '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-greataxe) ;; TODO handle two-handed weapons and placeholders for monsters ? since they can't change their equipment, and since they are used as two-handed weapons anyway (1.5 times the strength bonus), not really necessary
@@ -55,7 +55,7 @@
 (define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
   (new-monster make-bat
 	       "bat" #f #f
-	       1 15 10 2 14 4 (make-table)
+	       1 15 10 2 14 4 (make-table) 0
 	       '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       1/10 (rush-behavior)))
@@ -65,7 +65,7 @@
 (define (new-rat)
   (new-monster make-rat
 	       "rat" #f #f
-	       2 15 10 2 12 2 (make-table)
+	       2 15 10 2 12 2 (make-table) 0
 	       '(2) #f #f 0 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       1/8 (rush-behavior)))

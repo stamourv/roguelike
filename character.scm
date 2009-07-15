@@ -4,7 +4,7 @@
   (slot: pos)
   (slot: floor-no)
 
-  (slot: str) ;; TODO have a profile type to store all that ?
+  (slot: str)
   (slot: dex)
   (slot: con)
   (slot: int)
@@ -15,6 +15,8 @@
   ;; affecting it. if this non-zero, the attribute will be displayed
   ;; differently
   (slot: altered-attrs)
+
+  (slot: natural-ac) ;; TODO have natural weapons too, which are used when no weapon is equipped (change get-damage-fun)
   
   (slot: hit-dice)
   (slot: max-hp)
@@ -39,23 +41,25 @@
 (define (attribute-getter attr)
   (lambda (char)
     (case attr
-      ((str) (character-str char))
-      ((dex) (character-dex char))
-      ((con) (character-con char))
-      ((int) (character-int char))
-      ((wis) (character-wis char))
-      ((cha) (character-cha char))
-      ((hp)  (character-hp  char)))))
+      ((str)        (character-str char)) ;; TODO muck around with string->symbol instead ?
+      ((dex)        (character-dex char))
+      ((con)        (character-con char))
+      ((int)        (character-int char))
+      ((wis)        (character-wis char))
+      ((cha)        (character-cha char))
+      ((hp)         (character-hp  char))
+      ((natural-ac) (character-natural-ac char)))))
 (define (attribute-setter attr)
   (lambda (char val)
     (case attr
-      ((str) (character-str-set! char val))
-      ((dex) (character-dex-set! char val))
-      ((con) (character-con-set! char val))
-      ((int) (character-int-set! char val))
-      ((wis) (character-wis-set! char val))
-      ((cha) (character-cha-set! char val))
-      ((hp)  (character-hp-set!  char val)))))
+      ((str)        (character-str-set! char val))
+      ((dex)        (character-dex-set! char val))
+      ((con)        (character-con-set! char val))
+      ((int)        (character-int-set! char val))
+      ((wis)        (character-wis-set! char val))
+      ((cha)        (character-cha-set! char val))
+      ((hp)         (character-hp-set!  char val))
+      ((natural-ac) (character-natural-ac-set! char val)))))
 
 (define (get-attribute-bonus attr char)
   (quotient (- ((if (eq? attr 'dex)
@@ -111,6 +115,7 @@
 (define (get-armor-class c)
   (let ((e (character-equipment c)))
     (+ 10
+       (character-natural-ac c)
        (get-attribute-bonus 'dex c)
        (get-ac (equipment-torso    e))
        (get-ac (equipment-off-hand e))))) ;; TODO add more

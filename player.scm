@@ -9,8 +9,7 @@
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player name #f #f
-			     16 14 14 10 10 10 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
-			     (make-table)
+			     16 14 14 10 10 10 (make-table) 0 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     '(10) ; hit dice
 			     #f #f
 			     1 ; base attack bonus
@@ -69,7 +68,11 @@
   (display
    (string-append "/" (number->string (character-max-hp player)) " hp\n"))
   
-  (display-notification "AC: "  (number->string (get-armor-class player)) "\n")
+  (display-notification "AC: ")
+  (if (altered-attr? player 'natural-ac) (terminal-colors 'white 'black))
+  (display (number->string (get-armor-class player)))
+  (terminal-reset)
+  (display "\n")
   
   (display-notification "str: ")
   (if (altered-attr? player 'str) (terminal-colors 'white 'black))

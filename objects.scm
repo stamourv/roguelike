@@ -71,7 +71,7 @@
 (define (new-shortbow) (make-ranged-weapon "shortbow" 30 '(6) 'piercing))
 
 
-(define-class potion (object) ;; TODO have randomly assigned colors, and show a message about the true nature of the potion when drunk (and maybe even set! the new-X functions to give them their proper name (and rename all in inventory))
+(define-class potion (object)
   (slot: thunk)
   (slot: message))
 (define-method (print (o potion)) #\;)
@@ -82,7 +82,8 @@
 	 '("light healing potion"
 	   "bull's strength potion"
 	   "cat's grace potion"
-	   "bear's endurance potion"))
+	   "bear's endurance potion"
+	   "potion of barkskin"))
 	(colors
 	 '("red" "blue" "green" "yellow" "white" "black" "pink" "teal" "purple"
 	   "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
@@ -130,9 +131,13 @@
 		 (alter-attr player 'con 4 180)
 		 (alter-attr player 'hp  (* (player-level player) 2) 180))
 	       "You could run a thousand miles.\n"))
-;; TODO for barkskin : Your skin becomes thick and rough.\n TODO add natural-ac to character for that, maybe also natural-weapon ?
 ;; TODO add others for int, wis, cha once they get useful
-;; TODO have more potions, so that random colors actually matter
+(define (new-barkskin-potion)
+  (make-potion "potion of barkskin" 300
+	       (lambda ()
+		 (alter-attr player 'natural-ac 2 180))
+	       "Your skin becomes thick and rough.\n"))
+;; TODO have some bad potions (with the same price as the good ones, to avoid running only into bad potions early on) to make it riskier
 
 (define-class food (object)
   (slot: thunk))
