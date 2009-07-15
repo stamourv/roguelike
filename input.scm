@@ -91,7 +91,7 @@
 		       (show-state)
 		       (f object)
 		       (display (string-append feedback
-					       (object-name object)
+					       (object-info object)
 					       ".\n"))))))))
 
 ;; console from which arbitrary expressions can be evaluated

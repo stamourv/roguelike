@@ -211,12 +211,15 @@
 
 (define (cmd-drink)
   (let* ((e       (character-equipment player))
-	 (objects (player-inventory player)))
+	 (objects (player-inventory player))
+	 (o       #f))
     (choice objects
 	    (lambda (object)
-	      (drink object)
+	      (set! o object)
 	      (player-inventory-set! player (remove object objects)))
-	    "You have nothing to drink." "Drink what?" "Drank ")))
+	    "You have nothing to drink." "Drink what?" "Drank ")
+    ;; necessary to display the messages in the right order
+    (if o (drink o))))
 
 
 (define (direction-command name f)

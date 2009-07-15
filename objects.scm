@@ -72,30 +72,65 @@
 
 
 (define-class potion (object) ;; TODO have randomly assigned colors, and show a message about the true nature of the potion when drunk (and maybe even set! the new-X functions to give them their proper name (and rename all in inventory))
-  (slot: thunk))
+  (slot: thunk)
+  (slot: message))
 (define-method (print (o potion)) #\;)
+
+;; important: make sure there is at least as many colors as potion types
+(define potion-colors
+  (let ((types ;; TODO keep this up to date, maybe have a macro that generates the potion type, and adds it to the list ?
+	 '("light healing potion"
+	   "bull's strength potion"
+	   "cat's grace potion"
+	   "bear's endurance potion"))
+	(colors
+	 '("red" "blue" "green" "yellow" "white" "black" "pink" "teal" "purple"
+	   "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
+	   "milky")))
+    (map cons types (take (randomize-list colors) (length types)))))
+;; potion types that have been identified ;; TODO put this with the player ?
+(define identified-potions '())
+
+(define-method (object-info (o potion))
+  (let ((name (object-name o)))
+    (cond ((member name identified-potions) name)
+	  ;; unindentified, show the color
+	  (else (string-append (cdr (assoc name potion-colors))
+			       " potion")))))
+
 (define-generic drink)
 (define-method (drink o)          (display "I can't drink that."))
-(define-method (drink (o potion)) ((potion-thunk o)))
+(define-method (drink (o potion))
+  ((potion-thunk o))
+  (display (potion-message o))
+  (let ((name (object-name o)))
+    (if (not (member name identified-potions))
+	(set! identified-potions (cons name identified-potions)))))
+
 (define (new-light-healing-potion)
   (make-potion "light healing potion" 50 ;; TODO at this price, is oly seen on the 3rd level. might be nice to see on the second
 	       (lambda ()
 		 (character-hp-set! player
 				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
-					 (character-max-hp player))))))
+					 (character-max-hp player))))
+	       "You feel healthier.\n"))
 (define (new-bulls-strength-potion)
   (make-potion "bull's strength potion" 300 ;; TODO at this price, will take a while to see
 	       (lambda ()
-		 (alter-attr player 'str 4 180)))) ; 3 minutes/level @ level 3
+		 (alter-attr player 'str 4 180)) ; 3 minutes/level @ level 3
+	       "You could lift boulders.\n"))
 (define (new-cats-grace-potion)
   (make-potion "cat's grace potion" 300
 	       (lambda ()
-		 (alter-attr player 'dex 4 180))))
+		 (alter-attr player 'dex 4 180))
+	       "You feel lighter.\n"))
 (define (new-bears-endurance-potion)
   (make-potion "bear's endurance potion" 300
 	       (lambda ()
 		 (alter-attr player 'con 4 180)
-		 (alter-attr player 'hp  (* (player-level player) 2) 180))))
+		 (alter-attr player 'hp  (* (player-level player) 2) 180))
+	       "You could run a thousand miles.\n"))
+;; TODO for barkskin : Your skin becomes thick and rough.\n TODO add natural-ac to character for that, maybe also natural-weapon ?
 ;; TODO add others for int, wis, cha once they get useful
 ;; TODO have more potions, so that random colors actually matter
 

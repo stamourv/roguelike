@@ -3,6 +3,8 @@
 (define-generic print) ; used for objects, cells, etc. ;; TODO receive bg and fg color ? or visibility ? as optional arguments, if methods can have them ?
 (define-method (print o) #\space)
 
+(random-source-randomize! default-random-source)
+
 (include "utilities.scm") ;; TODO have a makefile, and separate compilation
 (include "grid.scm")
 (include "cell.scm")
@@ -21,7 +23,6 @@
 
 (define debug #f)
 
-(random-source-randomize! default-random-source)
 (tty-mode-set! (current-input-port) #t #t #t #f 0)
 (shell-command "setterm -cursor off")
 ;; strangely, clear-to-bottom does not clear the bottom of the screen as it

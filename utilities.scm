@@ -23,6 +23,11 @@
 	((p (car l)) (car l))
 	(else        (find p (cdr l)))))
 
+(define (take l n)
+  (if (< n 1)
+      '()
+      (cons (car l) (take (cdr l) (- n 1)))))
+
 (define (call x) (x))
 
 (define (identity x)  x)
