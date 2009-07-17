@@ -102,10 +102,9 @@
 				     make-north-east-wall)
 				    ((and (visited? down) (visited? right))
 				     make-north-west-wall)
-				    ((and (visited? left) (visited? right))
+				    ((or (visited? left)  (visited? right))
 				     make-horizontal-wall)
-				    (else ;; FOO
-				     make-pillar))) ;; FOO last case ?
+				    (else make-pillar))) ;; FOO
 			     ((south-tee-wall? cell)
 			      (cond ((and (visited? up)
 					  (visited? left)
@@ -115,36 +114,33 @@
 				     make-south-east-wall)
 				    ((and (visited? up)   (visited? right))
 				     make-south-west-wall)
-				    ((and (visited? left) (visited? right))
+				    ((or (visited? left)  (visited? right))
 				     make-horizontal-wall)
-				    (else
-				     make-pillar))) ;; FOO
+				    (else make-pillar))) ;; FOO
 			     ((east-tee-wall? cell)
 			      (cond ((and (visited? up)
 					  (visited? down)
 					  (visited? left))
 				     make-east-tee-wall)
-				    ((and (visited? up)   (visited? down))
-				     make-vertical-wall)
-				    ((and (visited? up)   (visited? right))
-				     make-south-west-wall)
-				    ((and (visited? down) (visited? right))
-				     make-north-west-wall)
-				    (else
-				     make-pillar))) ;; FOO
-			     ((west-tee-wall? cell)
-			      (cond ((and (visited? up)
-					  (visited? down)
-					  (visited? right))
-				     make-west-tee-wall)
-				    ((and (visited? up)   (visited? down))
-				     make-vertical-wall)
 				    ((and (visited? up)   (visited? left))
 				     make-south-east-wall)
 				    ((and (visited? down) (visited? left))
 				     make-north-east-wall)
-				    (else
-				     make-pillar)))) ;; FOO
+				    ((or (visited? up)    (visited? down))
+				     make-vertical-wall)
+				    (else make-pillar))) ;; FOO
+			     ((west-tee-wall? cell)
+			      (cond ((and (visited? up)
+					  (visited? down)
+					  (visited? right)) ;; FOO instead of doing it that way, do it with the diagonals
+				     make-west-tee-wall)
+				    ((and (visited? up)   (visited? right))
+				     make-south-west-wall)
+				    ((and (visited? down) (visited? right))
+				     make-north-west-wall)
+				    ((or (visited? up)    (visited? down))
+				     make-vertical-wall)
+				    (else make-pillar)))) ;; FOO
 		       (cell-objects cell) (cell-occupant cell))
 		      cell)))
       (let ((c (print cell)))
