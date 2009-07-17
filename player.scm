@@ -1,53 +1,76 @@
+(import class)
+(import cell)
+(import grid)
+(import scheduler)
+(import character)
+(import objects)
+(import dungeon)
+(import encounters)
+(import treasure)
+(import visibility)
+(import common)
+(import utilities)
+(import terminal)
+
 (define-class player (character)
   (slot: floors-before) ; pairs (map . view)
   (slot: current-floor)
   (slot: floors-after)
 
-  (slot: level)
   (slot: experience)
     
   (slot: inventory)) ; list of objects
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player name #f #f
 			     16 14 14 10 10 10 (make-table) 0 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
-			     '(10) ; hit dice
+			     1 '(10) ; hit dice
 			     #f #f
 			     1 ; base attack bonus
 			     6 ; speed, 6 seconds for a turn
 			     (new-equipment main-hand: (new-club))
 			     '() #f '()
-			     1 0
-			     '())))
+			     0 '())))
     (init-hp player #t) ; the player gets maxed out hp
     (place-player player (new-player-floor 0))
     player))
 (define-method (print (p player)) #\@)
 
+(define-method (turn (p player))
+  (if (<= (character-hp player) 0)
+      (begin (display "You die.\n")
+	     (quit))
+      (begin (update-visibility)
+	     (show-state)
+	     (read-command)
+	     (reschedule player))))
 
 (define-type player-floor
   floor ; views are a grid of either visible, visited or unknown
   view)
 (define (new-player-floor no)
   (let ((floor (generate-floor no (< no (- n-levels 1)))))
+    ;; add everything else on top
+    (generate-encounters floor)
+    (generate-treasure   floor)
     (make-player-floor floor (init-visibility (floor-map floor)))))
 
 
-(define (player-floor player)
-  (player-floor-floor (player-current-floor player)))
 (define (player-map   player)
-  (floor-map (player-floor player)))
+  (floor-map (character-floor player)))
 (define (player-view  player)
   (player-floor-view (player-current-floor player)))
 
 (define (place-player
 	 player player-floor
-	 #!key (start-pos (floor-stairs-up (player-floor-floor player-floor))))
+	 #!key (start-pos #f))
+  (if (not start-pos)
+      (set! start-pos (floor-stairs-up (player-floor-floor player-floor)))) ;; FOO put as default value once black hole fully supports key parameters
   (let* ((floor (player-floor-floor player-floor))
 	 (map   (floor-map floor)))
     (cell-occupant-set!        (grid-ref map start-pos) player)
     (character-pos-set!        player start-pos)
     (player-current-floor-set! player player-floor)
-    (character-floor-no-set!   player (+ (floor-no floor) 1))
+    (character-floor-set!      player floor)
     (set! turn-no 0)
     (set! turn-id 0)
     (set! turn-queue '())
@@ -109,10 +132,242 @@
   (display (string-append
 	    "Floor "
 	    (number->string
-	     (+ (floor-no (player-floor player)) 1))
+	     (+ (floor-no (character-floor player)) 1))
 	    "\n"))
   (show-grid (player-map player)
 	     print-fun: (visibility-printer (player-view player))))
+
+
+(define (update-visibility) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
+  ;; set the fog of war
+  (let ((view (player-view player))
+	(pos  (character-pos player)))
+    (grid-for-each (lambda (pos)
+		     (if (eq? (grid-ref view pos) 'visible)
+			 (grid-set! view pos 'visited)))
+		   view)
+
+    ;; field of vision using shadow casting (spiral path FOV)
+    ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
+    (let* ((g     (player-map player))
+	   (x     (point-x    pos))
+	   (y     (point-y    pos)))
+      (let loop ((queue (list pos)))
+	(define (pass-light pos new)
+	  ;; enqueue cells depending on the orientation of new from pos
+	  (let* ((pos-x (point-x pos)) (pos-y (point-y pos))
+		 (new-x (point-x new)) (new-y (point-y new))
+		 (dirs  (four-directions new))
+		 (north (list-ref dirs 0))
+		 (south (list-ref dirs 1))
+		 (west  (list-ref dirs 2))
+		 (east  (list-ref dirs 3)))
+	    (cond ((< new-x pos-x) ; somewhere north
+		   (cond ((= new-y pos-y) (list east north west)) ; due north
+			 ((< new-y pos-y) (list north west))      ; north-west
+			 ((> new-y pos-y) (list east north))))    ; north-east
+		  ((> new-x pos-x) ; somewhere south
+		   (cond ((= new-y pos-y) (list west south east)) ; due south
+			 ((< new-y pos-y) (list west south))      ; south-west
+			 ((> new-y pos-y) (list south east))))    ; south-east
+		  ((< new-y pos-y) (list north west south))       ; due west
+		  ((> new-y pos-y) (list south east north))       ; due east
+		  (else ; we are at the starting point
+		   (list east north west south)))))
+	(if (not (null? queue))
+	    (let ((new (car queue)))
+	      (if (and (inside-grid? view new)
+		       (not (eq? (grid-ref view new)
+				 'visible)) ; already seen
+		       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
+		       ;; do we have line of sight ? helps restrict the
+		       ;; visibility down to a reasonable level
+		       ;; note: line of sight is not necessary to see walls,
+		       ;; this gives better results
+		       (or (opaque-cell? (grid-ref g new) #f)
+			   (line-of-sight? g pos new)))
+		  (begin (grid-set! view new 'visible) ; mark as lit
+			 (if (not (opaque-cell? (grid-ref g new) #f))
+			     (loop (append (cdr queue)
+					   (pass-light pos new))))))
+	      (loop (cdr queue)))))
+
+      ;; one last pass to solve the problem case of walls that are hard to
+      ;; see, which gives ugly results
+      ;; to solve the problem, any wall next to a visible square is visible
+      (grid-for-each
+       (lambda (pos)
+	 (if (and (opaque-cell? (grid-ref g pos) #f)
+		  (eq? (grid-ref view pos) 'unknown)
+		  (fold
+		   (lambda (acc new)
+		     (or acc
+			 (and (not (opaque-cell? (grid-ref-check g new) #f))
+			      (eq? (grid-ref-check view new) 'visible))))
+		   #f (eight-directions pos)))
+	     (grid-set! view pos 'visited)))
+       view))))
+
+
+;; commands
+(define (invalid-command) (display "Invalid command.\n"))
+
+(define (which-direction?)
+  (if (not (eq? (read-char) #\[))
+      (invalid-command))
+  (case (read-char)
+    ((#\A) 'up)
+    ((#\B) 'down)
+    ((#\C) 'right)
+    ((#\D) 'left)
+    (else  (invalid-command))))
+
+(define (read-command) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
+  (let* ((pos   (copy-point (character-pos player)))
+	 (grid  (floor-map (character-floor player)))
+	 (x     (point-x pos))
+	 (y     (point-y pos))
+	 (char  (read-char)))
+
+    (clear-to-bottom)
+
+    (case char
+      ;; movement
+      ((#\esc) (case (which-direction?)
+		 ((up)    (point-x-set! pos (- x 1)))
+		 ((down)  (point-x-set! pos (+ x 1)))
+		 ((right) (point-y-set! pos (+ y 1)))
+		 ((left)  (point-y-set! pos (- y 1))))
+       ;; tries to move to the new position, if it fails, stay where we were
+       (move grid player pos))
+
+      ;; inventory
+      ((#\p) (pick-up pos))
+      ((#\d) (drop))
+      ((#\i) (inventory))
+      ((#\e) (equip))
+      ((#\r) (take-off))
+      ((#\D) (cmd-drink))
+
+      ((#\o) (cmd-open))
+      ((#\c) (cmd-close))
+      ((#\t) (stairs))
+
+      ((#\s) (shoot))
+
+      ;; help
+      ((#\?) (show-help))
+      ((#\n) (info grid pos))
+      ((#\l) (look grid pos))
+
+      ;; debugging
+      ((#\k) (kill)) ; insta-kill a monster
+      ((#\:) (console))
+
+      ((#\space) (display "Nothing happens.\n")) ; noop
+      ((#\q)     (quit))
+      (else      (invalid-command)))))
+
+(define (choose-direction)
+  (case (read-char)
+    ((#\esc) (which-direction?))
+    (else    (invalid-command) #f)))
+
+(define (read-number n) ; read a number up to n, or q to cancel
+  (let loop ((nb (read-char)))
+    (cond ((eq? nb #\q)
+	   #f) ; cancel
+	  ((not (and (char>=? nb #\1)
+		     (<= (- (char->integer nb) (char->integer #\0)) n)))
+	   (loop (read-char)))
+	  (else
+	   (- (char->integer nb)
+	      (char->integer #\0) 1)))))
+
+(define (choice objects f null-message question feedback)
+  (if (null? objects)
+      (display (string-append null-message "\n"))
+      (begin   (cursor-home)
+	       (clear-to-bottom)
+	       (display question)
+	       (display "\nq: Cancel\n")
+	       (for-each (lambda (o i)
+			   (display (string-append
+				     (number->string (+ i 1)) ": "
+				     (object-info o) "\n")))
+			 objects
+			 (iota (length objects)))
+	       (let ((nb (read-number (length objects))))
+		 (if nb
+		     (let ((object (list-ref objects nb)))
+		       (show-state)
+		       (f object)
+		       (display (string-append feedback
+					       (object-info object)
+					       ".\n"))))))))
+
+(define (direction-command name f)
+  (clear-to-bottom)
+  (display (string-append name " in which direction? "))
+  (let ((dir (choose-direction))) ; evaluates to a function, or #f
+    (if dir
+	(let* ((grid (player-map player))
+	       (cell (grid-ref grid ((eval dir) (character-pos player)))))
+	  (f grid cell player)))))
+
+;; console from which arbitrary expressions can be evaluated
+(define (console)
+  (tty-mode-set! (current-input-port) #t #t #f #f 0)
+  (shell-command "setterm -cursor on")
+  (display ": ")
+  (display (eval (read)))
+  (read-char)
+  (shell-command "setterm -cursor off")
+  (tty-mode-set! (current-input-port) #t #t #t #f 0))
+
+(define (quit)
+  (display "\nHall of fame:\n\n") ;; TODO have in a function
+  (let* ((name         (string->symbol (player-name player)))
+	 (xp           (player-experience player))
+	 (level        (player-level player))
+	 (floor-no     (floor-no (character-floor player)))
+	 (current-game (list name xp level floor-no)))
+    (define (update-hall-of-fame name score level floor)
+      (let* ((l   (sort-list (cons (list name score level floor) hall-of-fame)
+			     (lambda (x y) (> (cadr x) (cadr y))))) ;; TODO if same score, sort with the other factors
+	     (new (if (> (length l) 10) ; we keep the 10 best
+		      (remove-at-index l 10)
+		      l)))
+	(set! hall-of-fame new)
+	(with-output-to-file "hall-of-fame"
+	  (lambda () (display new)))
+	new))
+    (let loop ((hall (update-hall-of-fame name xp level floor-no))
+	       (highlight? #t))
+      (if (not (null? hall))
+	  (let ((head (car hall)))
+	    (terminal-print
+	     (string-append (symbol->string (car    head))
+			    ":\t" ;; TODO alignment will be messed up anyways
+			    (number->string (cadr   head))
+			    "\tlevel "
+			    (number->string (caddr  head))
+			    "\tfloor "
+			    (number->string (cadddr head))
+			    "\n")
+	     bg: (if (and highlight? (equal? (car hall) current-game))
+		     'white
+		     'black)
+	     fg: (if (and highlight? (equal? (car hall) current-game))
+		     'black
+		     'white))
+	    (loop (cdr hall)
+		  (and highlight? (not (equal? (car hall) current-game))))))))
+  (display "\n")
+  ;; restore tty
+  (tty-mode-set! (current-input-port) #t #t #f #f 0)
+  (shell-command "setterm -cursor on")
+  (exit))
 
 
 (define (inventory)
@@ -224,15 +479,32 @@
     ;; necessary to display the messages in the right order
     (if o (drink o))))
 
+(define (stairs)
+  (let ((cell (grid-ref (player-map player) (character-pos player))))
+    (let ((current      (player-current-floor         player))
+	  (before       (player-floors-before         player))
+	  (after        (player-floors-after          player)))
+      (cond ((stairs-up? cell)
+	     (cond ((not (null? before))
+		    (let ((new (car before)))
+		      (place-player
+		       player new
+		       start-pos: (floor-stairs-down (player-floor-floor new)))
+		      (player-floors-after-set!  player (cons current after))
+		      (player-floors-before-set! player (cdr before))))
+		   (else (display "This would lead to the surface.\n"))))
+	    ((stairs-down? cell)
+	     (player-floors-before-set! player (cons current before))
+	     (if (null? after)
+		 ;; if we would generate the last floor, don't put stairs down
+		 (place-player player
+			       (new-player-floor
+				(+ (floor-no (player-floor player))
+				   1)))
+		 (begin (place-player             player (car after))
+			(player-floors-after-set! player (cdr after)))))
+	    (else (display "There are no stairs here.\n"))))))
 
-(define (direction-command name f)
-  (clear-to-bottom)
-  (display (string-append name " in which direction? "))
-  (let ((dir (choose-direction))) ; evaluates to a function, or #f
-    (if dir
-	(let* ((grid (player-map player))
-	       (cell (grid-ref grid ((eval dir) (character-pos player)))))
-	  (f grid cell player)))))
 (define (cmd-open)  (direction-command "Open"  open))
 (define (cmd-close) (direction-command "Close" close))
 (define (kill) ; insta-kill something, for debugging purposes
@@ -247,6 +519,12 @@
 			     (else (display
 				    "There is nothing to kill there.\n"))))))
 
+(define-method (attack (attacker player) defender)
+  (display (string-append (character-name attacker)
+			  " attacks the "
+			  (character-name defender)))
+  (check-if-hit attacker defender))
+
 (define (shoot) ;; TODO have shooting monsters too
   (let* ((grid    (player-map player))
 	 (weapon  (equipment-main-hand (character-equipment player)))
@@ -258,7 +536,7 @@
 						 (character-pos player)
 						 (character-pos m)
 						 #t)))
-			  (floor-monsters (player-floor player))))
+			  (floor-monsters (character-floor player))))
 	 (n       (length targets)))
     (cond
      ((not (ranged-weapon? weapon))
@@ -293,7 +571,7 @@
 	(display (string-append
 		  "Floor "
 		  (number->string
-		   (+ (floor-no (player-floor player)) 1))
+		   (+ (floor-no (character-floor player)) 1))
 		  "\n"))
 	(show-grid grid
 		   print-fun: (visibility-printer (player-view player)))
@@ -310,31 +588,40 @@
 		    (damage player target)
 		    (display " and misses.\n"))))))))))
 
-(define (stairs)
-  (let ((cell (grid-ref (player-map player) (character-pos player))))
-    (let ((current      (player-current-floor         player))
-	  (before       (player-floors-before         player))
-	  (after        (player-floors-after          player)))
-      (cond ((stairs-up? cell)
-	     (cond ((not (null? before))
-		    (let ((new (car before)))
-		      (place-player
-		       player new
-		       start-pos: (floor-stairs-down (player-floor-floor new)))
-		      (player-floors-after-set!  player (cons current after))
-		      (player-floors-before-set! player (cdr before))))
-		   (else (display "This would lead to the surface.\n"))))
-	    ((stairs-down? cell)
-	     (player-floors-before-set! player (cons current before))
-	     (if (null? after)
-		 ;; if we would generate the last floor, don't put stairs down
-		 (place-player player
-			       (new-player-floor
-				(+ (floor-no (player-floor player))
-				   1)))
-		 (begin (place-player             player (car after))
-			(player-floors-after-set! player (cdr after)))))
-	    (else (display "There are no stairs here.\n"))))))
+
+(define-method (damage (attacker player) (defender monster))
+  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
+    (display (string-append " and deals " (number->string dmg) ;; TODO copied from character.scm, the fallback method, use call-next-method ? (but would mess up with the .\n at the end)
+			    " damage"))
+    (character-hp-set! defender (- (character-hp defender) dmg))
+    (if (<= (character-hp defender) 0)
+	(remove-monster defender)
+	(display ".\n"))))
+
+;; TODO not all that clean to have it here, but it's the only place where it would not lead to circular dependencies
+;; removes a monster, usually when killed
+(define (remove-monster monster)
+  (display (string-append ", which kills the "
+			  (character-name monster)
+			  ".\n"))
+  (let* ((floor (character-floor monster))
+	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
+    ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
+    (for-each-equipped (lambda (obj where)
+			 (if (and obj (removable? obj)) (add-object cell obj)))
+		       (character-equipment monster))
+    ;; remove the monster
+    (cell-occupant-set! cell #f)
+    (floor-monsters-set! floor (remove monster (floor-monsters floor)))
+    ;; give experience
+    (let* ((challenge     (character-level monster))
+	   (xp-same-level (* challenge 300))
+	   (delta-level   (- challenge (character-level player))))
+      (add-experience (if (= delta-level 0)
+			  xp-same-level
+			  (max 0
+			       (ceiling (* xp-same-level
+					   (+ 1 (* 1/3 delta-level))))))))))
 
 (define (add-experience xp)
   (let ((total (+ (player-experience player) xp))

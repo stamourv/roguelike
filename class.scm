@@ -1,16 +1,5 @@
 ;; Very simple object system which focuses on runtime speed.
 
-;; utilitary macros for the object system
-(define-macro (init-header)
-  (eval '(begin
-           (define (symbol-append s1 . ss)
-             (string->symbol (apply string-append
-                                    (symbol->string s1)
-                                    (map symbol->string ss))))
-           (define (gen-instantiator-name name)
-             
-             (symbol-append 'make- name '-instance)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generic constructors (new)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,6 +11,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utilities
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (filter pred list)
+  (cond
+   ((not (pair? list)) '())
+   ((pred (car list)) (cons (car list) (filter pred (cdr list))))
+   (else (filter pred (cdr list)))))
+(define (quick-sort smaller? equal? greater? lst)
+  (if (or (not (pair? lst))
+	  (null? (cdr lst)))
+      lst
+      (let ((pivot (car lst)))
+	(append (quick-sort smaller? equal? greater?
+			    (filter (lambda (x) (smaller? x pivot))
+				    lst))
+		(filter (lambda (x) (equal? x pivot)) lst)
+		(quick-sort smaller? equal? greater?
+			    (filter (lambda (x) (greater? x pivot))
+				    lst))))))
 
 (define-macro (update! obj class field f)
   (let ((objval (gensym 'objval)))
@@ -41,169 +48,166 @@
                   `(,(gen-setter-name class field-name) ,obj-ptr ,val)))
               field-val-list)
        ,obj-ptr)))
-(init-header)
 
+;; Loading of the macro time lib
+(syntax-begin
+ (define (symbol-append s1 . ss)
+   (string->symbol (apply string-append
+			  (symbol->string s1)
+			  (map symbol->string ss))))
+ (define (gen-instantiator-name name)
+   (symbol-append 'make- name '-instance))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Macro expansion time env
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Initializes the global define-class macro-expension-time
-;; environnment. This macro must be called
-(define-macro (init)
-  ;; macro exp time librairy
-  (eval
-   '(begin
-      (define (filter pred list)
-	(cond
-	 ((not (pair? list)) '())
-	 ((pred (car list)) (cons (car list) (filter pred (cdr list))))
-	 (else (filter pred (cdr list)))))
-      (define (quick-sort smaller? equal? greater? lst)
-	(if (or (not (pair? lst))
-		(null? (cdr lst)))
-	    lst
-	    (let ((pivot (car lst)))
-	      (append (quick-sort smaller? equal? greater?
-				  (filter (lambda (x) (smaller? x pivot))
-					  lst))
-		      (filter (lambda (x) (equal? x pivot)) lst)
-		      (quick-sort smaller? equal? greater?
-				  (filter (lambda (x) (greater? x pivot))
-					  lst))))))
-      
-      ;; method expansion mode
-      (define mode 'iterative) ; iterative as default
-      
-      ;; starts to 2 because 0/1 are reserved for the class id and supers
-      (define desc-index 1) 
-      (define mt-class-table (make-table test: eq?))
-      (define mt-meth-table (make-table test: eq?))
-      (define (next-desc-index)
-        (set! desc-index (+ desc-index 1))
-        desc-index)
-      
-      (define (meth-name sign) (if (not (list? sign))
-                                   (error 'bad-signature-syntax)
-                                   (car sign)))
-      (define any-type '*)
-
-      (define (symbol-append s1 . ss)
-          (string->symbol (apply string-append
-                                 (symbol->string s1)
-                                 (map symbol->string ss))))
-
+ ;; TODO: these 2 are both in the compile-time env and the run-time env
+ (define (filter pred list)
+   (cond
+    ((not (pair? list)) '())
+    ((pred (car list)) (cons (car list) (filter pred (cdr list))))
+    (else (filter pred (cdr list)))))
+ (define (quick-sort smaller? equal? greater? lst)
+   (if (or (not (pair? lst))
+	   (null? (cdr lst)))
+       lst
+       (let ((pivot (car lst)))
+	 (append (quick-sort smaller? equal? greater?
+			     (filter (lambda (x) (smaller? x pivot))
+				     lst))
+		 (filter (lambda (x) (equal? x pivot)) lst)
+		 (quick-sort smaller? equal? greater?
+			     (filter (lambda (x) (greater? x pivot))
+				     lst))))))
+ 
+ ;; method expansion mode
+ (define mode 'iterative) ; iterative as default
+ 
+ ;; starts to 2 because 0/1 are reserved for the class id and supers
+ (define desc-index 1) 
+ (define mt-class-table (make-table test: eq?))
+ (define mt-meth-table (make-table test: eq?))
+ (define (next-desc-index)
+   (set! desc-index (+ desc-index 1))
+   desc-index)
+ 
+ (define (meth-name sign) (if (not (list? sign))
+			      (error 'bad-signature-syntax)
+			      (car sign)))
+ (define any-type '*)
+ 
+ (define (symbol-append s1 . ss)
+   (string->symbol (apply string-append
+			  (symbol->string s1)
+			  (map symbol->string ss))))
+ 
       ;;;;;;;;;;;;;;; Naming convention abstractions ;;;;;;;;;;;;;;;
-      (define (gen-accessor-name class-name var)
-        (symbol-append class-name '- var))
-      (define (gen-setter-name class-name var)
-        (symbol-append class-name '- var '-set!))
-      (define (gen-predicate-name class-name)
-        (symbol-append class-name '?))
-      (define (class-desc-name  class-name)
-        (symbol-append class-name '-class-descriptor))
-      
-      (define (gen-method-desc-name sign)
-        (symbol-append (meth-name sign) '-meth-desc))
-
-      (define (gen-method-table-name name)
-        (symbol-append name '-meth-table))
-      
-
+ (define (gen-accessor-name class-name var)
+   (symbol-append class-name '- var))
+ (define (gen-setter-name class-name var)
+   (symbol-append class-name '- var '-set!))
+ (define (gen-predicate-name class-name)
+   (symbol-append class-name '?))
+ (define (class-desc-name  class-name)
+   (symbol-append class-name '-class-descriptor))
+ 
+ (define (gen-method-desc-name sign)
+   (symbol-append (meth-name sign) '-meth-desc))
+ 
+ (define (gen-method-table-name name)
+   (symbol-append name '-meth-table))
+ 
+ 
       ;;;;;;;;;;;;;;; Data structure used ;;;;;;;;;;;;;;;
-
-      (define (make-class-info field-indices descriptor)
-        (vector field-indices descriptor))
-      (define (class-info-fi info) (vector-ref info 0))
-      (define (class-info-desc info) (vector-ref info 1))
-      
-      (define (make-class-desc id supers num-fields)
-	(define (fold-l f acc list)
-	  (if (not (pair? list))
-	      acc
-	      (fold-l f (f acc (car list)) (cdr list))))
-	(define (generic-member comparator el list)
-	  (cond
-	   ((not (pair? list)) #f)
-	   ((comparator el (car list)) list)
-	   (else (generic-member comparator el (cdr list)))))
-	(define (generic-union comparator l1 l2)
-	  (let loop ((l1 l1) (acc l2))
-	    (if (not (pair? l1))
-		acc
-		(if (generic-member comparator (car l1) l2)
-		    (loop (cdr l1) acc)
-		    (loop (cdr l1) (cons (car l1) acc))))))
-	(define (generic-multi-union comp . ls)
-	  (fold-l (lambda (acc-set set) (generic-union comp acc-set set))
-		  '()
-		  ls))
-        ;; add 2 to include place holders for the id and supers
-        (let ((desc (make-vector (+ num-fields 2) 'unknown-slot))
-              (all-supers
-               (apply generic-multi-union eq?
-                      supers
-                      (map (lambda (s) (class-desc-supers
-                                        (class-info-desc
-                                         (table-ref mt-class-table s))))
-                           supers))))
-          (vector-set! desc 0 id)
-          (vector-set! desc 1 all-supers)
-          desc))
-      (define (class-desc-id desc) (vector-ref desc 0))
-      (define (class-desc-supers desc) (vector-ref desc 1))
-      (define (class-desc-indices-vect desc) (vector-ref desc 2))
-
-
-      (define (make-slot type index options inherited?)
-        (vector type index options inherited?))
-      (define (is-class-slot? slot-info)
-        (and (vector? slot-info)
-             (eq? (slot-type slot-info) class-slot:)))
-      (define (is-instance-slot? slot-info)
-        (and (vector? slot-info)
-             (eq? (slot-type slot-info) slot:)))
-      (define (slot-type slot-info)
-        (vector-ref slot-info 0))
-      (define (slot-index slot-info)
-        (vector-ref slot-info 1))
-      (define (slot-options slot-info)
-        (vector-ref slot-info 2))
-      (define (slot-inherited? slot-info)
-        (vector-ref slot-info 3))
-
-      ;; returns the slot hooks, if any is present.
-      (define (slot-read-hooks? slot-info)
-        (let* ((options (slot-options slot-info))
-               (hooks (assq read-hooks: options)))
-          (if hooks (cdr hooks) #f)))
-      (define (slot-write-hooks? slot-info)
-        (let* ((options (slot-options slot-info))
-               (hooks (assq write-hooks: options)))
-          (if hooks (cdr hooks) #f)))
-        
-      (define (make-mt-generic-function name args)
-        (vector name args (make-table test: equal?)))
-      (define (mt-generic-function-name gf) (vector-ref gf 0))
-      (define (mt-generic-function-args gf) (vector-ref gf 1))
-      (define (mt-generic-function-instances gf) (vector-ref gf 2))
-      (define (mt-generic-function-instances-add! gf instance)
-        (table-set! (mt-generic-function-instances gf)
-                    (method-types instance)
-                    instance))
-      (define (mt-generic-function-instances-list gf)
-        (table->list (mt-generic-function-instances gf)))
-      (define (mt-generic-function-get-instance gf types)
-        (table-ref (mt-generic-function-instances gf) types #f))
-      (define (mt-generic-function-instances-number gf)
-        (table-length (mt-generic-function-instances gf)))
-      
-      
-      (define make-method vector) ; (make-method id types body)
-      (define (method-id meth) (vector-ref meth 0))
-      (define (method-types meth) (vector-ref meth 1))
-      (define (method-body meth) (vector-ref meth 2)))
-   ))
+ 
+ (define (make-class-info field-indices descriptor)
+   (vector field-indices descriptor))
+ (define (class-info-fi info) (vector-ref info 0))
+ (define (class-info-desc info) (vector-ref info 1))
+ 
+ (define (make-class-desc id supers num-fields)
+   (define (fold-l f acc list)
+     (if (not (pair? list))
+	 acc
+	 (fold-l f (f acc (car list)) (cdr list))))
+   (define (generic-member comparator el list)
+     (cond
+      ((not (pair? list)) #f)
+      ((comparator el (car list)) list)
+      (else (generic-member comparator el (cdr list)))))
+   (define (generic-union comparator l1 l2)
+     (let loop ((l1 l1) (acc l2))
+       (if (not (pair? l1))
+	   acc
+	   (if (generic-member comparator (car l1) l2)
+	       (loop (cdr l1) acc)
+	       (loop (cdr l1) (cons (car l1) acc))))))
+   (define (generic-multi-union comp . ls)
+     (fold-l (lambda (acc-set set) (generic-union comp acc-set set))
+	     '()
+	     ls))
+   ;; add 2 to include place holders for the id and supers
+   (let ((desc (make-vector (+ num-fields 2) 'unknown-slot))
+	 (all-supers
+	  (apply generic-multi-union eq?
+		 supers
+		 (map (lambda (s) (class-desc-supers
+				   (class-info-desc
+				    (table-ref mt-class-table s))))
+		      supers))))
+     (vector-set! desc 0 id)
+     (vector-set! desc 1 all-supers)
+     desc))
+ (define (class-desc-id desc) (vector-ref desc 0))
+ (define (class-desc-supers desc) (vector-ref desc 1))
+ (define (class-desc-indices-vect desc) (vector-ref desc 2))
+ 
+ 
+ (define (make-slot type index options inherited?)
+   (vector type index options inherited?))
+ (define (is-class-slot? slot-info)
+   (and (vector? slot-info)
+	(eq? (slot-type slot-info) class-slot:)))
+ (define (is-instance-slot? slot-info)
+   (and (vector? slot-info)
+	(eq? (slot-type slot-info) slot:)))
+ (define (slot-type slot-info)
+   (vector-ref slot-info 0))
+ (define (slot-index slot-info)
+   (vector-ref slot-info 1))
+ (define (slot-options slot-info)
+   (vector-ref slot-info 2))
+ (define (slot-inherited? slot-info)
+   (vector-ref slot-info 3))
+ 
+ ;; returns the slot hooks, if any is present.
+ (define (slot-read-hooks? slot-info)
+   (let* ((options (slot-options slot-info))
+	  (hooks (assq read-hooks: options)))
+     (if hooks (cdr hooks) #f)))
+ (define (slot-write-hooks? slot-info)
+   (let* ((options (slot-options slot-info))
+	  (hooks (assq write-hooks: options)))
+     (if hooks (cdr hooks) #f)))
+ 
+ (define (make-mt-generic-function name args)
+   (vector name args (make-table test: equal?)))
+ (define (mt-generic-function-name gf) (vector-ref gf 0))
+ (define (mt-generic-function-args gf) (vector-ref gf 1))
+ (define (mt-generic-function-instances gf) (vector-ref gf 2))
+ (define (mt-generic-function-instances-add! gf instance)
+   (table-set! (mt-generic-function-instances gf)
+	       (method-types instance)
+	       instance))
+ (define (mt-generic-function-instances-list gf)
+   (table->list (mt-generic-function-instances gf)))
+ (define (mt-generic-function-get-instance gf types)
+   (table-ref (mt-generic-function-instances gf) types #f))
+ (define (mt-generic-function-instances-number gf)
+   (table-length (mt-generic-function-instances gf)))
+ 
+ 
+ (define make-method vector) ; (make-method id types body)
+ (define (method-id meth) (vector-ref meth 0))
+ (define (method-types meth) (vector-ref meth 1))
+ (define (method-body meth) (vector-ref meth 2)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -218,17 +222,11 @@
 
   (define constructor-list '())
 
-  (define (show . args)
-    (for-each (lambda (x) (if (string? x) (display x) (write x))) args))
-  (define-macro (to-string e1 . es)
-    `(with-output-to-string "" (lambda () ,e1 ,@es)))
-
   ;; puts the fields into the temp table. The class fields MUST be
   ;; processed AFTER that the super class's fields where processed.
   (define (process-field! field)
     (if (not (list? field))
-        (else (error (to-string (show "ill-formed slot declaration: "
-                                      field))))
+        (else (error "ill-formed slot declaration: " field))
         (case (car field)
           ((slot: class-slot:)
            (let ((slot-type (car field))
@@ -248,8 +246,7 @@
           ((constructor:)
            (set! constructor-list (cons (cadr field) constructor-list)))
 
-          (else (error (to-string (show "ill-formed slot declaration: "
-                                        field)))))))
+          (else (error "ill-formed slot declaration: " field)))))
 
   (define (gen-accessors field-indices)
     (define (gen-accessor field slot-info)
@@ -358,11 +355,6 @@
   ;; field-indices are expected to be sorted from lower index to
   ;; highest index
   (define (gen-descriptor field-indices)
-    (define-macro (instance-index++)
-      (define i (gensym 'i))
-      `(let ((,i instance-index))
-         (set! instance-index (+ instance-index 1))
-         ,i))
     (define (drop lst n)
       (if (or (< n 1) (not (pair? lst)))
 	  lst
@@ -390,7 +382,8 @@
        (lambda (fi)
          (let ((index (slot-index fi)))
            (cond ((is-instance-slot? fi)
-                  (vector-set! desc index (instance-index++)))
+                  (vector-set! desc index instance-index)
+		  (set! instance-index (+ instance-index 1)))
                  ((is-class-slot? fi)
                   (vector-set! desc index 'unbound-class-slot))
                  (else
@@ -492,10 +485,8 @@
        (list ,@(map field->list field-indices))))
   
   (define (sort-field-indices field-indices)
-    (define-macro (indice-comp op)
-      (let ((x (gensym 'x)) (y (gensym 'y)))
-        `(lambda (,x ,y) (,op (slot-index (cdr ,x))
-                              (slot-index (cdr ,y))))))
+    (define (indice-comp op)
+      (lambda (x y) (op (slot-index (cdr x)) (slot-index (cdr y)))))
     (quick-sort (indice-comp <) (indice-comp =) (indice-comp >)
                 field-indices))
 
@@ -508,9 +499,7 @@
              (cond
               ((table-ref mt-class-table super #f) =>
                (lambda (desc) (class-info-fi desc)))
-              (else (error
-                     (to-string
-                      (show "Inexistant super class: " super)))))))
+              (else (error "Inexistant super class: " super)))))
         (for-each
          (lambda (field-index)
            (if (not (table-ref temp-field-table (car field-index) #f))
@@ -522,9 +511,7 @@
                                         (slot-options    super-slot)
                                         super ; now inherited
                                         )))
-               (error
-                (to-string
-                 (show "Field already defined: " (car field-index))))))
+               (error "Field already defined: " (car field-index))))
          super-field-indices)))
     supers)
 
@@ -585,10 +572,6 @@
                          (pretty-print `(,',name ,@types)))))))))))))
 
 (define-macro (define-method signature bod . bods)
-  (define (show . args)
-    (for-each (lambda (x) (if (string? x) (display x) (write x))) args))
-  (define-macro (to-string e1 . es)
-    `(with-output-to-string "" (lambda () ,e1 ,@es)))
   (define (name) (meth-name signature))
   (define unknown-meth-error 'unknown-meth)
   (define (parse-arg arg)
@@ -618,7 +601,7 @@
   (with-exception-catcher
    (lambda (e)
      (if (eq? e unknown-meth-error)
-         (error (to-string (show "Generic method was not defined: " (name))))
+         (error "Generic method was not defined: " (name))
          (raise e)))
    ;; TODO: Add arity verification
    (lambda ()
@@ -637,13 +620,6 @@
        `(begin
           (define-generic ,(name))
           (define-method ,signature ,bod ,@bods)))))))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;; Runtime stuff ;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Loading of the macro time lib
-(init)
-
 
 
 
@@ -715,11 +691,7 @@
        (symbol? (class-desc-id (instance-class-descriptor obj)))))
 
 (define (assert-cast args types)
-  (define (show . args)
-    (for-each (lambda (x) (if (string? x) (display x) (write x))) args))
-  (define-macro (to-string e1 . es)
-    `(with-output-to-string "" (lambda () ,e1 ,@es)))
-  (define error-str )
+  (define error-str "")
 
   (if (not (= (length args) (length types)))
       (error (string-append "Cannot perform cast: actual parameter number "
@@ -728,8 +700,8 @@
    (lambda (arg type)
      (let ((class-id (get-class-id arg)))
        (if (not (is-subclass? class-id type))
-           (error (to-string (show "Cannot perform cast: "
-                                   class-id " is not a sublclass of " type))))))
+           (error "Cannot perform cast: "
+		  class-id " is not a sublclass of " type))))
    args
    types)
   types)

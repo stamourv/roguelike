@@ -1,19 +1,8 @@
+(import class)
+(import character)
+(import utilities)
+
 (define-generic turn)
-(define-method (turn (p player))
-  (if (<= (character-hp player) 0)
-      (begin (display "You die.\n")
-	     (quit))
-      (begin (update-visibility)
-	     (show-state)
-	     (read-command)
-	     (reschedule player))))
-(define-method (turn (m monster))
-  (if (and (> (character-hp m) 0)
-	   (= (character-floor-no m) (character-floor-no player)))
-      (begin ((behavior-fun (monster-behavior m))
-	      m (player-floor player) (character-pos player))
-	     (reschedule m))))
-;; TODO add methods for potions and spells, to dissipate their effect
 
 (define turn-no    0) ; in seconds, reset when the level is changed
 ;; to preserve the ordering from turn to turn, in case of identical speeds

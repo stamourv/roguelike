@@ -1,3 +1,7 @@
+(import class)
+(import common)
+(import utilities)
+
 (define-class cell ()
   (slot: objects)
   (slot: occupant)) ; player, monster, ...
@@ -14,7 +18,8 @@
        (not (cell-occupant cell))))
 
 (define-generic opaque-cell?)
-(define-method (opaque-cell? c) #f)
+(define-method (opaque-cell? c occupants-opaque?)
+  (and occupants-opaque? (cell-occupant c)))
 
 
 (define (walkable-cell-print cell char)
@@ -42,7 +47,7 @@
 
 (define-class wall (cell))
 (define-method (print (c wall)) #\+)
-(define-method (opaque-cell? (c wall)) #t)
+(define-method (opaque-cell? (c wall) occupants-opaque?) #t)
 
 (define double-walls? #f)
 
@@ -114,8 +119,10 @@
       (display "This door is already closed.\n")
       (begin (door-open?-set! door #f)
 	     (display "Door closed.\n"))))
-(define-method (walkable-cell? (c door))      (door-open? c))
-(define-method (opaque-cell?   (c door)) (not (door-open? c)))
+(define-method (walkable-cell? (c door)) (door-open? c))
+(define-method (opaque-cell?   (c door) occupants-opaque?)
+  (or (not (door-open? c))
+      (and occupants-opaque? (cell-occupant c)))) ;; TODO call-next-method?
 
 
 (define-class chest (cell)

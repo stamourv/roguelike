@@ -1,3 +1,8 @@
+(import cell)
+(import grid)
+(import terminal)
+(import common)
+
 (define (init-visibility g)
   (empty-grid (grid-height g) (grid-width g)
 	      cell-fun: (lambda (pos) 'unknown)))
@@ -33,9 +38,7 @@
 		   (cell  (grid-ref g pos)))
 	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
 	      (cond ((equal? pos dest)          #t) ; we see it
-		    ((and (or (opaque-cell? cell)
-			      (and monsters-opaque?
-				   (monster? (cell-occupant cell))))
+		    ((and (opaque-cell? cell monsters-opaque?)
 			  (not (equal? pos start))) #f) ; we hit an obstacle
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
@@ -43,82 +46,13 @@
 					   (floor (+ y y-step)) y)))
 			    (loop error (+ x 1) y))))))))))
 
-(define (update-visibility) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
-  ;; set the fog of war
-  (let ((view (player-view player))
-	(pos  (character-pos player)))
-    (grid-for-each (lambda (pos)
-		     (if (eq? (grid-ref view pos) 'visible)
-			 (grid-set! view pos 'visited)))
-		   view)
-
-    ;; field of vision using shadow casting (spiral path FOV)
-    ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
-    (let* ((g     (player-map player))
-	   (x     (point-x    pos))
-	   (y     (point-y    pos)))
-      (let loop ((queue (list pos)))
-	(define (pass-light pos new)
-	  ;; enqueue cells depending on the orientation of new from pos
-	  (let* ((pos-x (point-x pos)) (pos-y (point-y pos))
-		 (new-x (point-x new)) (new-y (point-y new))
-		 (dirs  (four-directions new))
-		 (north (list-ref dirs 0))
-		 (south (list-ref dirs 1))
-		 (west  (list-ref dirs 2))
-		 (east  (list-ref dirs 3)))
-	    (cond ((< new-x pos-x) ; somewhere north
-		   (cond ((= new-y pos-y) (list east north west)) ; due north
-			 ((< new-y pos-y) (list north west))      ; north-west
-			 ((> new-y pos-y) (list east north))))    ; north-east
-		  ((> new-x pos-x) ; somewhere south
-		   (cond ((= new-y pos-y) (list west south east)) ; due south
-			 ((< new-y pos-y) (list west south))      ; south-west
-			 ((> new-y pos-y) (list south east))))    ; south-east
-		  ((< new-y pos-y) (list north west south))       ; due west
-		  ((> new-y pos-y) (list south east north))       ; due east
-		  (else ; we are at the starting point
-		   (list east north west south)))))
-	(if (not (null? queue))
-	    (let ((new (car queue)))
-	      (if (and (inside-grid? view new)
-		       (not (eq? (grid-ref view new)
-				 'visible)) ; already seen
-		       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
-		       ;; do we have line of sight ? helps restrict the
-		       ;; visibility down to a reasonable level
-		       ;; note: line of sight is not necessary to see walls,
-		       ;; this gives better results
-		       (or (opaque-cell? (grid-ref g new))
-			   (line-of-sight? g pos new)))
-		  (begin (grid-set! view new 'visible) ; mark as lit
-			 (if (not (opaque-cell? (grid-ref g new)))
-			     (loop (append (cdr queue)
-					   (pass-light pos new))))))
-	      (loop (cdr queue)))))
-
-      ;; one last pass to solve the problem case of walls that are hard to
-      ;; see, which gives ugly results
-      ;; to solve the problem, any wall next to a visible square is visible
-      (grid-for-each
-       (lambda (pos)
-	 (if (and (opaque-cell? (grid-ref g pos))
-		  (eq? (grid-ref view pos) 'unknown)
-		  (fold (lambda (acc new)
-			  (or acc
-			      (and (not (opaque-cell? (grid-ref-check g new)))
-				   (eq? (grid-ref-check view new) 'visible))))
-			 #f (eight-directions pos)))
-	     (grid-set! view pos 'visited)))
-       view))))
-
 ;; returns a printing function for show-grid
 (define (visibility-printer view)
   (lambda (pos cell)
     (let ((c (print cell)))
       (case (grid-ref view pos)
 	((visible)
-	 (if (opaque-cell? cell)
+	 (if (opaque-cell? cell #f)
 	     (display c)
 	     (terminal-print c bg: 'white fg: 'black))) ;; TODO can we have colored objects with that ? not sure
 	((visited)

@@ -1,27 +1,53 @@
+(import class)
+(import character)
+(import scheduler)
+(import objects)
+(import cell)
+(import grid)
+(import dungeon)
+(import visibility)
+(import common)
+(import utilities)
+
 (define-class monster (character)
-  (slot: challenge-rating)
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
 
 ;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
-(define-macro (new-monster f . args)
-  (let ((m (gensym)))
-    `(let ((,m (,f ,@args)))
-       (init-hp ,m)
-       ,m)))
+(define (new-monster f . args)
+  (let ((m (apply f args)))
+    (init-hp m)
+    m))
+
+(define-method (turn (m monster))
+  (if (and (> (character-hp m) 0)
+	   (eq? (character-floor m) (character-floor player)))
+      (begin ((behavior-fun (monster-behavior m))
+	      m (character-pos player))
+	     (reschedule m))))
+
+(define-method (attack (attacker monster) defender)
+  (display (string-append "The "
+			  (character-name attacker)
+			  " attacks "
+			  (character-name defender)))
+  (check-if-hit attacker defender))
+;; monsters don't attack other monsters
+(define-method (attack (attacker monster) (defender monster)) #f)
+
 
 (define-class goblin (monster))
 (define (new-goblin)
   (new-monster make-goblin
 	       "goblin" #f #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6 (make-table) 0
-	       '(8) #f #f 1 6
+	       1/3 '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-club)
 		off-hand:  (new-light-shield)
 		torso:     (new-leather-armor))
-	       1/3 (rush-behavior)))
+	       (rush-behavior)))
 (define-method (print (m goblin)) #\g)
 
 (define-class kobold (monster))
@@ -29,11 +55,11 @@
   (new-monster make-kobold
 	       "kobold" #f #f
 	       9 13 10 10 9 8 (make-table) 0
-	       '(8) #f #f 1 6
+	       1/4 '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-shortspear)
 		torso:     (new-leather-armor))
-	       1/4 (rush-behavior)))
+	       (rush-behavior)))
 (define-method (print (m kobold)) #\k)
 
 (define-class orc (monster))
@@ -41,11 +67,11 @@
   (new-monster make-orc
 	       "orc" #f #f
 	       17 11 12 8 7 6 (make-table) 0
-	       '(8) #f #f 1 6
+	       1/2 '(8) #f #f 1 6
 	       (new-equipment
 		main-hand: (new-greataxe) ;; TODO handle two-handed weapons and placeholders for monsters ? since they can't change their equipment, and since they are used as two-handed weapons anyway (1.5 times the strength bonus), not really necessary
 		torso:     (new-studded-leather-armor))
-	       1/2 (pursue-behavior)))
+	       (pursue-behavior)))
 (define-method (print (m orc)) #\o)
 
 
@@ -56,9 +82,9 @@
   (new-monster make-bat
 	       "bat" #f #f
 	       1 15 10 2 14 4 (make-table) 0
-	       '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
+	       1/10 '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
-	       1/10 (rush-behavior)))
+	       (rush-behavior)))
 (define-method (print (m bat)) #\b)
 
 (define-class rat (animal))
@@ -66,129 +92,114 @@
   (new-monster make-rat
 	       "rat" #f #f
 	       2 15 10 2 12 2 (make-table) 0
-	       '(2) #f #f 0 6
+	       1/8 '(2) #f #f 0 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
-	       1/8 (rush-behavior)))
+	       (rush-behavior)))
 (define-method (print (m rat)) #\r)
 
 
 (define-class undead (monster)) ;; TODO add some
 
 
-(define-type encounter-type
-  points
-  monsters ; list of functions that create monsters
-  can-be-placed?) ; takes a room as parameter
-;; TODO have more, maybe have chests, treasure, dungeon features (campfire), maybe a name for the encounter, to display when we enter the room ?
+;; AI
+(define-type behavior
+  fun
+  nb-turns-idle)
 
-(define-type encounter
-  monsters) ;; TODO have more, espescially other kinds of objects that would need to be placed, such as chests or campfires
-;; TODO also have some treasure with the encounter, see DM guide for proportions and amount by encounter level
-(define (new-encounter encounter-type) ; actually creates the monsters
-  (make-encounter (map call (encounter-type-monsters encounter-type))))
-(define (encounter-points e)
-  (fold + 0 (map monster-challenge-rating (encounter-monsters e))))
+(define (new-behavior fun)
+  (let ((b (make-behavior #f 0)))
+    (behavior-fun-set! b (fun b))
+    b))
 
-(define (new-encounter-type
-	 monsters
-	 #!optional (restriction (lambda (room)
-				   (>= (length (room-cells room))
-				       (length monsters)))))
-  (let* ((encounter-type  (make-encounter-type
-			   #f
-			   monsters
-			   restriction))
-	 (dummy-encounter (new-encounter encounter-type)))
-    (encounter-type-points-set! encounter-type
-				(encounter-points dummy-encounter))
-    encounter-type))
+(define (rush-behavior) (new-behavior rush))
+(define (rush b)
+  (lambda (monster player-pos)
+    (let ((pos (character-pos monster))
+	  (map (floor-map (character-floor monster))))
+      (if (line-of-sight? map pos player-pos)
+	  (let ((next (find-path map pos player-pos)))
+	    (if next (move-or-increment-idle map monster next)))))))
 
-(define encounter-types ;; TODO have weights, since some would be more common, make it so it can use random-choice
-  (map new-encounter-type ;; TODO have a "language" to define encounters types, maybe make the probability a function of the level-no ?
-       `((,new-bat ,new-bat ,new-bat)
-	 (,new-bat ,new-bat ,new-bat ,new-bat)
-	 (,new-rat ,new-rat)
-	 (,new-rat ,new-rat ,new-rat)
-	 (,new-rat ,new-rat ,new-rat ,new-rat)
-	 (,new-kobold ,new-kobold ,new-kobold)
-	 (,new-kobold ,new-kobold ,new-kobold ,new-kobold)
-	 (,new-goblin ,new-goblin)
-	 (,new-goblin ,new-goblin ,new-goblin)
-	 (,new-orc ,new-orc)
-	 (,new-orc ,new-goblin ,new-goblin))))
+(define (pursue-behavior) (new-behavior pursue))
+(define (pursue b)
+  (let ((last-player-pos #f)) ; AI state
+    (lambda (monster player-pos)
+      (let* ((pos    (character-pos monster))
+	     (map    (floor-map (character-floor monster)))
+	     (target (cond ((line-of-sight? map pos player-pos)
+			    (set! last-player-pos player-pos)
+			    player-pos)
+			   (else last-player-pos)))) ; we try to pursue
+	(let ((next (and target (find-path map pos target))))
+	  (if next (move-or-increment-idle map monster next)))))))
 
+(define (move-or-increment-idle map monster dest)
+  (let ((pos (character-pos monster)))
+    (move map monster dest)
+    (if (equal? pos (character-pos monster))
+	;; we did not move, increment idle counter
+	(let ((b (monster-behavior monster)))
+	  (behavior-nb-turns-idle-set! b (+ (behavior-nb-turns-idle b) 1))))))
 
-(define (possible-encounters no)
-  (let* ((encounter-level-cap (/ no 2.5))
-	 (encounter-level-bottom
-	  (max (/ no 4)
-	       (fold min
-		     encounter-level-cap
-		     (map encounter-type-points
-			  encounter-types)))))
-    (filter (lambda (e)
-	      (let ((pts (encounter-type-points e)))
-		(and (>= pts encounter-level-bottom)
-		     (<= pts encounter-level-cap))))
-	    encounter-types)))
-
-(define (generate-encounters floor)
-  (let* ((no                       (+ (floor-no floor) 1))
-	 (possible-encounter-types (possible-encounters no))
-	 (actual-bottom            (fold min
-					 no ; generous upper bound
-					 (map encounter-type-points
-					      possible-encounter-types))))
-    (if (null? possible-encounter-types)
-	(error "no possible encounters for this level"))
-    (let loop ((pts            (* no 5))
-	       (free-rooms     (floor-rooms floor))
-	       (floor-monsters '()))
-      (if (and (>= pts actual-bottom)
-	       (not (null? free-rooms)))
-	  (let* ((type             (random-element possible-encounter-types))
-		 (encounter-points (encounter-type-points type))
-		 (room             (random-element free-rooms)))
-	    (if (and (<= encounter-points pts)
-		     (not (room-encounter room)) ; already an encounter there
-		     ((encounter-type-can-be-placed? type) room))
-		(let loop2 ((monsters     (encounter-monsters
-					   (new-encounter type)))
-			    (all-monsters '())
-			    (space        (room-cells room)))
-		  (if (not (null? monsters))
-		      (let ((cell (random-element space))
-			    (mon  (car monsters)))
-			(character-floor-no-set! mon no)
-			(cell-occupant-set! (grid-ref (floor-map floor) cell)
-					    mon)
-			(character-pos-set! mon cell)
-			(loop2 (cdr monsters)
-			       (cons mon all-monsters)
-			       (remove cell space)))
-		      (loop (- pts encounter-points)
-			    (remove room free-rooms)
-			    (append floor-monsters all-monsters))))
-		(loop pts free-rooms floor-monsters))) ; try something else
-	  (floor-monsters-set! floor floor-monsters)))))
-
-;; removes a monster, usually when killed
-(define (remove-monster monster)
-  (let* ((floor (player-floor player))
-	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
-    ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
-    (for-each-equipped (lambda (obj where)
-			 (if (and obj (removable? obj)) (add-object cell obj)))
-		       (character-equipment monster))
-    ;; remove the monster
-    (cell-occupant-set! cell #f)
-    (floor-monsters-set! floor (remove monster (floor-monsters floor)))
-    ;; give experience
-    (let* ((challenge     (monster-challenge-rating monster))
-	   (xp-same-level (* challenge 300))
-	   (delta-level   (- challenge (player-level player))))
-      (add-experience (if (= delta-level 0)
-			  xp-same-level
-			  (max 0
-			       (ceiling (* xp-same-level
-					   (+ 1 (* 1/3 delta-level))))))))))
+;; simple pathfinding using A*
+(define (find-path g a b)
+  ;; grid of pairs (cost . previous)
+  (let* ((height  (grid-height g))
+	 (width   (grid-width g))
+	 (maximum (* width height)) ; arbitrarily high value
+	 (costs (empty-grid
+		 height width
+		 cell-fun: (lambda (pos)
+			     (cons (if (walkable-cell? (grid-ref g pos))
+				       maximum
+				       #f) ; we can't even get there
+				   #f)))))
+    (grid-set! costs a (cons 0 #f)) ; initialize
+    (let loop ((queue (list a))) ; list of positions
+      (if (null? queue)
+	  ;; we have found a path, we return its first step
+	  (let loop ((pos  b)
+		     (prev #f))
+	    (let ((parent (cdr (grid-ref costs pos))))
+	      (if parent
+		  (loop parent pos)
+		  prev)))
+	  (let* ((next (fold (lambda (best new) ; least expensive neighbor
+			       (if (< (car (grid-ref costs new))
+				      (car (grid-ref costs best)))
+				   new
+				   best))
+			     (car queue)
+			     queue))
+		 (queue (remove next queue))
+		 (neighbors
+		  (filter
+		   (lambda (pos)
+		     (if (inside-grid? g pos)
+			 (cond
+			  ((car (grid-ref costs pos)) =>
+			   (lambda (cost)
+			     (let ((new-cost
+				    (+ (car (grid-ref costs next))
+				       ;; heuristic cost
+				       (distance pos b)
+				       ;; if we would pass through another
+				       ;; monster, take into account the number
+				       ;; of turns it has been stuck there, to
+				       ;; avoid congestion
+				       (let ((occ (cell-occupant
+						   (grid-ref g pos))))
+					 (if (and occ (monster? occ))
+					     (* (behavior-nb-turns-idle
+						 (monster-behavior occ))
+						5)
+					     0)))))
+			       (if (< new-cost cost)
+				   (begin
+				     (grid-set! costs pos (cons new-cost next))
+				     #t)
+				   #f))))
+			  (else #f))
+			 #f))
+		   (four-directions next))))
+	    (loop (append neighbors queue)))))))

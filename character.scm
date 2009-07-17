@@ -1,8 +1,14 @@
+(import class)
+(import objects)
+(import cell)
+(import grid)
+(import utilities)
+
 (define-class character ()
   (slot: name)
   
   (slot: pos)
-  (slot: floor-no)
+  (slot: floor)
 
   (slot: str)
   (slot: dex)
@@ -17,6 +23,8 @@
   (slot: altered-attrs)
 
   (slot: natural-ac) ;; TODO have natural weapons too, which are used when no weapon is equipped (change get-damage-fun)
+
+  (slot: level)
   
   (slot: hit-dice)
   (slot: max-hp)
@@ -27,16 +35,16 @@
 
   (slot: equipment))
 
-(define (init-hp character #!optional max?)
-  (let* ((hd (character-hit-dice character))
+(define (init-hp c #!optional max?)
+  (let* ((hd (character-hit-dice c))
 	 (hp (max (+ (if max?
 			 (fold + 0 hd)
 			 ((apply dice hd)))
-		     (* (get-attribute-bonus 'con character)
+		     (* (get-attribute-bonus 'con c)
 			(length hd)))
 		  1)))
-    (character-max-hp-set! character hp)
-    (character-hp-set!     character hp)))
+    (character-max-hp-set! c hp)
+    (character-hp-set!     c hp)))
 
 (define (attribute-getter attr)
   (lambda (char)
@@ -142,35 +150,18 @@
               ((walkable-cell? new-cell)
                (attack occ (cell-occupant (grid-ref g new-pos))))))))
 
-(define (attack attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
-  (if (not (and (monster? attacker)
-                (monster? defender))) ; monsters don't attack other monsters
-      (let ((roll ((dice 20))))
-        (cond ((player? attacker)
-               (display (string-append (character-name attacker)
-                                       " attacks the "
-                                       (character-name defender))))
-              ((monster? attacker)
-               (display (string-append "The "
-                                       (character-name attacker)
-                                       " attacks "
-                                       (character-name defender)))))
-        (if (>= (+ roll (get-melee-attack-bonus attacker))
-		(get-armor-class defender))
-	    (damage attacker defender)
-	    (display " and misses.\n"))))) ;; TODO depending on by how much it missed, say different things
+(define-generic attack)
 
-;; returns #t if the opponent dies
-(define (damage attacker defender)
+(define (check-if-hit attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
+  (let ((roll ((dice 20))))
+    (if (>= (+ roll (get-melee-attack-bonus attacker))
+	    (get-armor-class defender))
+	(damage attacker defender)
+	(display " and misses.\n")))) ;; TODO depending on by how much it missed, say different things
+
+(define-generic damage)
+(define-method (damage attacker defender)
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
     (display (string-append " and deals " (number->string dmg)
-			    " damage"))
-    (character-hp-set! defender (- (character-hp defender) dmg))
-    (if (and (<= (character-hp defender) 0) (monster? defender))
-	(begin (display (string-append ", which kills the "
-				       (character-name defender)
-				       ".\n"))
-	       (remove-monster defender)
-	       #t)
-	(begin (display ".\n")
-	       #f))))
+			    " damage.\n"))
+    (character-hp-set! defender (- (character-hp defender) dmg))))

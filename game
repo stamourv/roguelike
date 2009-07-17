@@ -1,2 +1,0 @@
-#!/bin/sh
-`which gsi` -:t8 game.scm

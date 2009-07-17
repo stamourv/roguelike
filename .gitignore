@@ -1,4 +1,5 @@
 *~
+*.o*
 TAGS
 garbage
 TODO

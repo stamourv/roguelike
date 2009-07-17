@@ -1,4 +1,9 @@
 ;; TODO change the name of the file for level.scm
+(import grid)
+(import cell)
+(import character)
+(import common)
+(import utilities)
 
 (define-type floor ;; TODO also have a dungeon type ?
   no
@@ -27,7 +32,7 @@
 	     (room-connected-to-set! b (cons a (room-connected-to b))))))
 
 
-(define (generate-floor no #!optional (stairs-down? #t) (step? #f))
+(define (generate-floor no #!optional (stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 18)
@@ -90,10 +95,6 @@
 	       level
 	       start-x:  pos-x  start-y:  pos-y
 	       length-x: height length-y: width)
-
-	      (if step?
-		  (begin (show-grid level)
-			 (read-line)))
 
 	      ;; the type will be filled later
 	      (make-room #f inside new-walls '() #f))
@@ -220,7 +221,7 @@
 	      (map (lambda (x) (cons x (car type)))
 		   (repeat weight (room-walls res))))
 	    #f)))
-
+    
     ;; generate features
     (let loop ((n 500)
 	       (walls (let loop ((res #f)) ; we place the first feature
@@ -402,9 +403,6 @@
 			new-pillar))))))))
      level)
 
-    ;; add everything else on top
-    (generate-encounters new-floor)
-    (generate-treasure   new-floor)
     new-floor))
 
 (define (random-free-position floor)

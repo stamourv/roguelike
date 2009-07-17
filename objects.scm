@@ -1,3 +1,7 @@
+(import class)
+(import common)
+(import utilities)
+
 (define-class object ()
   (slot: name)
   (slot: gp-value))

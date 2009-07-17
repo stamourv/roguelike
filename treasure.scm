@@ -1,23 +1,33 @@
+(import cell)
+(import grid)
+(import dungeon)
+(import objects)
+(import utilities)
+
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
 (define treasure-table
-  `((0.43
-     ;; weapons
-     (0.2 . ,new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
-     (0.1  . ,new-greataxe)
-     (0.3  . ,new-club)
-     (0.15 . ,new-shortspear)
-     (0.25 . ,new-shortbow))
-    (0.25
-     ;; shields
-     (1 . ,new-light-shield))
-    (0.22
-     ;; body armor
-     (0.7 . ,new-leather-armor)
-     (0.3 . ,new-studded-leather-armor))
-    (0.1
-     ;; potions
-     (1 . ,new-light-healing-potion))))
+  (list (list 0.43 ;; FOO had something pretty with quasiquote and unquote, but black hole considered the unquoted parts to be syntaxtic closures, which made no sense
+	      ;; weapons
+	      (cons 0.2  new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
+	      (cons 0.1  new-greataxe)
+	      (cons 0.3  new-club)
+	      (cons 0.15 new-shortspear)
+	      (cons 0.25 new-shortbow))
+	(list 0.25
+	      ;; shields
+	      (cons 1 new-light-shield))
+	(list 0.22
+	      ;; body armor
+	      (cons 0.7 new-leather-armor)
+	      (cons 0.3 new-studded-leather-armor))
+	(list 0.1
+	      ;; potions
+	      (cons 0.5  new-light-healing-potion)
+	      (cons 0.13 new-bulls-strength-potion)
+	      (cons 0.13 new-cats-grace-potion)
+	      (cons 0.13 new-bears-endurance-potion)
+	      (cons 0.11 new-barkskin-potion))))
 ;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
 ;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
 
