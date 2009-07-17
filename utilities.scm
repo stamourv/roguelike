@@ -100,22 +100,6 @@
 (define (random-between x y) ; between x and y inclusively
   (+ x (random-integer (+ 1 (- y x)))))
 
-(define (split-string s delimiter) ; delimiter is a char
-  (let loop ((s   (string->list s))
-	     (acc '())
-	     (res '()))
-    (cond ((null? s)
-	   (reverse (map (lambda (x) (list->string (reverse x)))
-			 (if (null? acc) res (cons acc res)))))
-	  ((eq? (car s) delimiter)
-	   (loop (cdr s)
-		 '()
-		 (cons acc res)))
-	  (else
-	   (loop (cdr s)
-		 (cons (car s) acc)
-		 res)))))
-
 ;; returns a thunk that simulated the requested dice roll
 (define (dice . kinds)
   (lambda ()

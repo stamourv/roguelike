@@ -1,9 +1,9 @@
+(import utilities)
 (import cell)
 (import grid)
 (import character)
 (import monsters)
 (import dungeon)
-(import utilities)
 
 (define-type encounter-type
   points

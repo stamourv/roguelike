@@ -1,4 +1,5 @@
 (import class)
+(import utilities)
 (import character)
 (import scheduler)
 (import objects)
@@ -7,7 +8,6 @@
 (import dungeon)
 (import visibility)
 (import common)
-(import utilities)
 
 (define-class monster (character)
   ;; function that takes the monster, the floor, and the position of the

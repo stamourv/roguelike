@@ -1,6 +1,6 @@
 (import class)
-(import character)
 (import utilities)
+(import character)
 
 (define-generic turn)
 

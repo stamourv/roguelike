@@ -1,8 +1,8 @@
 (import class)
+(import utilities)
 (import objects)
 (import cell)
 (import grid)
-(import utilities)
 
 (define-class character ()
   (slot: name)

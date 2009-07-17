@@ -1,4 +1,5 @@
 (import class)
+(import utilities)
 (import cell)
 (import grid)
 (import scheduler)
@@ -9,7 +10,6 @@
 (import treasure)
 (import visibility)
 (import common)
-(import utilities)
 (import terminal)
 
 (define-class player (character)
@@ -270,7 +270,11 @@
 
 (define (choose-direction)
   (case (read-char)
-    ((#\esc) (which-direction?))
+    ((#\esc) (case (which-direction?)
+	       ((up)    up)
+	       ((down)  down) ;; TODO for some reason, since I use black hole, just using eval does not work
+	       ((left)  left)
+	       ((right) right)))
     (else    (invalid-command) #f)))
 
 (define (read-number n) ; read a number up to n, or q to cancel
@@ -312,7 +316,7 @@
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (if dir
 	(let* ((grid (player-map player))
-	       (cell (grid-ref grid ((eval dir) (character-pos player)))))
+	       (cell (grid-ref grid (dir (character-pos player)))))
 	  (f grid cell player)))))
 
 ;; console from which arbitrary expressions can be evaluated
