@@ -52,9 +52,9 @@
     ;; visibility for walls that consider only seen walls
     ;; if we have a 4-corner wall or a T wall, show it differently
     ;; depending on whether the neighbouring walls are known or not
-    (define (visited? x)
+    (define (visited? x #!optional (edge-ok? #t))
       (let ((v (grid-ref-check view x)))
-	(and (or (eq? v 'visited) (eq? v 'visible) (not v))
+	(and (or (eq? v 'visited) (eq? v 'visible) (and edge-ok? (not v)))
 	     (not (wall? (grid-ref-check map x))))))
     (let* ((eight      (eight-directions pos))
 	   (up         (list-ref eight 0)) ;; TODO have a macro with-eight-directions that binds all these
@@ -97,7 +97,7 @@
 				    (else
 				     make-four-corner-wall)))
 			     ((north-tee-wall? cell)
-			      (cond ((>= (+ (if (visited? up)         1 0)
+			      (cond ((>= (+ (if (visited? up #f)      1 0)
 					    (if (visited? down-left)  1 0)
 					    (if (visited? down-right) 1 0))
 					 2)
@@ -113,7 +113,7 @@
 				    (else
 				     make-north-tee-wall)))
 			     ((south-tee-wall? cell)
-			      (cond ((>= (+ (if (visited? down)     1 0)
+			      (cond ((>= (+ (if (visited? down #f)  1 0)
 					    (if (visited? up-left)  1 0)
 					    (if (visited? up-right) 1 0))
 					 2)
@@ -129,7 +129,7 @@
 				    (else
 				     make-south-tee-wall)))
 			     ((east-tee-wall? cell)
-			      (cond ((>= (+ (if (visited? right)     1 0)
+			      (cond ((>= (+ (if (visited? right #f)  1 0)
 					    (if (visited? up-left)   1 0)
 					    (if (visited? down-left) 1 0))
 					 2)
@@ -145,7 +145,7 @@
 				    (else
 				     make-east-tee-wall)))
 			     ((west-tee-wall? cell)
-			      (cond ((>= (+ (if (visited? left)       1 0)
+			      (cond ((>= (+ (if (visited? left #f)    1 0)
 					    (if (visited? up-right)   1 0)
 					    (if (visited? down-right) 1 0))
 					 2)

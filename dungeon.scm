@@ -352,6 +352,13 @@
 	   new-floor (remove pos (floor-walkable-cells new-floor)))
 	  (floor-stairs-down-set! new-floor pos)))
 
+    ;; replace the solid walls next to the stairs up by some prettier walls
+    (let ((stairs (floor-stairs-up new-floor)))
+      (for-each (lambda (pos)
+		  (if (solid-wall? (grid-ref-check level pos))
+		      (grid-set! level pos (new-four-corner-wall))))
+		(eight-directions stairs)))
+    
     ;; replace generic corner walls by the appropriate wall cell, for
     ;; aesthetic reasons
     (grid-for-each
