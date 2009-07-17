@@ -47,24 +47,24 @@
 			    (loop error (+ x 1) y))))))))))
 
 ;; returns a printing function for show-grid
-(define (visibility-printer view)
+(define (visibility-printer view map)
   (lambda (pos cell)
     ;; visibility for walls that consider only seen walls
     ;; if we have a 4-corner wall or a T wall, show it differently
     ;; depending on whether the neighbouring walls are known or not
     (define (visited? x)
-      (and (or (eq? x 'visited) (eq? x 'visible) (not x))
-	   #;
-	   (not (wall? x)))) ;; FOO no way to tell if it's a wall since we don't have access to the true map, but would solve some problems
+      (let ((v (grid-ref-check view x)))
+	(and (or (eq? v 'visited) (eq? v 'visible) (not v))
+	     (not (wall? (grid-ref-check map x))))))
     (let* ((eight      (eight-directions pos))
-	   (up         (grid-ref-check view (list-ref eight 0))) ;; TODO have a macro with-eight-directions that binds all these
-	   (down       (grid-ref-check view (list-ref eight 1)))
-	   (left       (grid-ref-check view (list-ref eight 2)))
-	   (right      (grid-ref-check view (list-ref eight 3)))
-	   (up-left    (grid-ref-check view (list-ref eight 4)))
-	   (down-left  (grid-ref-check view (list-ref eight 5)))
-	   (up-right   (grid-ref-check view (list-ref eight 6)))
-	   (down-right (grid-ref-check view (list-ref eight 7)))
+	   (up         (list-ref eight 0)) ;; TODO have a macro with-eight-directions that binds all these
+	   (down       (list-ref eight 1))
+	   (left       (list-ref eight 2))
+	   (right      (list-ref eight 3))
+	   (up-left    (list-ref eight 4))
+	   (down-left  (list-ref eight 5))
+	   (up-right   (list-ref eight 6))
+	   (down-right (list-ref eight 7))
 	   (cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
 		      ((cond ((four-corner-wall? cell) ;; TODO looks a lot like the last pass of dungeon generation, abstract ?
 			      (cond ((>= (+ (if (visited? up-left)    1 0)
