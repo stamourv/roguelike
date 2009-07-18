@@ -1,4 +1,4 @@
-(import class)
+(import (path class))
 (import utilities)
 (import cell)
 (import grid)

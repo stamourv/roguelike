@@ -1,4 +1,4 @@
-(import class)
+(import (path class))
 (import common)
 (import utilities)
 

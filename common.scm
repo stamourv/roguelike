@@ -1,4 +1,4 @@
-(import class)
+(import (path class))
 
 (define-generic print) ; used for objects, cells, etc. ;; TODO receive bg and fg color ? or visibility ? as optional arguments, if methods can have them ?
 (define-method (print o) #\space)

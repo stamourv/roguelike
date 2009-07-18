@@ -1,5 +1,3 @@
-(import class)
-
 (define (iota n)
   (let loop ((n (- n 1)) (l '()))
     (if (< n 0) l (loop (- n 1) (cons n l)))))
