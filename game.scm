@@ -5,6 +5,12 @@
 (import player)
 (import scheduler)
 
+;; some more imports, that are not necessary here, but could be for the console
+(import character)
+(import monsters)
+(import objects)
+;; TODO more ?
+
 (define debug #f)
 
 (port-settings-set! ##stdout-port (list char-encoding: 'UTF-8))

@@ -3,6 +3,7 @@
 (import character)
 
 (define-generic turn)
+(define-method (turn x reschedule?) #f)
 
 (define turn-no    0) ; in seconds, reset when the level is changed
 ;; to preserve the ordering from turn to turn, in case of identical speeds
@@ -14,7 +15,7 @@
   (set! turn-id (+ turn-id 1)))
 
 (define (reschedule char)
-  (schedule (lambda () (turn char)) (+ turn-no (character-speed char))))
+  (schedule (lambda () (turn char #t)) (+ turn-no (character-speed char))))
 
 (define (find-next-active)
   (let* ((minimum (fold (lambda (acc new) (min acc (car new)))

@@ -20,12 +20,12 @@
     (init-hp m)
     m))
 
-(define-method (turn (m monster))
+(define-method (turn (m monster) reschedule?)
   (if (and (> (character-hp m) 0)
 	   (eq? (character-floor m) (character-floor player)))
       (begin ((behavior-fun (monster-behavior m))
 	      m (character-pos player))
-	     (reschedule m))))
+	     (if reschedule? (reschedule m))))) ;; TODO this would be a nice candidate for call-next-method, once it works
 
 (define-method (attack (attacker monster) defender)
   (display (string-append "The "

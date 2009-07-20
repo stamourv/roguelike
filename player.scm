@@ -35,14 +35,14 @@
     player))
 (define-method (print (p player)) #\@)
 
-(define-method (turn (p player))
+(define-method (turn (p player) reschedule?)
   (if (<= (character-hp player) 0)
       (begin (display "You die.\n")
 	     (quit))
       (begin (update-visibility)
 	     (show-state)
 	     (read-command)
-	     (reschedule player))))
+	     (if reschedule? (reschedule player)))))
 
 (define-type player-floor
   floor ; views are a grid of either visible, visited or unknown
@@ -527,8 +527,23 @@
 (define-method (attack (attacker player) defender)
   (display (string-append (character-name attacker)
 			  " attacks the "
-			  (character-name defender)))
+			  (character-name defender))) ;; TODO instead of check-if-hit, use call-next-method ? with the new version of class
   (check-if-hit attacker defender))
+(define-method (ranged-attack (attacker player) defender)
+  (display (string-append (character-name player)
+			  " shoots at the "
+			  (character-name defender)))
+  (check-if-hit attacker defender get-ranged-attack-bonus)
+  ;; attacks of opportunity ;; TODO add them to monsters when we have some ranged ones
+  (for-each (lambda (pos)
+	      (cond ((grid-ref-check
+		      (floor-map (character-floor attacker)) pos)
+		     => (lambda (cell)
+			  (let ((occ (cell-occupant cell)))
+			    (if occ (begin (display "Attack of opportunity: ")
+					   ;; give a turn, but don't reschedule
+					   (turn occ #f)))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
+	    (four-directions (character-pos attacker))))
 
 (define (shoot) ;; TODO have shooting monsters too
   (let* ((grid    (player-map player))
@@ -583,16 +598,7 @@
 						  (player-map  player)))
 	;; choose a target
 	(let ((nb (read-number n)))
-	  (if nb
-	      (let ((target (list-ref targets nb))
-		    (roll   ((dice 20))))
-		(display (string-append (character-name player) ;; TODO abstract with attack in character.scm
-					" shoots at the "
-					(character-name target)))
-		(if (>= (+ roll (get-ranged-attack-bonus player))
-			(get-armor-class target))
-		    (damage player target)
-		    (display " and misses.\n"))))))))))
+	  (if nb (ranged-attack player (list-ref targets nb)))))))))
 
 
 (define-method (damage (attacker player) (defender monster))

@@ -150,11 +150,13 @@
               ((walkable-cell? new-cell)
                (attack occ (cell-occupant (grid-ref g new-pos))))))))
 
-(define-generic attack)
+(define-generic attack) ;; TODO these would be good candidates for call-next-method, but class seems to have trouble with it, or maybe it's my patched version, or maybe it's black hole
+(define-generic ranged-attack)
 
-(define (check-if-hit attacker defender) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
+(define (check-if-hit attacker defender
+		      #!optional (bonus-fun get-melee-attack-bonus)) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
   (let ((roll ((dice 20))))
-    (if (>= (+ roll (get-melee-attack-bonus attacker))
+    (if (>= (+ roll (bonus-fun attacker))
 	    (get-armor-class defender))
 	(damage attacker defender)
 	(display " and misses.\n")))) ;; TODO depending on by how much it missed, say different things
