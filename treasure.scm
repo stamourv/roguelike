@@ -57,22 +57,31 @@
 			new-items))))
 	 treasure-table)))
 
-(define (generate-treasure floor)
-  (let* ((no              (+ (floor-no floor) 1))
-	 (treasure-points (* 100 no)) ; in gp TODO tweak
+(define (generate-treasure no)
+  (let* ((treasure-points (* 30 (expt no 1.5))) ; in gp TODO tweak
 	 (possible        (possible-treasure no))
 	 (actual-bottom (fold min ; lowest value of the possible treasure
 			      treasure-points ; generous upper bound
 			      (map (lambda (i) (object-gp-value ((cdr i))))
 				   (apply append
-					  (map cdr possible)))))
-	 ;; the number of chests is level number independent
-	 (chests (map (lambda (x) (new-chest '())) ; will be filled later
-		      (iota (random-between 4 8)))))
-
+					  (map cdr possible))))))
     (if (fold (lambda (acc new) (and acc (null? (cdr new)))) #t possible)
 	(error "no possible treasure for this level"))
-    
+    (let loop ((pts   treasure-points)
+	       (items '()))
+      (if (>= pts actual-bottom)
+	  (let* ((cat   (random-choice possible))
+		 (item  (if (null? cat) #f ((random-choice cat))))
+		 (value (if item (object-gp-value item) #f)))
+	    (if (and value (<= value pts))
+		(loop (- pts value) (cons item items))
+		(loop pts items))) ; try something else
+	  items))))
+
+(define (place-treasure floor)
+  ;; the number of chests is level number independent
+  (let ((chests (map (lambda (x) (new-chest '())) ; will be filled later
+		     (iota (random-between 4 8)))))
     ;; place the chests randomly on the map
     (let loop ((chests chests))
       (if (not (null? chests))
@@ -81,15 +90,6 @@
 	    (floor-walkable-cells-set!
 	     floor (remove pos (floor-walkable-cells floor)))
 	    (loop (cdr chests)))))
-    
     ;; fill the chests
-    (let loop ((pts treasure-points))
-      (if (>= pts actual-bottom)
-	  (let* ((cat   (random-choice possible))
-		 (item  (if (null? cat) #f ((random-choice cat))))
-		 (value (if item (object-gp-value item) #f)))
-	    (if (and value (<= value pts))
-		(let ((chest (random-element chests)))
-		  (add-object chest item)
-		  (loop (- pts value)))
-		(loop pts))))))) ; try something else
+    (for-each (lambda (item) (add-object (random-element chests) item))
+	      (generate-treasure (+ (floor-no floor) 1)))))

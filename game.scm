@@ -14,8 +14,9 @@
 (define debug #f)
 
 (port-settings-set! ##stdout-port (list char-encoding: 'UTF-8))
-(tty-mode-set! (current-input-port) #t #t #t #f 0)
-(shell-command "setterm -cursor off")
+(if (not debug)
+    (begin (tty-mode-set! (current-input-port) #t #t #t #f 0)
+	   (shell-command "setterm -cursor off")))
 ;; strangely, clear-to-bottom does not clear the bottom of the screen as it
 ;; should
 (for-each (lambda (dummy) (display "\n")) (iota 50))
