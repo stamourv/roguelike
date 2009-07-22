@@ -12,10 +12,12 @@
 ;; TODO have more, maybe have chests, treasure, dungeon features (campfire), maybe a name for the encounter, to display when we enter the room ?
 
 (define-type encounter
+  type
   monsters) ;; TODO have more, espescially other kinds of objects that would need to be placed, such as chests or campfires
 ;; TODO also have some treasure with the encounter, see DM guide for proportions and amount by encounter level
 (define (new-encounter encounter-type) ; actually creates the monsters
-  (make-encounter (map call (encounter-type-monsters encounter-type))))
+  (make-encounter encounter-type
+		  (map call (encounter-type-monsters encounter-type))))
 (define (encounter-points e)
   (fold + 0 (map character-level (encounter-monsters e))))
 
@@ -64,42 +66,54 @@
                      (<= pts encounter-level-cap))))
             encounter-types)))
 
-(define (generate-encounters floor)
-  (let* ((no                       (+ (floor-no floor) 1))
-         (possible-encounter-types (possible-encounters no))
+(define (generate-encounters no)
+  (let* ((possible-encounter-types (possible-encounters no))
          (actual-bottom            (fold min
                                          no ; generous upper bound
                                          (map encounter-type-points
                                               possible-encounter-types))))
     (if (null? possible-encounter-types)
         (error "no possible encounters for this level"))
-    (let loop ((pts            (* no 5))
-               (free-rooms     (floor-rooms floor))
-               (floor-monsters '()))
-      (if (and (>= pts actual-bottom)
-               (not (null? free-rooms)))
+    (let loop ((pts        (* no 5))
+               (encounters '()))
+      (if (and (>= pts actual-bottom))
           (let* ((type             (random-element possible-encounter-types))
-                 (encounter-points (encounter-type-points type))
-                 (room             (random-element free-rooms)))
-            (if (and (<= encounter-points pts)
-                     (not (room-encounter room)) ; already an encounter there
-                     ((encounter-type-can-be-placed? type) room))
-                (let loop2 ((monsters     (encounter-monsters
-                                           (new-encounter type)))
-                            (all-monsters '())
-                            (space        (room-cells room)))
-                  (if (not (null? monsters))
-                      (let ((cell (random-element space))
-                            (mon  (car monsters)))
-                        (character-floor-set! mon floor)
-                        (cell-occupant-set! (grid-ref (floor-map floor) cell)
+                 (encounter-points (encounter-type-points type)))
+            (if (<= encounter-points pts)
+		(loop (- pts encounter-points)
+		      (cons (new-encounter type) encounters))
+                (loop pts encounters))) ; try something else
+	  encounters))))
+
+(define (place-encounters floor)
+  (let ((encounters (generate-encounters (+ (floor-no floor) 1))))
+    (floor-monsters-set! floor (apply append (map encounter-monsters
+						  encounters)))
+    (let loop ((encounters encounters)
+	       (free-rooms (floor-rooms floor)))
+      (if (not (or (null? encounters)
+		   (null? free-rooms)))
+	  (let* ((room      (random-element free-rooms))
+		 (encounter (car encounters)))
+	    (if (and (not (room-encounter room)) ; already an encounter there
+		     ((encounter-type-can-be-placed?
+		       (encounter-type encounter))room))
+		(let loop2 ((monsters (encounter-monsters encounter))
+			    (space    (room-cells room)))
+		  (if (not (null? monsters))
+		      (let ((cell (random-element space))
+			    (mon  (car monsters)))
+			(character-floor-set! mon floor)
+			(cell-occupant-set! (grid-ref (floor-map floor) cell)
                                             mon)
-                        (character-pos-set! mon cell)
-                        (loop2 (cdr monsters)
-                               (cons mon all-monsters)
+			(character-pos-set! mon cell)
+			(loop2 (cdr monsters)
                                (remove cell space)))
-                      (loop (- pts encounter-points)
-                            (remove room free-rooms)
-                            (append floor-monsters all-monsters))))
-                (loop pts free-rooms floor-monsters))) ; try something else
-          (floor-monsters-set! floor floor-monsters)))))
+		      (loop (cdr encounters) (remove room free-rooms))))
+		(loop encounters (remove room free-rooms))))))))
+
+;; for debugging purposes
+(define (show-encounters no)
+  (map (lambda (enc) (map (lambda (m) (character-name m))
+			  (encounter-monsters enc)))
+       (generate-encounters no)))

@@ -50,7 +50,7 @@
 (define (new-player-floor no)
   (let ((floor (generate-floor no (< no (- n-levels 1)))))
     ;; add everything else on top
-    (generate-encounters floor)
+    (place-encounters floor)
     (place-treasure   floor)
     (make-player-floor floor (init-visibility (floor-map floor)))))
 

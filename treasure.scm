@@ -93,3 +93,6 @@
     ;; fill the chests
     (for-each (lambda (item) (add-object (random-element chests) item))
 	      (generate-treasure (+ (floor-no floor) 1)))))
+
+;; for debugging purposes
+(define (show-treasure no) (map object-name (generate-treasure no)))
