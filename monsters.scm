@@ -2,10 +2,10 @@
 (import utilities)
 (import character)
 (import scheduler)
-(import objects)
+(import items)
 (import cell)
 (import grid)
-(import dungeon)
+(import floor)
 (import visibility)
 (import common)
 
@@ -144,7 +144,7 @@
        (let ((pos (character-pos monster))
 	     (map (floor-map (character-floor monster))))
 	 (cond ((member player-pos (four-directions pos))
-		;; we are next to the player, attack ;; TODO have another that flees even if next to the player
+		;; we are next to the player, attack ;; TODO have another that flees even if next to the player, and one that flees when wounded
 		=> (lambda (pl)
 		     (move-or-increment-idle map monster player-pos)))
 	       ((line-of-sight? map pos player-pos)

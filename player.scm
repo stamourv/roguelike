@@ -5,6 +5,8 @@
 (import scheduler)
 (import character)
 (import objects)
+(import items)
+(import floor)
 (import dungeon)
 (import encounters)
 (import treasure)
@@ -482,7 +484,7 @@
 	      (player-inventory-set! player (remove object objects)))
 	    "You have nothing to drink." "Drink what?" "Drank ")
     ;; necessary to display the messages in the right order
-    (if o (drink o))))
+    (if o (begin (drink o) (attacks-of-opportunity player)))))
 
 (define (stairs)
   (let ((cell (grid-ref (player-map player) (character-pos player))))
@@ -534,16 +536,7 @@
 			  " shoots at the "
 			  (character-name defender)))
   (check-if-hit attacker defender get-ranged-attack-bonus)
-  ;; attacks of opportunity ;; TODO add them to monsters when we have some ranged ones
-  (for-each (lambda (pos)
-	      (cond ((grid-ref-check
-		      (floor-map (character-floor attacker)) pos)
-		     => (lambda (cell)
-			  (let ((occ (cell-occupant cell)))
-			    (if occ (begin (display "Attack of opportunity: ")
-					   ;; give a turn, but don't reschedule
-					   (turn occ #f)))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
-	    (four-directions (character-pos attacker))))
+  (attacks-of-opportunity attacker))
 
 (define (shoot) ;; TODO have shooting monsters too
   (let* ((grid    (player-map player))

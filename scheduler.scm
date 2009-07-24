@@ -1,6 +1,5 @@
 (import (path class))
 (import utilities)
-(import character)
 
 (define-generic turn)
 (define-method (turn x reschedule?) #f)
@@ -14,8 +13,8 @@
   (set! turn-queue (cons (list t turn-id thunk) turn-queue))
   (set! turn-id (+ turn-id 1)))
 
-(define (reschedule char)
-  (schedule (lambda () (turn char #t)) (+ turn-no (character-speed char))))
+(define-generic reschedule)
+(define-method (reschedule x) #f)
 
 (define (find-next-active)
   (let* ((minimum (fold (lambda (acc new) (min acc (car new)))

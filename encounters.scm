@@ -3,7 +3,7 @@
 (import grid)
 (import character)
 (import monsters)
-(import dungeon)
+(import floor)
 
 (define-type encounter-type
   points

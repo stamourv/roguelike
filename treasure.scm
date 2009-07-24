@@ -1,8 +1,9 @@
 (import utilities)
 (import cell)
 (import grid)
-(import dungeon)
+(import floor)
 (import objects)
+(import items)
 
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
