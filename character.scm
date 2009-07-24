@@ -175,13 +175,13 @@
 			    " damage.\n"))
     (character-hp-set! defender (- (character-hp defender) dmg))))
 
-(define (attacks-of-opportunity attacker)
+(define (attacks-of-opportunity char)
   (for-each (lambda (pos)
 	      (cond ((grid-ref-check
-		      (floor-map (character-floor attacker)) pos)
+		      (floor-map (character-floor char)) pos)
 		     => (lambda (cell)
 			  (let ((occ (cell-occupant cell)))
 			    (if occ (begin (display "Attack of opportunity: ")
 					   ;; give a turn, but don't reschedule
 					   (turn occ #f)))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
-	    (four-directions (character-pos attacker))))
+	    (four-directions (character-pos char))))
