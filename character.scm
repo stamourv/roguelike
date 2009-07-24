@@ -137,18 +137,20 @@
 		       (else                        1)))))))
 
 (define (move g occ new-pos)
-  ;; moves the occupant of pos to new-pos, and returns the position of the
-  ;; occupant (the new one or the original, if the move fails)
+  ;; moves the occupant of pos to new-pos, and returns #t if it actually moved
   (if (inside-grid? g new-pos)
       (let ((cell     (grid-ref g (character-pos occ)))
             (new-cell (grid-ref g new-pos)))
         (cond ((free-cell? new-cell)
                (cell-occupant-set! cell     #f)
                (cell-occupant-set! new-cell occ)
-               (character-pos-set! occ new-pos))
+               (character-pos-set! occ new-pos)
+	       #t)
               ;; walkable, but occupied already, attack whoever is there
               ((walkable-cell? new-cell)
-               (attack occ (cell-occupant (grid-ref g new-pos))))))))
+               (attack occ (cell-occupant (grid-ref g new-pos)))
+	       #f) ;; TODO return #f ? the character did not move, but its turn is likely lost (except in the case where a monster moves over a monster, and then tries to move around it, like in flee-behavior)
+	      (else #f)))))
 
 (define-generic attack) ;; TODO these would be good candidates for call-next-method, but class seems to have trouble with it, or maybe it's my patched version, or maybe it's black hole
 (define-generic ranged-attack)

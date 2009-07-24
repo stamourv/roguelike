@@ -69,7 +69,7 @@
 	       17 11 12 8 7 6 (make-table) 0
 	       1/2 '(8) #f #f 1 6
 	       (new-equipment
-		main-hand: (new-greataxe) ;; TODO handle two-handed weapons and placeholders for monsters ? since they can't change their equipment, and since they are used as two-handed weapons anyway (1.5 times the strength bonus), not really necessary
+		main-hand: (new-greataxe)
 		torso:     (new-studded-leather-armor))
 	       (pursue-behavior)))
 (define-method (print (m orc)) #\o)
@@ -77,14 +77,14 @@
 
 (define-class animal (monster))
 
-(define-class bat (animal)) ;; TODO actually just as annoying and dangerous as rats, so up the challenge rating ?
-(define (new-bat) ;; TODO these monsters are kind of pointless since they can barely do damage
+(define-class bat (animal))
+(define (new-bat)
   (new-monster make-bat
 	       "bat" #f #f
 	       1 15 10 2 14 4 (make-table) 0
 	       1/10 '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
-	       (rush-behavior)))
+	       (flee-behavior)))
 (define-method (print (m bat)) #\b)
 
 (define-class rat (animal))
@@ -101,7 +101,9 @@
 (define-class undead (monster)) ;; TODO add some
 
 
+
 ;; AI
+
 (define-type behavior
   fun
   nb-turns-idle)
@@ -111,27 +113,59 @@
     (behavior-fun-set! b (fun b))
     b))
 
-(define (rush-behavior) (new-behavior rush))
-(define (rush b)
-  (lambda (monster player-pos)
-    (let ((pos (character-pos monster))
-	  (map (floor-map (character-floor monster))))
-      (if (line-of-sight? map pos player-pos)
-	  (let ((next (find-path map pos player-pos)))
-	    (if next (move-or-increment-idle map monster next)))))))
+(define (rush-behavior)
+  (new-behavior
+   (lambda (b)
+     (lambda (monster player-pos) ;; TODO have a macro for all that ?
+       (let ((pos (character-pos monster))
+	     (map (floor-map (character-floor monster))))
+	 (if (line-of-sight? map pos player-pos)
+	     (let ((next (find-path map pos player-pos)))
+	       (if next (move-or-increment-idle map monster next)))))))))
 
-(define (pursue-behavior) (new-behavior pursue))
-(define (pursue b)
-  (let ((last-player-pos #f)) ; AI state
-    (lambda (monster player-pos)
-      (let* ((pos    (character-pos monster))
-	     (map    (floor-map (character-floor monster)))
-	     (target (cond ((line-of-sight? map pos player-pos)
-			    (set! last-player-pos player-pos)
-			    player-pos)
-			   (else last-player-pos)))) ; we try to pursue
-	(let ((next (and target (find-path map pos target))))
-	  (if next (move-or-increment-idle map monster next)))))))
+(define (pursue-behavior)
+  (new-behavior
+   (lambda (b)
+     (let ((last-player-pos #f)) ; AI state
+       (lambda (monster player-pos)
+	 (let* ((pos    (character-pos monster))
+		(map    (floor-map (character-floor monster)))
+		(target (cond ((line-of-sight? map pos player-pos)
+			       (set! last-player-pos player-pos)
+			       player-pos)
+			      (else last-player-pos)))) ; we try to pursue
+	   (let ((next (and target (find-path map pos target))))
+	     (if next (move-or-increment-idle map monster next)))))))))
+
+(define (flee-behavior)
+  (new-behavior
+   (lambda (b)
+     (lambda (monster player-pos)
+       (let ((pos (character-pos monster))
+	     (map (floor-map (character-floor monster))))
+	 (cond ((member player-pos (four-directions pos))
+		;; we are next to the player, attack ;; TODO have another that flees even if next to the player
+		=> (lambda (pl)
+		     (move-or-increment-idle map monster player-pos)))
+	       ((line-of-sight? map pos player-pos)
+		;; flee
+		(let* ((x     (point-x pos))
+		       (y     (point-y pos))
+		       (dx    (- (point-x player-pos) x))
+		       (dy    (- (point-y player-pos) y))
+		       (adx   (abs dx))
+		       (ady   (abs dy))
+		       (vert  (lambda ()
+				(move-or-increment-idle
+				 map monster (new-point (- x (/ dx adx)) y))))
+		       (horiz (lambda ()
+				(move-or-increment-idle
+				 map monster (new-point x (- y (/ dy ady)))))))
+		  (if (> adx ady)
+		      ;; try to move vertically first
+		      (if (not (vert))  (horiz))
+		      ;; try to move horizontally first
+		      (if (not (horiz)) (vert)))))))))))
 
 (define (move-or-increment-idle map monster dest)
   (let ((pos (character-pos monster)))
