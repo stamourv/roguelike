@@ -637,9 +637,17 @@
 
 (define (level-up) ;; TODO have attribute upgrades, etc
   (display "Level up!\n")
-  (player-level-set! player (+ (player-level player) 1))
-  (let ((hd (character-hit-dice player)))
-    (character-hit-dice-set! player (cons (car hd) hd))
-    (init-hp player #t))
-  (character-base-attack-bonus-set!
-   player (+ (character-base-attack-bonus player) 1)))
+  (let* ((old-level (player-level player))
+	 (new-level (+ old-level 1)))
+    (player-level-set! player new-level)
+    (let ((hd (character-hit-dice player)))
+      (character-hit-dice-set! player (cons (car hd) hd))
+      (init-hp player #t))
+    (character-base-attack-bonus-set!
+     player (+ (character-base-attack-bonus player) 1))
+    (if (= (modulo old-level 5) 0) ; 6, 11, ...
+	;; add a new attack TODO this is a poor substitute for having multiple attacks, since we can just move twice as fast, and the 2 attacks are at the base attack bonus. if we have monsters with high enough BAB, do the same thing
+	(character-speed-set!
+	 player
+	 (/ (* (character-speed player) (/ old-level 5))
+	    (+ (/ old-level 5) 1))))))
