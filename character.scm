@@ -33,6 +33,8 @@
   (slot: hp)
   
   (slot: base-attack-bonus)
+  (slot: nb-attacks)
+  
   (slot: speed) ; number of seconds needed to do a turn
 
   (slot: equipment))

@@ -50,7 +50,7 @@
 
 (define (grid-for-each f g #!key
 		       (start-x 0)                (start-y 0)
-		       (length-x #f) (length-y #f)) ;; FOO should have the default values just below, once black hole fully supports key parameters
+		       (length-x #f) (length-y #f)) ;; TODO BLACKHOLE should have the default values just below, once black hole fully supports key parameters
   (if (not length-x) (set! length-x (grid-height g)))
   (if (not length-y) (set! length-y (grid-width g)))
   (for-each (lambda (x)

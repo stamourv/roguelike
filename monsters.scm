@@ -42,7 +42,7 @@
   (new-monster make-goblin
 	       "goblin" #f #f ;; TODO add ranged versions too
 	       11 13 12 10 9 6 (make-table) 0
-	       1/3 '(8) #f #f 1 6
+	       1/3 '(8) #f #f 1 1 6
 	       (new-equipment
 		main-hand: (new-club)
 		off-hand:  (new-light-shield)
@@ -55,7 +55,7 @@
   (new-monster make-kobold
 	       "kobold" #f #f
 	       9 13 10 10 9 8 (make-table) 0
-	       1/4 '(8) #f #f 1 6
+	       1/4 '(8) #f #f 1 1 6
 	       (new-equipment
 		main-hand: (new-shortspear)
 		torso:     (new-leather-armor))
@@ -67,7 +67,7 @@
   (new-monster make-orc
 	       "orc" #f #f
 	       17 11 12 8 7 6 (make-table) 0
-	       1/2 '(8) #f #f 1 6
+	       1/2 '(8) #f #f 1 1 6
 	       (new-equipment
 		main-hand: (new-greataxe)
 		torso:     (new-studded-leather-armor))
@@ -82,7 +82,7 @@
   (new-monster make-bat
 	       "bat" #f #f
 	       1 15 10 2 14 4 (make-table) 0
-	       1/10 '(2) #f #f 0 6 ;; TODO make faster, and raise the challenge rating
+	       1/10 '(2) #f #f 0 1 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
 (define-method (print (m bat)) #\b)
@@ -92,7 +92,7 @@
   (new-monster make-rat
 	       "rat" #f #f
 	       2 15 10 2 12 2 (make-table) 0
-	       1/8 '(2) #f #f 0 6
+	       1/8 '(2) #f #f 0 1 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
 (define-method (print (m rat)) #\r)

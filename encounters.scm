@@ -24,7 +24,7 @@
 (define (new-encounter-type
          monsters
          #!optional (restriction #f))
-  (if (not restriction) ;; FOO put as default value once black hole fully supports key parameters
+  (if (not restriction) ;; TODO BLACKHOLE put as default value once black hole fully supports key parameters
       (set! restriction (lambda (room)
 			  (>= (length (room-cells room))
 			      (length monsters)))))

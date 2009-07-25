@@ -27,7 +27,7 @@
 			     16 14 14 10 10 10 (make-table) 0 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     1 '(10) ; hit dice
 			     #f #f
-			     1 ; base attack bonus
+			     1 1 ; base attack bonus, nb attacks
 			     6 ; speed, 6 seconds for a turn
 			     (new-equipment main-hand: (new-club))
 			     '() #f '()
@@ -41,10 +41,20 @@
   (if (<= (character-hp player) 0)
       (begin (display "You die.\n")
 	     (quit))
-      (begin (update-visibility)
-	     (show-state)
-	     (read-command)
-	     (if reschedule? (reschedule player)))))
+      (begin
+	;; if we don't move, we can get multiple attacks (if we have more
+	;; than one attack). these "attacks" can also be used to drink
+	;; potions or anything else apart from moving. moving stops the
+	;; sequence of attacks (so the last "attack" could be a move)
+	;; TODO an interesting variant would be to move a certain amount of times, and then only be able to attack, and attack the right number of times, then start the cycle again. would help to display these numbers to the player
+	;; TODO would be nice to have both a move action and an attack, but to be able to do a full attack only if we didn't move
+	(let ((pos (character-pos player))) ; to check if we moved
+	  (let loop ((n (character-nb-attacks player)))
+	    (if (and (> n 0) (equal? (character-pos player) pos)) ;; TODO a failed move will count as an attack, not as a move
+		(begin (read-command)
+		       (loop (- n 1))))))
+	;; TODO for now, all attacks use the max attack bonus, which is wrong
+	(if reschedule? (reschedule player))))) ;; TODO this would be a good candidate for call-next-method, especially with multiple attack handling
 
 (define-type player-floor
   floor ; views are a grid of either visible, visited or unknown
@@ -66,7 +76,7 @@
 	 player player-floor
 	 #!key (start-pos #f))
   (if (not start-pos)
-      (set! start-pos (floor-stairs-up (player-floor-floor player-floor)))) ;; FOO put as default value once black hole fully supports key parameters
+      (set! start-pos (floor-stairs-up (player-floor-floor player-floor)))) ;; TODO BLACKHOLE put as default value once black hole fully supports key parameters
   (let* ((floor (player-floor-floor player-floor))
 	 (map   (floor-map floor)))
     (cell-occupant-set!        (grid-ref map start-pos) player)
@@ -226,6 +236,9 @@
     (else  (invalid-command))))
 
 (define (read-command) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
+  (update-visibility)
+  (show-state)
+
   (let* ((pos   (copy-point (character-pos player)))
 	 (grid  (floor-map (character-floor player)))
 	 (x     (point-x pos))
@@ -646,8 +659,5 @@
     (character-base-attack-bonus-set!
      player (+ (character-base-attack-bonus player) 1))
     (if (= (modulo old-level 5) 0) ; 6, 11, ...
-	;; add a new attack TODO this is a poor substitute for having multiple attacks, since we can just move twice as fast, and the 2 attacks are at the base attack bonus. if we have monsters with high enough BAB, do the same thing
-	(character-speed-set!
-	 player
-	 (/ (* (character-speed player) (/ old-level 5))
-	    (+ (/ old-level 5) 1))))))
+	;; add a new attack
+	(character-nb-attacks-set! player (+ (character-nb-attacks player) 1)))))

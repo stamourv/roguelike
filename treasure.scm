@@ -8,7 +8,7 @@
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
 (define treasure-table
-  (list (list 0.43 ;; FOO had something pretty with quasiquote and unquote, but black hole considered the unquoted parts to be syntaxtic closures, which made no sense
+  (list (list 0.43 ;; TODO BLACKHOLE had something pretty with quasiquote and unquote, but black hole considered the unquoted parts to be syntaxtic closures, which made no sense
 	      ;; weapons
 	      (cons 0.2  new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
 	      (cons 0.1  new-greataxe)

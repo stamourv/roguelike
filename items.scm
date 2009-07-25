@@ -23,7 +23,7 @@
 (define (new-light-healing-potion)
   (make-potion "light healing potion" 50 ;; TODO at this price, is oly seen on the 3rd level. might be nice to see on the second
 	       (lambda ()
-		 (character-hp-set! player ;; FOO this, and the other potions need character.scm
+		 (character-hp-set! player
 				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
 					 (character-max-hp player))))
 	       "You feel healthier.\n"))
