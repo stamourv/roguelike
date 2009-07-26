@@ -27,7 +27,7 @@
 			     16 14 14 10 10 10 (make-table) 0 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
 			     1 '(10) ; hit dice
 			     #f #f
-			     1 1 ; base attack bonus, nb attacks
+			     1 #f 1 ; base and current attack bonus, nb attacks
 			     6 ; speed, 6 seconds for a turn
 			     (new-equipment main-hand: (new-club))
 			     '() #f '()
@@ -48,12 +48,14 @@
 	;; sequence of attacks (so the last "attack" could be a move)
 	;; TODO an interesting variant would be to move a certain amount of times, and then only be able to attack, and attack the right number of times, then start the cycle again. would help to display these numbers to the player
 	;; TODO would be nice to have both a move action and an attack, but to be able to do a full attack only if we didn't move
-	(let ((pos (character-pos player))) ; to check if we moved
-	  (let loop ((n (character-nb-attacks player)))
-	    (if (and (> n 0) (equal? (character-pos player) pos)) ;; TODO a failed move will count as an attack, not as a move
-		(begin (read-command)
-		       (loop (- n 1))))))
-	;; TODO for now, all attacks use the max attack bonus, which is wrong
+	(let ((pos (character-pos player))
+	      (bab (character-base-attack-bonus player))) ; to check if we moved
+	  (let loop ((n            (character-nb-attacks player))
+		     (attack-bonus bab))
+	    (if (and (> n 0) (equal? (character-pos player) pos)) ;; TODO a failed move will count as an attack, not as a move, also, we can make many ranged attacks. maybe instead of checking if we moved or not, have each command (in read-command) return its name, so we can decide, depending on the action taken, to have others or not
+		(begin (character-current-attack-bonus-set! player attack-bonus)
+		       (read-command)
+		       (loop (- n 1) (- attack-bonus 5))))))
 	(if reschedule? (reschedule player))))) ;; TODO this would be a good candidate for call-next-method, especially with multiple attack handling
 
 (define-type player-floor

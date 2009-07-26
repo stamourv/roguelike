@@ -33,6 +33,7 @@
   (slot: hp)
   
   (slot: base-attack-bonus)
+  (slot: current-attack-bonus) ; for multiple attacks TODO have a constructor that sets it at base, when monsters handle multiple attacks (which sets this), won't be needed (and mosnters can have it as #f)
   (slot: nb-attacks)
   
   (slot: speed) ; number of seconds needed to do a turn
@@ -102,10 +103,10 @@
   (> (table-ref (character-altered-attrs char) attr 0) 0))
 
 (define (get-melee-attack-bonus  c)
-  (+ (character-base-attack-bonus c)
+  (+ (character-current-attack-bonus c)
      (get-attribute-bonus 'str c)))
 (define (get-ranged-attack-bonus c)
-  (+ (character-base-attack-bonus c)
+  (+ (character-current-attack-bonus c)
      (get-attribute-bonus 'dex c)))
 
 (define-type equipment
