@@ -626,9 +626,10 @@
 			  ".\n"))
   (let* ((floor (character-floor monster))
 	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
-    ;; drop equipment TODO maybe only drop each part with a certain probability, to simulate breaking during combat
+    ;; drop equipment with a certain probability TODO TWEAK
     (for-each-equipped (lambda (obj where)
-			 (if (and obj (removable? obj)) (add-object cell obj)))
+			 (if (and obj (removable? obj) (random-boolean 0.3))
+			     (add-object cell obj)))
 		       (character-equipment monster))
     ;; remove the monster
     (cell-occupant-set! cell #f)

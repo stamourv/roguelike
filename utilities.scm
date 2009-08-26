@@ -95,6 +95,7 @@
     (cond ((null? l)      #f) ; shouldn't happen
 	  ((< r (caar l)) (cdar l))
 	  (else           (loop (- r (caar l)) (cdr l))))))
+(define (random-boolean #!optional (p 0.5)) (< (random-real) p))
 (define (random-between x y) ; between x and y inclusively
   (+ x (random-integer (+ 1 (- y x)))))
 
