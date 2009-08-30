@@ -177,6 +177,6 @@
 		    (cell-occupant-set! cell #f)
 		    (print (show cell))
 		    (cell-occupant-set! cell occ)))
-		 (else (display c)))) ; no enemy to hide
+		 (else (print c)))) ; no enemy to hide
 	  ((unknown)
 	   (terminal-print " ")))))))
