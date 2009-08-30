@@ -27,6 +27,24 @@
   (if (< n 1)
       '()
       (cons (car l) (take (cdr l) (- n 1)))))
+(define (drop l n)
+  (if (< n 1)
+      l
+      (drop (cdr l) (- n 1))))
+
+(define-macro (take! l n)
+  (let ((loop (gensym))
+	(tmp  (gensym))
+	(i    (gensym))
+	(res  (gensym)))
+    `(let ,loop ((,tmp ,l)
+		 (,i   ,n)
+		 (,res '()))
+       (if (< ,i 1)
+	   (begin (set! ,l ,tmp) (reverse ,res))
+	   (,loop (cdr ,tmp)
+		  (- ,i 1)
+		  (cons (car ,tmp) ,res))))))
 
 (define (call x) (x))
 

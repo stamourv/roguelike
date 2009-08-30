@@ -16,7 +16,13 @@
 
 ;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
 (define (new-monster f . args)
-  (let ((m (apply f args)))
+  (let ((m (apply f `(,@(take! args 1) ; name
+		      #f #f            ; pos, floor
+		      ,@(take! args 6) ; str, dex, con, int, wis, cha
+		      ,(make-table)    ; altered-attrs
+		      ,@(take! args 3) ; natural-ac, level, hit-dice
+		      #f #f            ; hp, max-hp
+		      ,@args))))       ; rest
     (init-hp m)
     m))
 
@@ -40,9 +46,10 @@
 (define-class goblin (monster))
 (define (new-goblin)
   (new-monster make-goblin
-	       "goblin" #f #f ;; TODO add ranged versions too
-	       11 13 12 10 9 6 (make-table) 0
-	       1/3 '(8) #f #f 1 1 1 6
+	       "goblin"
+	       11 13 12 10 9 6
+	       0 1/3 '(8)
+	       1 1 1 6
 	       (new-equipment
 		main-hand: (new-club)
 		off-hand:  (new-light-shield)
@@ -53,9 +60,10 @@
 (define-class kobold (monster))
 (define (new-kobold)
   (new-monster make-kobold
-	       "kobold" #f #f
-	       9 13 10 10 9 8 (make-table) 0
-	       1/4 '(8) #f #f 1 1 1 6
+	       "kobold"
+	       9 13 10 10 9 8
+	       0 1/4 '(8)
+	       1 1 1 6
 	       (new-equipment
 		main-hand: (new-shortspear)
 		torso:     (new-leather-armor))
@@ -65,9 +73,10 @@
 (define-class orc (monster))
 (define (new-orc)
   (new-monster make-orc
-	       "orc" #f #f
-	       17 11 12 8 7 6 (make-table) 0
-	       1/2 '(8) #f #f 1 1 1 6
+	       "orc"
+	       17 11 12 8 7 6
+	       0 1/2 '(8)
+	       1 1 1 6
 	       (new-equipment
 		main-hand: (new-greataxe)
 		torso:     (new-studded-leather-armor))
@@ -80,9 +89,10 @@
 (define-class bat (animal))
 (define (new-bat)
   (new-monster make-bat
-	       "bat" #f #f
-	       1 15 10 2 14 4 (make-table) 0
-	       1/10 '(2) #f #f 0 0 1 6 ;; TODO make faster, and raise the challenge rating
+	       "bat"
+	       1 15 10 2 14 4
+	       0 1/10 '(2)
+	       0 0 1 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
 (define-method (print (m bat)) #\b)
@@ -90,9 +100,10 @@
 (define-class rat (animal))
 (define (new-rat)
   (new-monster make-rat
-	       "rat" #f #f
-	       2 15 10 2 12 2 (make-table) 0
-	       1/8 '(2) #f #f 0 0 1 6
+	       "rat"
+	       2 15 10 2 12 2
+	       0 1/8 '(2)
+	       0 0 1 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
 (define-method (print (m rat)) #\r)

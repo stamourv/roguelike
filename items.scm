@@ -3,6 +3,8 @@
 (import common)
 (import utilities)
 
+;; TODO have generation probabilities here, not separately
+
 (define (new-leather-armor)
   (make-body-armor "leather armor"         10 2 6))
 (define (new-studded-leather-armor)
