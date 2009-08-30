@@ -1,5 +1,6 @@
 (import objects)
 (import character)
+(import display)
 (import common)
 (import utilities)
 

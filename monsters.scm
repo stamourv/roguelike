@@ -8,6 +8,7 @@
 (import grid)
 (import floor)
 (import visibility)
+(import display)
 (import common)
 
 (define-class monster (character)
@@ -208,7 +209,7 @@
        (let ((pos (character-pos monster)) ;; TODO have that in a macro
 	     (map (floor-map (character-floor monster))))
 	 (if (clear-shot? map pos player-pos) ;; TODO not very interesting for the moment
-	     (ranged-attack monster player)
+	     (ranged-attack monster (cell-occupant (grid-ref map player-pos)))
 	     #f)))))) ;; stay there
 
 

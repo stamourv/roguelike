@@ -1,5 +1,5 @@
 (import (path class))
-(import common)
+(import display)
 (import utilities)
 
 (define-class cell ()

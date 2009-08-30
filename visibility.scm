@@ -1,7 +1,7 @@
 (import cell)
 (import grid)
 (import terminal)
-(import common)
+(import display)
 
 (define (init-visibility g)
   (empty-grid (grid-height g) (grid-width g)

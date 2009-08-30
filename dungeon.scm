@@ -4,6 +4,7 @@
 (import cell)
 (import floor)
 (import character)
+(import display)
 (import common)
 
 (define (generate-floor no #!optional (stairs-down? #t))

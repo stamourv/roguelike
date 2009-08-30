@@ -11,6 +11,7 @@
 (import encounters)
 (import treasure)
 (import visibility)
+(import display)
 (import common)
 (import terminal)
 
