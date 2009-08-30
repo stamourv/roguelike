@@ -1,7 +1,7 @@
 (define (terminal-command command)
   (display (string-append (list->string (list (integer->char #x1b))) command)))
 (define (terminal-reset) (terminal-command "[0m"))
-(define (terminal-colors bg fg)
+(define (terminal-colors bg fg bold? underline?)
   (terminal-command (string-append "[" (case bg
 					 ((black) "40") ((red)     "41")
 					 ((green) "42") ((yellow)  "43")
@@ -12,9 +12,13 @@
 					 ((green) "32") ((yellow)  "33")
 					 ((blue)  "34") ((magenta) "35")
 					 ((cyan)  "36") ((white)   "37"))
+				   (if bold?      ";1" "")
+				   (if underline? ";4" "")
 				   "m")))
-(define (terminal-print text #!key (bg 'black) (fg 'white))
-  (terminal-colors bg fg)
+;; bright is bold, dim is regular weight, blink, reverse and hidden don't work
+(define (terminal-print text #!key (bg 'black) (fg 'white)
+			           (bold? #f) (underline? #f))
+  (terminal-colors bg fg bold? underline?)
   (display text)
   (terminal-reset)) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc) maybe it's just my xterm that is badly configured
 (define (clear-line)      (terminal-command "[K"))
