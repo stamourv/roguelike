@@ -75,7 +75,7 @@
 	       (new-equipment ;; TODO maybe also have a melee weapon
 		main-hand: (new-shortbow)) ; no armor to compensate fot the bow
 	       (ranged-behavior)))
-(define-method (show (m goblin-archer)) #\G)
+(define-method (show (m goblin-archer)) (new-sprite #\g fg: 'magenta))
 
 (define-class kobold (monster))
 (define (new-kobold)

@@ -165,14 +165,14 @@
 	(case (grid-ref view pos)
 	  ((visible)
 	   (if (opaque-cell? cell #f)
-	       (display c)
-	       (terminal-print c bg: 'white fg: 'black))) ;; TODO can we have colored objects with that ? not sure
+	       (print (darken-sprite  c))
+	       (print (lighten-sprite c))))
 	  ((visited)
 	   ;; (terminal-print c bg: 'black fg: 'white)
 	   ;; these are the default colors of the terminal, and not having to
 	   ;; print the control characters speeds up the game
 	   ;; we don't show enemies if they would be in the fog of war
-	   (cond ((cell-occupant cell) =>
+	   (cond ((cell-occupant cell) => ;; FOO have a sprite function for that
 		  (lambda (occ)
 		    (cell-occupant-set! cell #f)
 		    (display (show cell))
