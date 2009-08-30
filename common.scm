@@ -8,3 +8,5 @@
     (if (null? hall)
 	'()
 	(car hall))))
+
+(define god-mode? #f) ; for debugging
