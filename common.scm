@@ -1,7 +1,7 @@
 (import (path class))
 
-(define-generic print) ; used for objects, cells, etc. ;; TODO receive bg and fg color ? or visibility ? as optional arguments, if methods can have them ?
-(define-method (print o) #\space)
+(define-generic show) ; used for objects, cells, etc. ;; TODO receive bg and fg color ? or visibility ? as optional arguments, if methods can have them ?
+(define-method (show o) #\space)
 
 (define n-levels 3) ;; TODO change
 (define player #f) ; needed for level-generation

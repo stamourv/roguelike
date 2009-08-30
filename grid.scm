@@ -145,7 +145,7 @@
 
 (define (show-grid
 	 g #!key
-	 (print-fun (lambda (pos cell) (display (print cell))))
+	 (print-fun (lambda (pos cell) (display (show cell))))
 	 (border? #f))
   (define (draw-border-line)
     (if border?

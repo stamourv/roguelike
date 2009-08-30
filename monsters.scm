@@ -64,7 +64,7 @@
 		off-hand:  (new-light-shield)
 		torso:     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (print (m goblin)) #\g)
+(define-method (show (m goblin)) #\g)
 (define-class goblin-archer (goblin))
 (define (new-goblin-archer)
   (new-monster make-goblin-archer
@@ -75,7 +75,7 @@
 	       (new-equipment ;; TODO maybe also have a melee weapon
 		main-hand: (new-shortbow)) ; no armor to compensate fot the bow
 	       (ranged-behavior)))
-(define-method (print (m goblin-archer)) #\G)
+(define-method (show (m goblin-archer)) #\G)
 
 (define-class kobold (monster))
 (define (new-kobold)
@@ -88,7 +88,7 @@
 		main-hand: (new-shortspear)
 		torso:     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (print (m kobold)) #\k)
+(define-method (show (m kobold)) #\k)
 
 (define-class orc (monster))
 (define (new-orc)
@@ -101,7 +101,7 @@
 		main-hand: (new-greataxe)
 		torso:     (new-studded-leather-armor))
 	       (pursue-behavior)))
-(define-method (print (m orc)) #\o)
+(define-method (show (m orc)) #\o)
 
 
 (define-class animal (monster))
@@ -115,7 +115,7 @@
 	       0 0 1 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
-(define-method (print (m bat)) #\b)
+(define-method (show (m bat)) #\b)
 
 (define-class rat (animal))
 (define (new-rat)
@@ -126,7 +126,7 @@
 	       0 0 1 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
-(define-method (print (m rat)) #\r)
+(define-method (show (m rat)) #\r)
 
 
 (define-class undead (monster)) ;; TODO add some

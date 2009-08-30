@@ -32,10 +32,10 @@
 (define-class body-armor (armor)
   (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor and have different display characters for each type of armor ?
 (define-method (max-dex-bonus (o body-armor)) (body-armor-max-dex-bonus o))
-(define-method (print (o body-armor)) #\&)
+(define-method (show (o body-armor)) #\&)
 
 (define-class shield (armor))
-(define-method (print (o shield)) #\0)
+(define-method (show (o shield)) #\0)
 
 
 (define-generic get-damage-fun)
@@ -44,7 +44,7 @@
 (define-class weapon (equipable-object)
   (slot: damage-dice) ; function that returns the damage
   (slot: damage-type)) ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee and ranged, ...
-(define-method (print (o weapon)) #\!)
+(define-method (show (o weapon)) #\!)
 (define-method (get-damage-fun (o weapon)) (apply dice (weapon-damage-dice o)))
 (define-method (object-info (o weapon))
   (string-append (object-name o)
@@ -62,13 +62,13 @@
 (define-method (removable? (o off-hand-placeholder)) #f)
 
 (define-class ranged-weapon (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed
-(define-method (print (o ranged-weapon)) #\))
+(define-method (show (o ranged-weapon)) #\))
 
 
 (define-class potion (object)
   (slot: thunk)
   (slot: message))
-(define-method (print (o potion)) #\;)
+(define-method (show (o potion)) #\;)
 
 ;; important: make sure there is at least as many colors as potion types
 (define potion-colors

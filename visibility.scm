@@ -46,8 +46,7 @@
 					   (floor (+ y y-step)) y)))
 			    (loop error (+ x 1) y))))))))))
 
-;; returns a printing function for show-grid
-(define (visibility-printer view map)
+(define (visibility-show view map)
   (lambda (pos cell)
     ;; visibility for walls that consider only seen walls
     ;; if we have a 4-corner wall or a T wall, show it differently
@@ -162,7 +161,7 @@
 				     make-west-tee-wall))))
 		       (cell-objects cell) (cell-occupant cell))
 		      cell)))
-      (let ((c (print cell)))
+      (let ((c (show cell)))
 	(case (grid-ref view pos)
 	  ((visible)
 	   (if (opaque-cell? cell #f)
@@ -176,7 +175,7 @@
 	   (cond ((cell-occupant cell) =>
 		  (lambda (occ)
 		    (cell-occupant-set! cell #f)
-		    (display (print cell))
+		    (display (show cell))
 		    (cell-occupant-set! cell occ)))
 		 (else (display c)))) ; no enemy to hide
 	  ((unknown)

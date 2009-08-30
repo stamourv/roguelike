@@ -35,7 +35,7 @@
     (init-hp player #t) ; the player gets maxed out hp
     (place-player player (new-player-floor 0))
     player))
-(define-method (print (p player)) #\@)
+(define-method (show (p player)) #\@)
 
 (define-method (turn (p player) reschedule?)
   (if (<= (character-hp player) 0)
@@ -150,8 +150,8 @@
 	     (+ (floor-no (character-floor player)) 1))
 	    "\n"))
   (show-grid (player-map player)
-	     print-fun: (visibility-printer (player-view player)
-					    (player-map  player))))
+	     print-fun: (visibility-show (player-view player)
+					 (player-map  player))))
 
 
 (define (update-visibility) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
@@ -611,8 +611,8 @@
 		   (+ (floor-no (character-floor player)) 1))
 		  "\n"))
 	(show-grid grid
-		   print-fun: (visibility-printer (player-view player)
-						  (player-map  player)))
+		   print-fun: (visibility-show (player-view player)
+					       (player-map  player)))
 	;; choose a target
 	(let ((nb (read-number n)))
 	  (if nb (ranged-attack player (list-ref targets nb)))))))))
