@@ -32,6 +32,7 @@
 	      bold?:      (sprite-bold?      s)
 	      underline?: (sprite-underline? s)))
 (define-method (darken-sprite s) (new-sprite s))
+
 (define-generic lighten-sprite)
 (define-method (lighten-sprite (s sprite))
   (new-sprite (sprite-char s)

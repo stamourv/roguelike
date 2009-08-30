@@ -172,10 +172,10 @@
 	   ;; these are the default colors of the terminal, and not having to
 	   ;; print the control characters speeds up the game
 	   ;; we don't show enemies if they would be in the fog of war
-	   (cond ((cell-occupant cell) => ;; FOO have a sprite function for that
+	   (cond ((cell-occupant cell) =>
 		  (lambda (occ)
 		    (cell-occupant-set! cell #f)
-		    (display (show cell))
+		    (print (show cell))
 		    (cell-occupant-set! cell occ)))
 		 (else (display c)))) ; no enemy to hide
 	  ((unknown)
