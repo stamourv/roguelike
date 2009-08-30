@@ -350,6 +350,13 @@
   (shell-command "setterm -cursor off")
   (tty-mode-set! (current-input-port) #t #t #t #f 0))
 
+;; for debugging
+(define (reveal-map)
+  (let ((view (player-view player)))
+    (grid-for-each (lambda (p) (grid-set! view p 'visited))
+		   view)))
+
+
 (define (quit)
   (display "\nHall of fame:\n\n") ;; TODO have in a function
   (let* ((name         (string->symbol (player-name player)))
@@ -550,23 +557,22 @@
 			  (character-name defender))) ;; TODO instead of check-if-hit, use call-next-method ? with the new version of class
   (check-if-hit attacker defender))
 (define-method (ranged-attack (attacker player) defender)
-  (display (string-append (character-name player)
+  (display (string-append (character-name attacker)
 			  " shoots at the "
 			  (character-name defender)))
   (check-if-hit attacker defender get-ranged-attack-bonus)
   (attacks-of-opportunity attacker))
 
-(define (shoot) ;; TODO have shooting monsters too
+(define (shoot)
   (let* ((grid    (player-map player))
 	 (weapon  (equipment-main-hand (character-equipment player)))
 	 (targets (filter (lambda (m)
 			    (and (eq? (grid-ref (player-view player)
 						(character-pos m))
 				      'visible)
-				 (line-of-sight? grid
-						 (character-pos player)
-						 (character-pos m)
-						 #t)))
+				 (clear-shot? grid
+					      (character-pos player)
+					      (character-pos m))))
 			  (floor-monsters (character-floor player))))
 	 (n       (length targets)))
     (cond

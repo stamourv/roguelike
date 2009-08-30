@@ -2,6 +2,7 @@
 (import utilities)
 (import character)
 (import scheduler)
+(import objects)
 (import items)
 (import cell)
 (import grid)
@@ -38,9 +39,17 @@
 			  (character-name attacker)
 			  " attacks "
 			  (character-name defender)))
-  (check-if-hit attacker defender))
+  (check-if-hit attacker defender)) ;; TODO good for call-next-method too
 ;; monsters don't attack other monsters
 (define-method (attack (attacker monster) (defender monster)) #f)
+
+(define-method (ranged-attack (attacker monster) (defender player))
+  (display (string-append "The "
+			  (character-name attacker)
+			  " shoots at "
+			  (character-name defender)))
+  (check-if-hit attacker defender get-ranged-attack-bonus)
+  (attacks-of-opportunity attacker))
 
 
 (define-class goblin (monster))
@@ -56,6 +65,17 @@
 		torso:     (new-leather-armor))
 	       (rush-behavior)))
 (define-method (print (m goblin)) #\g)
+(define-class goblin-archer (goblin))
+(define (new-goblin-archer)
+  (new-monster make-goblin-archer
+	       "goblin archer"
+	       11 13 12 10 9 6 ;; TODO abstract with goblin
+	       0 1/3 '(8)
+	       1 1 1 6
+	       (new-equipment ;; TODO maybe also have a melee weapon
+		main-hand: (new-shortbow)) ; no armor to compensate fot the bow
+	       (ranged-behavior)))
+(define-method (print (m goblin-archer)) #\G)
 
 (define-class kobold (monster))
 (define (new-kobold)
@@ -177,6 +197,20 @@
 		      (if (not (vert))  (horiz))
 		      ;; try to move horizontally first
 		      (if (not (horiz)) (vert)))))))))))
+
+(define (ranged-behavior)
+  (new-behavior
+   (lambda (b)
+     (lambda (monster player-pos)
+       (if (not (ranged-weapon? (equipment-main-hand
+				 (character-equipment monster))))
+	   (error "monster " monster " has no ranged weapon"))
+       (let ((pos (character-pos monster)) ;; TODO have that in a macro
+	     (map (floor-map (character-floor monster))))
+	 (if (clear-shot? map pos player-pos) ;; TODO not very interesting for the moment
+	     (ranged-attack monster player)
+	     #f)))))) ;; stay there
+
 
 (define (move-or-increment-idle map monster dest)
   (let ((pos (character-pos monster)))

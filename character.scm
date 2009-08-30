@@ -3,6 +3,7 @@
 (import objects)
 (import floor)
 (import scheduler)
+(import visibility)
 (import cell)
 (import grid)
 
@@ -188,3 +189,5 @@
 					   ;; give a turn, but don't reschedule
 					   (turn occ #f)))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
 	    (four-directions (character-pos char))))
+
+(define (clear-shot? grid a b) (line-of-sight? grid a b #t))

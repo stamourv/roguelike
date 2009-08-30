@@ -9,6 +9,9 @@
 (import character)
 (import monsters)
 (import objects)
+(import cell)
+(import grid)
+(import visibility)
 ;; TODO more ?
 
 (define debug #f)

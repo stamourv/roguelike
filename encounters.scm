@@ -48,6 +48,9 @@
          (,new-kobold ,new-kobold ,new-kobold ,new-kobold)
          (,new-goblin ,new-goblin)
          (,new-goblin ,new-goblin ,new-goblin)
+	 (,new-goblin ,new-goblin-archer)
+	 (,new-goblin ,new-goblin-archer ,new-goblin-archer)
+	 (,new-goblin ,new-goblin ,new-goblin-archer)
          (,new-orc ,new-orc)
          (,new-orc ,new-goblin ,new-goblin))))
 
