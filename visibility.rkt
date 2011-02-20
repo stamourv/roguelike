@@ -1,13 +1,14 @@
-(import cell)
-(import grid)
-(import terminal)
-(import display)
+#lang racket
+
+(require "cell.rkt" "grid.rkt" "terminal.rkt" "display.rkt"
+         (rename-in racket/base [floor math-floor]))
+(provide (all-defined-out))
 
 (define (init-visibility g)
   (empty-grid (grid-height g) (grid-width g)
-	      cell-fun: (lambda (pos) 'unknown)))
+	      #:cell-fun (lambda (pos) 'unknown)))
 
-(define (line-of-sight? g a b #!optional (monsters-opaque? #f))
+(define (line-of-sight? g a b (monsters-opaque? #f))
   ;; using Bresenham's algorithm to draw a line between a and b, see if we
   ;; hit any opaque objects
   ;; see: http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -17,12 +18,12 @@
       (let* ((x0 (point-x a)) (y0 (point-y a)) ;; TODO maybe have a generic bresenham, could be used for other things
 	     (x1 (point-x b)) (y1 (point-y b))
 	     (steep (> (abs (- y1 y0)) (abs (- x1 x0)))))
-	(if steep
-	    (let ((tmp x0))    (set! x0 y0) (set! y0 tmp)
-		 (set! tmp x1) (set! x1 y1) (set! y1 tmp)))
-	(if (> x0 x1)
-	    (let ((tmp x0))    (set! x0 x1) (set! x1 tmp)
-		 (set! tmp y0) (set! y0 y1) (set! y1 tmp)))
+	(when steep
+          (let ((tmp x0))    (set! x0 y0) (set! y0 tmp)
+               (set! tmp x1) (set! x1 y1) (set! y1 tmp)))
+	(when (> x0 x1)
+          (let ((tmp x0))    (set! x0 x1) (set! x1 tmp)
+               (set! tmp y0) (set! y0 y1) (set! y1 tmp)))
 	(let* ((delta-x   (- x1 x0))
 	       (delta-y   (abs (- y1 y0)))
 	       (delta-err (/ delta-y delta-x))
@@ -43,7 +44,7 @@
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
 				(y     (if (>= error 1/2)
-					   (floor (+ y y-step)) y)))
+					   (math-floor (+ y y-step)) y)))
 			    (loop error (+ x 1) y))))))))))
 
 (define (visibility-show view map)
@@ -51,7 +52,7 @@
     ;; visibility for walls that consider only seen walls
     ;; if we have a 4-corner wall or a T wall, show it differently
     ;; depending on whether the neighbouring walls are known or not
-    (define (visited? x #!optional (edge-ok? #t))
+    (define (visited? x (edge-ok? #t))
       (let ((v (grid-ref-check view x)))
 	(and (or (eq? v 'visited) (eq? v 'visible) (and edge-ok? (not v)))
 	     (not (wall? (grid-ref-check map x))))))
@@ -63,7 +64,7 @@
 	   (up-left    (list-ref eight 4))
 	   (down-left  (list-ref eight 5))
 	   (up-right   (list-ref eight 6))
-	   (down-right (list-ref eight 7))
+	   (down-right (list-ref eight 7)) ;; TODO match
 	   (cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
 		      ((cond ((four-corner-wall? cell) ;; TODO looks a lot like the last pass of dungeon generation, abstract ?
 			      (cond ((>= (+ (if (visited? up-left)    1 0)
@@ -165,8 +166,8 @@
 	(case (grid-ref view pos)
 	  ((visible)
 	   (if (opaque-cell? cell #f)
-	       (print (darken-sprite  c))
-	       (print (lighten-sprite c))))
+	       (print-sprite (darken-sprite  c))
+	       (print-sprite (lighten-sprite c))))
 	  ((visited)
 	   ;; (terminal-print c bg: 'black fg: 'white)
 	   ;; these are the default colors of the terminal, and not having to
@@ -174,9 +175,9 @@
 	   ;; we don't show enemies if they would be in the fog of war
 	   (cond ((cell-occupant cell) =>
 		  (lambda (occ)
-		    (cell-occupant-set! cell #f)
-		    (print (show cell))
-		    (cell-occupant-set! cell occ)))
-		 (else (print c)))) ; no enemy to hide
+		    (set-cell-occupant! cell #f)
+		    (print-sprite (show cell))
+		    (set-cell-occupant! cell occ)))
+		 (else (print-sprite c)))) ; no enemy to hide
 	  ((unknown)
 	   (terminal-print " ")))))))

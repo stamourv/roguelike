@@ -1,3 +1,7 @@
+#lang racket
+
+(provide (all-defined-out))
+
 (define (terminal-command command)
   (display (string-append (list->string (list (integer->char #x1b))) command)))
 (define (terminal-reset) (terminal-command "[0m"))
@@ -16,22 +20,22 @@
 				   (if underline? ";4" "")
 				   "m")))
 ;; bright is bold, dim is regular weight, blink, reverse and hidden don't work
-(define (terminal-print text #!key (bg 'black) (fg 'white)
-			           (bold? #f) (underline? #f))
+(define (terminal-print text #:bg (bg 'black) #:fg (fg 'white)
+			     #:bold? (bold? #f) #:underline? (underline? #f))
   (terminal-colors bg fg bold? underline?)
   (display text)
   (terminal-reset)) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc) maybe it's just my xterm that is badly configured
 (define (clear-line)      (terminal-command "[K"))
 (define (clear-to-bottom) (terminal-command "[J"))
 (define (cursor-home)     (terminal-command "[H"))
-(define (cursor-position-set! x #!optional (y #f))
+(define (set-cursor-position! x (y #f))
   (terminal-command (string-append "[" (number->string x)
 				   (if y
 				       (string-append ";" (number->string y))
 				       "")
 				   "H")))
 
-(define (cursor-notification-head) (cursor-position-set! 2))
+(define (cursor-notification-head) (set-cursor-position! 2))
 (define (display-notification . s)
   (terminal-command (string-append "[" (number->string 60) "C"))
   (clear-line)

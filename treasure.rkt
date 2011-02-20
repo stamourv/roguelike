@@ -1,41 +1,40 @@
-(import utilities)
-(import cell)
-(import grid)
-(import floor)
-(import objects)
-(import items)
+#lang racket
+
+(require "utilities.rkt" "cell.rkt" "grid.rkt" "floor.rkt" "objects.rkt"
+         "items.rkt" (only-in srfi/1 iota))
+(provide (all-defined-out))
 
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
 (define treasure-table
-  (list (list 0.43 ;; TODO BLACKHOLE had something pretty with quasiquote and unquote, but black hole considered the unquoted parts to be syntaxtic closures, which made no sense
-	      ;; weapons
-	      (cons 0.2  new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
-	      (cons 0.1  new-greataxe)
-	      (cons 0.3  new-club)
-	      (cons 0.15 new-shortspear)
-	      (cons 0.25 new-shortbow))
-	(list 0.25
-	      ;; shields
-	      (cons 1 new-light-shield))
-	(list 0.22
-	      ;; body armor
-	      (cons 0.7 new-leather-armor)
-	      (cons 0.3 new-studded-leather-armor))
-	(list 0.1
-	      ;; potions
-	      (cons 0.5  new-light-healing-potion)
-	      (cons 0.13 new-bulls-strength-potion)
-	      (cons 0.13 new-cats-grace-potion)
-	      (cons 0.13 new-bears-endurance-potion)
-	      (cons 0.11 new-barkskin-potion))))
+  `((0.43
+     ;; weapons
+     (0.2  . ,new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
+     (0.1  . ,new-greataxe)
+     (0.3  . ,new-club)
+     (0.15 . ,new-shortspear)
+     (0.25 . ,new-shortbow))
+    (0.25
+     ;; shields
+     (1 . ,new-light-shield))
+    (0.22
+     ;; body armor
+     (0.7 . ,new-leather-armor)
+     (0.3 . ,new-studded-leather-armor))
+    (0.1
+     ;; potions
+     (0.5  . ,new-light-healing-potion)
+     (0.13 . ,new-bulls-strength-potion)
+     (0.13 . ,new-cats-grace-potion)
+     (0.13 . ,new-bears-endurance-potion)
+     (0.11 . ,new-barkskin-potion))))
 ;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
 ;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
 
 (define (possible-treasure no) ;; TODO maybe be like nethack, and have the same item possibilities, regardless of level ? if so, just use the DM's guide tables
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
-			       (fold
+			       (foldl
 				min
 				treasure-cap
 				(map (lambda (i) (object-gp-value ((cdr i))))
@@ -49,8 +48,8 @@
 			       (and (>= value treasure-bottom)
 				    (<= value treasure-cap))))
 			   (cdr cat)))
-		  (factor (fold (lambda (acc new) (+ acc (car new)))
-				0 new-items)))
+		  (factor (foldl (lambda (new acc) (+ acc (car new)))
+                                 0 new-items)))
 	     ;; recalculate the probabilities
 	     ;; note: the probability of each category remains unchanged TODO change it ?
 	     (cons (car cat)
@@ -61,13 +60,13 @@
 (define (generate-treasure no)
   (let* ((treasure-points (* 30 (expt no 1.5))) ; in gp TODO tweak
 	 (possible        (possible-treasure no))
-	 (actual-bottom (fold min ; lowest value of the possible treasure
-			      treasure-points ; generous upper bound
-			      (map (lambda (i) (object-gp-value ((cdr i))))
-				   (apply append
-					  (map cdr possible))))))
-    (if (fold (lambda (acc new) (and acc (null? (cdr new)))) #t possible)
-	(error "no possible treasure for this level"))
+	 (actual-bottom (foldl min ; lowest value of the possible treasure
+                               treasure-points ; generous upper bound
+                               (map (lambda (i) (object-gp-value ((cdr i))))
+                                    (apply append
+                                           (map cdr possible))))))
+    (when (foldl (lambda (new acc) (and acc (null? (cdr new)))) #t possible) ; TODO andmap
+      (error "no possible treasure for this level"))
     (let loop ((pts   treasure-points)
 	       (items '()))
       (if (>= pts actual-bottom)
@@ -85,12 +84,12 @@
 		     (iota (random-between 4 8)))))
     ;; place the chests randomly on the map
     (let loop ((chests chests))
-      (if (not (null? chests))
-	  (let ((pos (random-free-position floor)))
-	    (grid-set! (floor-map floor) pos (car chests))
-	    (floor-walkable-cells-set!
-	     floor (remove pos (floor-walkable-cells floor)))
-	    (loop (cdr chests)))))
+      (when (not (null? chests))
+        (let ((pos (random-free-position floor)))
+          (grid-set! (floor-map floor) pos (car chests))
+          (set-floor-walkable-cells!
+           floor (remove pos (floor-walkable-cells floor)))
+          (loop (cdr chests)))))
     ;; fill the chests
     (for-each (lambda (item) (add-object (random-element chests) item))
 	      (generate-treasure (+ (floor-no floor) 1)))))

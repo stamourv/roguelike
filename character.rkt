@@ -1,13 +1,11 @@
-(import (path class))
-(import utilities)
-(import objects)
-(import floor)
-(import scheduler)
-(import visibility)
-(import cell)
-(import grid)
+#lang racket
 
-(define-class character ()
+(require "class.rkt" "utilities.rkt" "objects.rkt" "floor.rkt" "scheduler.rkt"
+         "visibility.rkt" "cell.rkt" "grid.rkt"
+         (only-in racket/base [floor math-floor]))
+(provide (all-defined-out))
+
+(define-class <character> ()
   (slot: name)
   
   (slot: pos)
@@ -41,16 +39,16 @@
 
   (slot: equipment))
 
-(define (init-hp c #!optional max?)
+(define (init-hp c (max? #f))
   (let* ((hd (character-hit-dice c))
 	 (hp (max (+ (if max?
-			 (fold + 0 hd)
+			 (apply + hd)
 			 ((apply dice hd)))
 		     (* (get-attribute-bonus 'con c)
 			(length hd)))
 		  1)))
-    (character-max-hp-set! c hp)
-    (character-hp-set!     c hp)))
+    (set-character-max-hp! c hp)
+    (set-character-hp!     c hp)))
 
 (define (attribute-getter attr)
   (lambda (char)
@@ -66,14 +64,14 @@
 (define (attribute-setter attr)
   (lambda (char val)
     (case attr
-      ((str)        (character-str-set! char val))
-      ((dex)        (character-dex-set! char val))
-      ((con)        (character-con-set! char val))
-      ((int)        (character-int-set! char val))
-      ((wis)        (character-wis-set! char val))
-      ((cha)        (character-cha-set! char val))
-      ((hp)         (character-hp-set!  char val))
-      ((natural-ac) (character-natural-ac-set! char val)))))
+      ((str)        (set-character-str! char val))
+      ((dex)        (set-character-dex! char val))
+      ((con)        (set-character-con! char val))
+      ((int)        (set-character-int! char val))
+      ((wis)        (set-character-wis! char val))
+      ((cha)        (set-character-cha! char val))
+      ((hp)         (set-character-hp!  char val))
+      ((natural-ac) (set-character-natural-ac! char val)))))
 
 (define (get-attribute-bonus attr char)
   (quotient (- ((if (eq? attr 'dex)
@@ -93,15 +91,15 @@
   (let ((alt    (character-altered-attrs char))
 	(getter (attribute-getter attr))
 	(setter (attribute-setter attr)))
-    (table-set! alt attr (+ (table-ref alt attr 0) 1))
+    (hash-set! alt attr (+ (hash-ref alt attr 0) 1))
     (setter char (+ (getter char) n))
     (schedule
      (lambda ()
        (setter char (- (getter char) n))
-       (table-set! alt attr (- (table-ref alt attr) 1)))
+       (hash-set! alt attr (- (hash-ref alt attr) 1)))
      (+ turn-no duration))))
 (define (altered-attr? char attr)
-  (> (table-ref (character-altered-attrs char) attr 0) 0))
+  (> (hash-ref (character-altered-attrs char) attr 0) 0))
 
 (define (get-melee-attack-bonus  c)
   (+ (character-current-attack-bonus c)
@@ -110,11 +108,14 @@
   (+ (character-current-attack-bonus c)
      (get-attribute-bonus 'dex c)))
 
-(define-type equipment
-  main-hand
-  off-hand ; shield or 2nd weapon ;; TODO no second weapon for now
-  torso) ;; TODO add more
-(define (new-equipment #!key (main-hand #f) (off-hand #f) (torso #f))
+(define-struct equipment
+  (main-hand
+   off-hand ; shield or 2nd weapon ;; TODO no second weapon for now
+   torso) ;; TODO add more
+  #:mutable #:transparent)
+(define (new-equipment #:main-hand (main-hand #f)
+                       #:off-hand (off-hand #f)
+                       #:torso (torso #f))
   (make-equipment main-hand off-hand torso))
 (define (equipment->list e)
   (list (cons (equipment-main-hand e) "main hand")
@@ -137,35 +138,35 @@
 (define (get-damage c)
   (let ((weapon (equipment-main-hand (character-equipment c))))
     (+ ((get-damage-fun weapon))
-       (floor (* (get-attribute-bonus 'str c)
-		 (cond ((ranged-weapon?     weapon) 0)
-		       ((two-handed-weapon? weapon) 3/2)
-		       (else                        1)))))))
+       (math-floor (* (get-attribute-bonus 'str c)
+                      (cond ((ranged-weapon?     weapon) 0)
+                            ((two-handed-weapon? weapon) 3/2)
+                            (else                        1)))))))
 
-(define-method (reschedule (char character))
+(define-method (reschedule (char struct:character))
   (schedule (lambda () (turn char #t)) (+ turn-no (character-speed char))))
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns #t if it actually moved
-  (if (inside-grid? g new-pos)
-      (let ((cell     (grid-ref g (character-pos occ)))
-            (new-cell (grid-ref g new-pos)))
-        (cond ((free-cell? new-cell)
-               (cell-occupant-set! cell     #f)
-               (cell-occupant-set! new-cell occ)
-               (character-pos-set! occ new-pos)
-	       #t)
-              ;; walkable, but occupied already, attack whoever is there
-              ((walkable-cell? new-cell)
-               (attack occ (cell-occupant (grid-ref g new-pos)))
-	       #f) ;; TODO return #f ? the character did not move, but its turn is likely lost (except in the case where a monster moves over a monster, and then tries to move around it, like in flee-behavior)
-	      (else #f)))))
+  (when (inside-grid? g new-pos)
+    (let ((cell     (grid-ref g (character-pos occ)))
+          (new-cell (grid-ref g new-pos)))
+      (cond ((free-cell? new-cell)
+             (set-cell-occupant! cell     #f)
+             (set-cell-occupant! new-cell occ)
+             (set-character-pos! occ new-pos)
+             #t)
+            ;; walkable, but occupied already, attack whoever is there
+            ((walkable-cell? new-cell)
+             (attack occ (cell-occupant (grid-ref g new-pos)))
+             #f) ;; TODO return #f ? the character did not move, but its turn is likely lost (except in the case where a monster moves over a monster, and then tries to move around it, like in flee-behavior)
+            (else #f)))))
 
 (define-generic attack) ;; TODO these would be good candidates for call-next-method, but class seems to have trouble with it, or maybe it's my patched version, or maybe it's black hole
 (define-generic ranged-attack)
 
 (define (check-if-hit attacker defender
-		      #!optional (bonus-fun get-melee-attack-bonus)) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
+		      (bonus-fun get-melee-attack-bonus)) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
   (let ((roll ((dice 20))))
     (if (>= (+ roll (bonus-fun attacker))
 	    (get-armor-class defender))
@@ -177,7 +178,7 @@
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
     (display (string-append " and deals " (number->string dmg)
 			    " damage.\n"))
-    (character-hp-set! defender (- (character-hp defender) dmg))))
+    (set-character-hp! defender (- (character-hp defender) dmg))))
 
 (define (attacks-of-opportunity char)
   (for-each (lambda (pos)
@@ -185,9 +186,10 @@
 		      (floor-map (character-floor char)) pos)
 		     => (lambda (cell)
 			  (let ((occ (cell-occupant cell)))
-			    (if occ (begin (display "Attack of opportunity: ")
-					   ;; give a turn, but don't reschedule
-					   (turn occ #f)))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
+			    (when occ
+                              (display "Attack of opportunity: ")
+                              ;; give a turn, but don't reschedule
+                              (turn occ #f))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
 	    (four-directions (character-pos char))))
 
 (define (clear-shot? grid a b) (line-of-sight? grid a b #t))

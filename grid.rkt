@@ -1,27 +1,18 @@
-(import utilities)
-(import cell)
+#lang racket
 
-;; (define-type point
-;;   x
-;;   y)
-;; (define new-point make-point) ; for consistency
-;; (define (copy-point p) (new-point (point-x p) (point-y p)))
-(define new-point    cons) ; for better performance
-(define point-x      car)
-(define point-y      cdr)
-(define point-x-set! set-car!)
-(define point-y-set! set-cdr!)
-(define (copy-point p) (cons (car p) (cdr p)))
+(require "utilities.rkt" "cell.rkt" "display.rkt" "terminal.rkt"
+         (only-in srfi/1 iota))
+(provide (all-defined-out))
+
+(define-struct point (x y) #:mutable #:transparent)
+(define new-point    make-point) ; for consistency
+(define (copy-point p) (make-point (point-x p) (point-y p)))
 
 ;; vector of cells
-(define-type grid
-  height
-  width
-  cells)
-(define (empty-grid height
-		    #!optional (width height)
+(define-struct grid (height width cells) #:transparent)
+(define (empty-grid height (width height)
 		    ;; function that takes the position, and returns the content
-		    #!key (cell-fun (lambda (pos) (new-empty-cell))))
+		    #:cell-fun (cell-fun (lambda (pos) (new-empty-cell))))
   (make-grid height width
 	     (list->vector
 	      (map (lambda (p) (cell-fun (new-point (quotient p width)
@@ -48,11 +39,10 @@
 	 (>= y 0) (< y (grid-width  g)))))
 
 
-(define (grid-for-each f g #!key
-		       (start-x 0)                (start-y 0)
-		       (length-x #f) (length-y #f)) ;; TODO BLACKHOLE should have the default values just below, once black hole fully supports key parameters
-  (if (not length-x) (set! length-x (grid-height g)))
-  (if (not length-y) (set! length-y (grid-width g)))
+(define (grid-for-each f g
+		       #:start-x (start-x 0) #:start-y (start-y 0)
+		       #:length-x (length-x (grid-height g))
+                       #:length-y (length-y (grid-width g)))
   (for-each (lambda (x)
 	      (for-each (lambda (y)
 			  (f (new-point (+ x start-x) (+ y start-y))))
@@ -129,38 +119,38 @@
      pos)))
 
 (define (next-to-a-door? g pos)
-  (fold (lambda (acc new)
-	  (or acc (door? (grid-ref-check g new))))
-	#f (four-directions pos)))
+  (foldl (lambda (new acc)
+           (or acc (door? (grid-ref-check g new))))
+         #f (four-directions pos)))
 
 (define (grid-find g p)
   (let ((cell #f))
-    (grid-for-each (lambda (pos) (if (p (grid-ref g pos)) (set! cell pos)))
+    (grid-for-each (lambda (pos) (when (p (grid-ref g pos)) (set! cell pos)))
 		   g)
     cell))
 
 (define (random-position g)
-  (new-point (random-integer (grid-height g))
-	     (random-integer (grid-width g))))
+  (new-point (random (grid-height g))
+	     (random (grid-width g))))
 
 (define (show-grid
-	 g #!key
-	 (print-fun (lambda (pos cell) (print (show cell))))
-	 (border? #f))
+	 g
+	 #:print-fun (print-fun (lambda (pos cell) (print-sprite (show cell))))
+	 #:border? (border? #f))
   (define (draw-border-line)
-    (if border?
-	(begin (display "+")
-	       (for-each (lambda (x) (display "-")) (iota (grid-width g)))
-	       (display "+\n"))))
+    (when border?
+      (display "+")
+      (for-each (lambda (x) (display "-")) (iota (grid-width g)))
+      (display "+\n")))
   (draw-border-line)
   (grid-for-each
    (lambda (pos)
-     (if (and border? (= (point-y pos) 0)) ; beginning of line
-	 (display "|"))
+     (when (and border? (= (point-y pos) 0)) ; beginning of line
+       (display "|"))
      (print-fun pos (grid-ref g pos))
-     (if (= (point-y pos) (- (grid-width g) 1)) ; end of line
-	 (begin (if border? (display "|"))
-		(display "\n"))))
+     (when (= (point-y pos) (- (grid-width g) 1)) ; end of line
+       (when border? (display "|"))
+       (display "\n")))
    g)
   (draw-border-line))
 
@@ -169,7 +159,7 @@
 	(y (point-y pos)))
     ;; we have to account for the borders
     (if (inside-grid? grid pos)
-	(cursor-position-set! (+ x 2) (+ y 2))
+	(set-cursor-position! (+ x 2) (+ y 2))
 	#f)))
 
 (define (octant c p) ;; TODO might have bugs, an algorithm built on top of it (the old shadow casting) failed, so it might be because of this (algorithm now in garbage) (not used for now)

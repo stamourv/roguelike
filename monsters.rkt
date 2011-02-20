@@ -1,17 +1,11 @@
-(import (path class))
-(import utilities)
-(import character)
-(import scheduler)
-(import objects)
-(import items)
-(import cell)
-(import grid)
-(import floor)
-(import visibility)
-(import display)
-(import common)
+#lang racket
 
-(define-class monster (character)
+(require "class.rkt" "utilities.rkt" "character.rkt" "scheduler.rkt"
+         "objects.rkt" "items.rkt" "cell.rkt" "grid.rkt" "floor.rkt"
+         "visibility.rkt" "display.rkt" "common.rkt")
+(provide (all-defined-out))
+
+(define-class <monster> (character)
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
   (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
@@ -21,30 +15,27 @@
   (let ((m (apply f `(,@(take! args 1) ; name
 		      #f #f            ; pos, floor
 		      ,@(take! args 6) ; str, dex, con, int, wis, cha
-		      ,(make-table)    ; altered-attrs
+		      ,(make-hash)     ; altered-attrs
 		      ,@(take! args 3) ; natural-ac, level, hit-dice
 		      #f #f            ; hp, max-hp
 		      ,@args))))       ; rest
     (init-hp m)
     m))
 
-(define-method (turn (m monster) reschedule?)
-  (if (and (> (character-hp m) 0)
-	   (eq? (character-floor m) (character-floor player)))
-      (begin ((behavior-fun (monster-behavior m))
-	      m (character-pos player))
-	     (if reschedule? (reschedule m))))) ;; TODO this would be a nice candidate for call-next-method, once it works
+(define-method (turn (m struct:monster) reschedule?)
+  (when (and (> (character-hp m) 0)
+             (eq? (character-floor m) (character-floor player)))
+    ((behavior-fun (monster-behavior m))
+     m (character-pos player))
+    (when reschedule? (reschedule m)))) ;; TODO this would be a nice candidate for call-next-method, once it works
 
-(define-method (attack (attacker monster) defender)
+(define-method (attack (attacker struct:monster) defender)
   (display (string-append "The "
 			  (character-name attacker)
 			  " attacks "
 			  (character-name defender)))
   (check-if-hit attacker defender)) ;; TODO good for call-next-method too
-;; monsters don't attack other monsters
-(define-method (attack (attacker monster) (defender monster)) #f)
-
-(define-method (ranged-attack (attacker monster) (defender player))
+(define-method (ranged-attack (attacker struct:monster) defender)
   (display (string-append "The "
 			  (character-name attacker)
 			  " shoots at "
@@ -52,8 +43,16 @@
   (check-if-hit attacker defender get-ranged-attack-bonus)
   (attacks-of-opportunity attacker))
 
+;; monsters don't attack other monsters
+(define-method (attack (attacker struct:monster)
+                       (defender struct:monster))
+  #f)
+(define-method (ranged-attack (attacker struct:monster)
+                              (defender struct:monster))
+  #f)
 
-(define-class goblin (monster))
+
+(define-class <goblin> (monster))
 (define (new-goblin)
   (new-monster make-goblin
 	       "goblin"
@@ -61,12 +60,12 @@
 	       0 1/3 '(8)
 	       1 1 1 6
 	       (new-equipment
-		main-hand: (new-club)
-		off-hand:  (new-light-shield)
-		torso:     (new-leather-armor))
+		#:main-hand (new-club)
+		#:off-hand  (new-light-shield)
+		#:torso     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (show (m goblin)) #\g)
-(define-class goblin-archer (goblin))
+(define-method (show (m struct:goblin)) #\g)
+(define-class <goblin-archer> (goblin))
 (define (new-goblin-archer)
   (new-monster make-goblin-archer
 	       "goblin archer"
@@ -74,11 +73,11 @@
 	       0 1/3 '(8)
 	       1 1 1 6
 	       (new-equipment ;; TODO maybe also have a melee weapon
-		main-hand: (new-shortbow)) ; no armor to compensate fot the bow
+		#:main-hand (new-shortbow)) ; no armor to compensate fot the bow
 	       (ranged-behavior)))
-(define-method (show (m goblin-archer)) (new-sprite #\g fg: 'magenta))
+(define-method (show (m struct:goblin-archer)) (new-sprite #\g #:fg 'magenta))
 
-(define-class kobold (monster))
+(define-class <kobold> (monster))
 (define (new-kobold)
   (new-monster make-kobold
 	       "kobold"
@@ -86,12 +85,12 @@
 	       0 1/4 '(8)
 	       1 1 1 6
 	       (new-equipment
-		main-hand: (new-shortspear)
-		torso:     (new-leather-armor))
+		#:main-hand (new-shortspear)
+		#:torso     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (show (m kobold)) #\k)
+(define-method (show (m struct:kobold)) #\k)
 
-(define-class orc (monster))
+(define-class <orc> (monster))
 (define (new-orc)
   (new-monster make-orc
 	       "orc"
@@ -99,15 +98,15 @@
 	       0 1/2 '(8)
 	       1 1 1 6
 	       (new-equipment
-		main-hand: (new-greataxe)
-		torso:     (new-studded-leather-armor))
+		#:main-hand (new-greataxe)
+		#:torso     (new-studded-leather-armor))
 	       (pursue-behavior)))
-(define-method (show (m orc)) #\o)
+(define-method (show (m struct:orc)) #\o)
 
 
-(define-class animal (monster))
+(define-class <animal> (monster))
 
-(define-class bat (animal))
+(define-class <bat> (animal))
 (define (new-bat)
   (new-monster make-bat
 	       "bat"
@@ -116,9 +115,9 @@
 	       0 0 1 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
-(define-method (show (m bat)) #\b)
+(define-method (show (m struct:bat)) #\b)
 
-(define-class rat (animal))
+(define-class <rat> (animal))
 (define (new-rat)
   (new-monster make-rat
 	       "rat"
@@ -127,22 +126,20 @@
 	       0 0 1 6
 	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
-(define-method (show (m rat)) #\r)
+(define-method (show (m struct:rat)) #\r)
 
 
-(define-class undead (monster)) ;; TODO add some
+(define-class <undead> (monster)) ;; TODO add some
 
 
 
 ;; AI
 
-(define-type behavior
-  fun
-  nb-turns-idle)
+(define-struct behavior (fun nb-turns-idle) #:mutable #:transparent)
 
 (define (new-behavior fun)
   (let ((b (make-behavior #f 0)))
-    (behavior-fun-set! b (fun b))
+    (set-behavior-fun! b (fun b))
     b))
 
 (define (rush-behavior)
@@ -151,9 +148,9 @@
      (lambda (monster player-pos) ;; TODO have a macro for all that ?
        (let ((pos (character-pos monster))
 	     (map (floor-map (character-floor monster))))
-	 (if (line-of-sight? map pos player-pos)
-	     (let ((next (find-path map pos player-pos)))
-	       (if next (move-or-increment-idle map monster next)))))))))
+	 (when (line-of-sight? map pos player-pos)
+           (let ((next (find-path map pos player-pos)))
+             (when next (move-or-increment-idle map monster next)))))))))
 
 (define (pursue-behavior)
   (new-behavior
@@ -167,7 +164,7 @@
 			       player-pos)
 			      (else last-player-pos)))) ; we try to pursue
 	   (let ((next (and target (find-path map pos target))))
-	     (if next (move-or-increment-idle map monster next)))))))))
+	     (when next (move-or-increment-idle map monster next)))))))))
 
 (define (flee-behavior)
   (new-behavior
@@ -189,23 +186,25 @@
 		       (ady   (abs dy))
 		       (vert  (lambda ()
 				(move-or-increment-idle
-				 map monster (new-point (- x (/ dx adx)) y))))
+				 map monster
+                                 (new-point (- x (/ dx (max adx 1))) y))))
 		       (horiz (lambda ()
 				(move-or-increment-idle
-				 map monster (new-point x (- y (/ dy ady)))))))
+				 map monster
+                                 (new-point x (- y (/ dy (max ady 1))))))))
 		  (if (> adx ady)
 		      ;; try to move vertically first
-		      (if (not (vert))  (horiz))
+		      (when (not (vert))  (horiz))
 		      ;; try to move horizontally first
-		      (if (not (horiz)) (vert)))))))))))
+		      (when (not (horiz)) (vert)))))))))))
 
 (define (ranged-behavior)
   (new-behavior
    (lambda (b)
      (lambda (monster player-pos)
-       (if (not (ranged-weapon? (equipment-main-hand
-				 (character-equipment monster))))
-	   (error "monster " monster " has no ranged weapon"))
+       (when (not (ranged-weapon? (equipment-main-hand
+                                   (character-equipment monster))))
+         (error "monster " monster " has no ranged weapon"))
        (let ((pos (character-pos monster)) ;; TODO have that in a macro
 	     (map (floor-map (character-floor monster))))
 	 (if (clear-shot? map pos player-pos) ;; TODO not very interesting for the moment
@@ -216,10 +215,10 @@
 (define (move-or-increment-idle map monster dest)
   (let ((pos (character-pos monster)))
     (move map monster dest)
-    (if (equal? pos (character-pos monster))
-	;; we did not move, increment idle counter
-	(let ((b (monster-behavior monster)))
-	  (behavior-nb-turns-idle-set! b (+ (behavior-nb-turns-idle b) 1))))))
+    (when (equal? pos (character-pos monster))
+      ;; we did not move, increment idle counter
+      (let ((b (monster-behavior monster)))
+        (set-behavior-nb-turns-idle! b (+ (behavior-nb-turns-idle b) 1))))))
 
 ;; simple pathfinding using A*
 (define (find-path g a b)
@@ -229,11 +228,11 @@
 	 (maximum (* width height)) ; arbitrarily high value
 	 (costs (empty-grid
 		 height width
-		 cell-fun: (lambda (pos)
-			     (cons (if (walkable-cell? (grid-ref g pos))
-				       maximum
-				       #f) ; we can't even get there
-				   #f)))))
+		 #:cell-fun (lambda (pos)
+                              (cons (if (walkable-cell? (grid-ref g pos))
+                                        maximum
+                                        #f) ; we can't even get there
+                                    #f)))))
     (grid-set! costs a (cons 0 #f)) ; initialize
     (let loop ((queue (list a))) ; list of positions
       (if (null? queue)
@@ -244,7 +243,7 @@
 	      (if parent
 		  (loop parent pos)
 		  prev)))
-	  (let* ((next (fold (lambda (best new) ; least expensive neighbor
+	  (let* ((next (foldl (lambda (new best) ; least expensive neighbor
 			       (if (< (car (grid-ref costs new))
 				      (car (grid-ref costs best)))
 				   new

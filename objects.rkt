@@ -1,8 +1,9 @@
-(import (path class))
-(import display)
-(import utilities)
+#lang racket
 
-(define-class object ()
+(require "class.rkt" "display.rkt" "utilities.rkt")
+(provide (all-defined-out))
+
+(define-class <object> ()
   (slot: name)
   (slot: gp-value))
 
@@ -12,7 +13,7 @@
 (define-generic removable?)
 (define-method (removable? o) #t)
 
-(define-class equipable-object (object))
+(define-class <equipable-object> (object))
 
 
 (define-generic get-ac)
@@ -20,33 +21,34 @@
 (define-generic max-dex-bonus)
 (define-method (max-dex-bonus o) #f)
 
-(define-class armor (equipable-object)
+(define-class <armor> (equipable-object)
   (slot: ac))
-(define-method (get-ac      (o armor)) (armor-ac o))
-(define-method (object-info (o armor))
+(define-method (get-ac      (o struct:armor)) (armor-ac o))
+(define-method (object-info (o struct:armor))
   (string-append (object-name o)
 		 " (ac: "
 		 (number->string (armor-ac o))
 		 ")"))
 
-(define-class body-armor (armor)
+(define-class <body-armor> (armor)
   (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor and have different display characters for each type of armor ?
-(define-method (max-dex-bonus (o body-armor)) (body-armor-max-dex-bonus o))
-(define-method (show (o body-armor)) #\&)
+(define-method (max-dex-bonus (o struct:body-armor))
+  (body-armor-max-dex-bonus o))
+(define-method (show (o struct:body-armor)) #\&)
 
-(define-class shield (armor))
-(define-method (show (o shield)) #\0)
+(define-class <shield> (armor))
+(define-method (show (o struct:shield)) #\0)
 
 
 (define-generic get-damage-fun)
 (define-method (get-damage-fun o) (dice 4)) ; unarmed strike
 
-(define-class weapon (equipable-object)
+(define-class <weapon> (equipable-object)
   (slot: damage-dice) ; function that returns the damage
   (slot: damage-type)) ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee and ranged, ...
-(define-method (show (o weapon)) #\!)
-(define-method (get-damage-fun (o weapon)) (apply dice (weapon-damage-dice o)))
-(define-method (object-info (o weapon))
+(define-method (show (o struct:weapon)) #\!)
+(define-method (get-damage-fun (o struct:weapon)) (apply dice (weapon-damage-dice o)))
+(define-method (object-info (o struct:weapon))
   (string-append (object-name o)
 		 " (damage: "
 		 (show-dice (weapon-damage-dice o))
@@ -55,20 +57,20 @@
 		 ")"))
 ;; TODO have small version of items ? (small weapons do less damage) goblins now have clubs instead of small morningstars
 
-(define-class two-handed-weapon (weapon)) ;; TODO have a different character to display two-handed weapons ? maybe / or \
-(define-class off-hand-placeholder (object))
+(define-class <two-handed-weapon> (weapon)) ;; TODO have a different character to display two-handed weapons ? maybe / or \
+(define-class <off-hand-placeholder> (object))
 (define (new-off-hand-placeholder)
   (make-off-hand-placeholder "<two-handed weapon>" 0))
-(define-method (removable? (o off-hand-placeholder)) #f)
+(define-method (removable? (o struct:off-hand-placeholder)) #f)
 
-(define-class ranged-weapon (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed
-(define-method (show (o ranged-weapon)) #\))
+(define-class <ranged-weapon> (two-handed-weapon)) ;; TODO what about slings, darts, shuriken, etc, whice are one handed
+(define-method (show (o struct:ranged-weapon)) #\))
 
 
-(define-class potion (object)
+(define-class <potion> (object)
   (slot: thunk)
   (slot: message))
-(define-method (show (o potion)) #\;)
+(define-method (show (o struct:potion)) #\;)
 
 ;; important: make sure there is at least as many colors as potion types
 (define potion-colors
@@ -86,7 +88,7 @@
 ;; potion types that have been identified ;; TODO put this with the player ?
 (define identified-potions '())
 
-(define-method (object-info (o potion))
+(define-method (object-info (o struct:potion))
   (let ((name (object-name o)))
     (cond ((member name identified-potions) name)
 	  ;; unindentified, show the color
@@ -95,14 +97,14 @@
 
 (define-generic drink)
 (define-method (drink o)          (display "I can't drink that."))
-(define-method (drink (o potion))
+(define-method (drink (o struct:potion))
   ((potion-thunk o))
   (display (potion-message o))
   (let ((name (object-name o)))
-    (if (not (member name identified-potions))
-	(set! identified-potions (cons name identified-potions)))))
+    (when (not (member name identified-potions))
+      (set! identified-potions (cons name identified-potions)))))
 
 
-(define-class food (object)
+(define-class <food> (object)
   (slot: thunk))
 ;; TODO add some, should be cheaper than potions, but should heal less

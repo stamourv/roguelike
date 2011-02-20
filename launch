@@ -1,2 +1,0 @@
-#!/bin/sh
-gsc -:dr,t8 -e "(load \"~~/lib/modules/build\")" launch.scm -

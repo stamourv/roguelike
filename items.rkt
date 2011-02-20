@@ -1,8 +1,8 @@
-(import objects)
-(import character)
-(import display)
-(import common)
-(import utilities)
+#lang racket
+
+(require "objects.rkt" "character.rkt" "display.rkt" "common.rkt"
+         "utilities.rkt")
+(provide (all-defined-out))
 
 ;; TODO have generation probabilities here, not separately
 
@@ -26,7 +26,7 @@
 (define (new-light-healing-potion)
   (make-potion "light healing potion" 50 ;; TODO at this price, is oly seen on the 3rd level. might be nice to see on the second
 	       (lambda ()
-		 (character-hp-set! player
+		 (set-character-hp! player
 				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
 					 (character-max-hp player))))
 	       "You feel healthier.\n"))
@@ -44,7 +44,7 @@
   (make-potion "bear's endurance potion" 300
 	       (lambda ()
 		 (alter-attr player 'con 4 180)
-		 (alter-attr player 'hp  (* (player-level player) 2) 180))
+		 (alter-attr player 'hp  (* (character-level player) 2) 180))
 	       "You could run a thousand miles.\n"))
 ;; TODO add others for int, wis, cha once they get useful
 (define (new-barkskin-potion)
