@@ -70,7 +70,7 @@
   (new-monster make-goblin-archer
 	       "goblin archer"
 	       11 13 12 10 9 6 ;; TODO abstract with goblin
-	       0 1/3 '(8)
+	       0 1/2 '(8)
 	       1 1 1 6
 	       (new-equipment ;; TODO maybe also have a melee weapon
 		#:main-hand (new-shortbow)) ; no armor to compensate fot the bow
