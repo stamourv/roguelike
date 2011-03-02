@@ -84,8 +84,9 @@
                 (loop pts encounters))) ; try something else
 	  encounters))))
 
-(define (place-encounters floor)
-  (let ((encounters (generate-encounters (+ (floor-no floor) 1))))
+;; encounters scale with the player's level, not the dungeon level
+(define (place-encounters floor level)
+  (let ((encounters (generate-encounters level)))
     (set-floor-monsters! floor (apply append (map encounter-monsters
 						  encounters)))
     (let loop ((encounters encounters)

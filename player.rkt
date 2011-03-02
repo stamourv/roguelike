@@ -27,7 +27,7 @@
                  '() #f '()
                  0 '())))
     (init-hp player #t) ; the player gets maxed out hp
-    (place-player player (new-player-floor 0))
+    (place-player player (new-player-floor 0 1))
     player))
 (define-method (show (p struct:player-character)) #\@)
 
@@ -58,10 +58,10 @@
   (floor ; views are a grid of either visible, visited or unknown
    view)
   #:transparent)
-(define (new-player-floor no)
+(define (new-player-floor no player-level)
   (let ((floor (generate-floor no (< no (- n-levels 1)))))
     ;; add everything else on top
-    (place-encounters floor)
+    (place-encounters floor player-level)
     (place-treasure   floor)
     (make-player-floor floor (init-visibility (floor-map floor)))))
 
@@ -375,7 +375,7 @@
   (let* ((name         (string->symbol (character-name player)))
 	 (xp           (player-character-experience player))
 	 (level        (character-level player))
-	 (floor-no     (floor-no (character-floor player)))
+	 (floor-no     (floor-no (character-floor player))) ;; TODO if I reach floor 3, it still says 2 in the hall of fame...
 	 (current-game (list name xp level floor-no)))
     (define (update-hall-of-fame name score level floor)
       (let* ((l   (sort (cons (list name score level floor)
@@ -548,7 +548,8 @@
 		 (place-player player
 			       (new-player-floor
 				(+ (floor-no (character-floor player))
-				   1)))
+				   1)
+                                (character-level player)))
 		 (begin (place-player             player (car after))
 			(set-player-character-floors-after!
                          player (cdr after)))))
