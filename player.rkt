@@ -376,15 +376,17 @@
 	 (xp           (player-character-experience player))
 	 (level        (character-level player))
 	 (floor-no     (+ (floor-no (character-floor player)) 1))
-	 (current-game (list name xp level floor-no)))
+	 (current-game (list name xp level floor-no))
+         (filename     "hall-of-fame"))
     (define (update-hall-of-fame)
+      ;; list of pairs (name . score), sorted by descending order of score
       (let* ((l   (sort (cons current-game
-                              (unbox hall-of-fame))
+                              (if (file-exists? filename)
+                                  (with-input-from-file filename read)
+                                  '()))
                         > #:key cadr)) ;; TODO if same score, sort with the other factors
 	     (new (take l (min (length l) 10)))); we keep the 10 best
-	(set-box! hall-of-fame new) ;; TODO not sure that's necessary. we quite right after
-	(display new (open-output-file "hall-of-fame"
-                                       #:exists 'replace))
+	(display new (open-output-file filename #:exists 'replace))
 	new))
     (let loop ((hall (update-hall-of-fame))
 	       (highlight? #t))
