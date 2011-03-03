@@ -81,9 +81,13 @@
       (add-rectangle pos (random-between 5 7) (random-between 5 7) direction))
     (define (add-large-room pos direction)
       ;; both dimensions 8-12 units (including walls)
-      (let* ((height (random-between 8 12)) ;; TODO maybe have even bigger rooms, or longer ones, that can have rows of columns, maybe just a hallway type of room, with width 6 (or maybe 7 possible too) with 2 rows of columns, handle like a corridor
+      (let* ((height (random-between 8 12))
 	     (width  (random-between 8 12))
 	     (room   (add-rectangle pos height width direction)))
+        ;; TODO maybe have even bigger rooms, or longer ones, that can have
+        ;;  rows of columns, maybe just a hallway type of room, with width 6
+        ;;  (or maybe 7 possible too) with 2 rows of columns, handle like a
+        ;;  corridor
 	;; large rooms may have pillars
 	(when (and room (< (random) 0.6))
           (let* ((cells       (room-cells room))
@@ -319,7 +323,8 @@
     
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor)
-    ;; TODO try to place it as far as possible from the stairs up, see building quantifiably fun maps, or something like that on the wiki
+    ;; TODO try to place it as far as possible from the stairs up, see
+    ;;  building quantifiably fun maps, or something like that on the wiki
     (when stairs-down?
       (let ((pos (random-free-position new-floor)))
         (grid-set! level pos (new-stairs-down))
@@ -355,7 +360,12 @@
              (grid-set!
               level pos
               ((cond ((and (wall-or-door? up)   (wall-or-door? down)
-                           (wall-or-door? left) (wall-or-door? right)) ;; TODO there are still issues with that. if we have 2 rooms side by side, but with no common wall, a corner that would normally be a T could be a cross, since it would see the other wall running behind, even if it's not connected
+                           (wall-or-door? left) (wall-or-door? right))
+                      ;; TODO there are still issues with that. if we have 2
+                      ;;  rooms side by side, but with no common wall, a corner
+                      ;;  that would normally be a T could be a cross, since it
+                      ;;  would see the other wall running behind, even if it's
+                      ;;  not connected
                       new-four-corner-wall)
                      ((and (wall-or-door? down)
                            (wall-or-door? left)

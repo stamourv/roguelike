@@ -8,9 +8,12 @@
 (define-class <monster> (character)
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
-  (slot: behavior)) ;; TODO have different speeds (maybe even initiative?) to determine which monster moves first
+  (slot: behavior))
+;; TODO have different speeds (maybe even initiative?) to determine which
+;;  monster moves first
 
-;; to handle the repetitive part of generating the hp ;; TODO could be done with a constructor ?
+;; to handle the repetitive part of generating the hp
+;; TODO could be done with a constructor ?
 (define (new-monster f . args)
   (let ((m (apply f `(,@(take! args 1) ; name
 		      #f #f            ; pos, floor
@@ -27,7 +30,7 @@
              (eq? (character-floor m) (character-floor player)))
     ((behavior-fun (monster-behavior m))
      m (character-pos player))
-    (when reschedule? (reschedule m)))) ;; TODO this would be a nice candidate for call-next-method, once it works
+    (when reschedule? (reschedule m)))) ;; TODO call-next-method
 
 (define-method (attack (attacker struct:monster) defender)
   (printf "The ~a attacks ~a"
@@ -69,7 +72,7 @@
 	       0 1/2 '(8)
 	       1 1 1 6
 	       (new-equipment ;; TODO maybe also have a melee weapon
-		#:main-hand (new-shortbow)) ; no armor to compensate fot the bow
+		#:main-hand (new-shortbow)) ; no armor to compensate for the bow
 	       (ranged-behavior)))
 (define-method (show (m struct:goblin-archer)) (new-sprite #\g #:fg 'magenta))
 
@@ -120,7 +123,8 @@
 	       2 15 10 2 12 2
 	       0 1/8 '(2)
 	       0 0 1 6
-	       (new-equipment) ; also unarmed strike ;; TODO have a way to represent natural weapons
+	       (new-equipment) ; also unarmed strike
+               ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
 (define-method (show (m struct:rat)) #\r)
 
@@ -169,7 +173,9 @@
        (let ((pos (character-pos monster))
 	     (map (floor-map (character-floor monster))))
 	 (cond ((member player-pos (four-directions pos))
-		;; we are next to the player, attack ;; TODO have another that flees even if next to the player, and one that flees when wounded
+		;; we are next to the player, attack
+                ;; TODO have another that flees even if next to the player, and
+                ;;  one that flees when wounded
 		=> (lambda (pl)
 		     (move-or-increment-idle map monster player-pos)))
 	       ((line-of-sight? map pos player-pos)
@@ -203,7 +209,8 @@
          (error "monster " monster " has no ranged weapon"))
        (let ((pos (character-pos monster)) ;; TODO have that in a macro
 	     (map (floor-map (character-floor monster))))
-	 (if (clear-shot? map pos player-pos) ;; TODO not very interesting for the moment
+         ;; TODO not very interesting for the moment
+	 (if (clear-shot? map pos player-pos)
 	     (ranged-attack monster (cell-occupant (grid-ref map player-pos)))
 	     #f)))))) ;; stay there
 

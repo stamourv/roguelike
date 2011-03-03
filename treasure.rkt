@@ -6,10 +6,11 @@
 
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
+;; TODO with a lot of items, this will end up being unmanageable
 (define treasure-table
   `((0.43
      ;; weapons
-     (0.2  . ,new-morningstar) ;; TODO with a lot of items, this will end up being unmanageable
+     (0.2  . ,new-morningstar)
      (0.1  . ,new-greataxe)
      (0.3  . ,new-club)
      (0.15 . ,new-shortspear)
@@ -28,10 +29,14 @@
      (0.13 . ,new-cats-grace-potion)
      (0.13 . ,new-bears-endurance-potion)
      (0.11 . ,new-barkskin-potion))))
-;; TODO maybe have these probabilities a function of the level ? something this is rare early on might become common later on
-;; TODO also have gold, gems, potions, and other random items, not just equipment (find a way to sell things ?)
+;; TODO maybe have these probabilities a function of the level ? something this
+;;  is rare early on might become common later on
+;; TODO also have gold, gems, potions, and other random items, not just
+;;  equipment (find a way to sell things ?)
 
-(define (possible-treasure no) ;; TODO maybe be like nethack, and have the same item possibilities, regardless of level ? if so, just use the DM's guide tables
+(define (possible-treasure no)
+  ;; TODO maybe be like nethack, and have the same item possibilities,
+  ;;  regardless of level ? if so, just use the DM's guide tables
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
 			       (foldl
@@ -51,7 +56,8 @@
 		  (factor (foldl (lambda (new acc) (+ acc (car new)))
                                  0 new-items)))
 	     ;; recalculate the probabilities
-	     ;; note: the probability of each category remains unchanged TODO change it ?
+	     ;; note: the probability of each category remains unchanged
+             ;; TODO change it ?
 	     (cons (car cat)
 		   (map (lambda (i) (cons (/ (car i) factor) (cdr i)))
 			new-items))))
@@ -65,7 +71,8 @@
                                (map (lambda (i) (object-gp-value ((cdr i))))
                                     (apply append
                                            (map cdr possible))))))
-    (when (foldl (lambda (new acc) (and acc (null? (cdr new)))) #t possible) ; TODO andmap
+    (when (foldl (lambda (new acc) (and acc (null? (cdr new)))) #t possible)
+      ;; TODO andmap
       (error "no possible treasure for this level"))
     (let loop ((pts   treasure-points)
 	       (items '()))

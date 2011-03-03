@@ -23,7 +23,9 @@
   ;; differently
   (slot: altered-attrs)
 
-  (slot: natural-ac) ;; TODO have natural weapons too, which are used when no weapon is equipped (change get-damage-fun)
+  (slot: natural-ac)
+  ;; TODO have natural weapons too, which are used when no weapon is equipped
+  ;;  (change get-damage-fun)
 
   (slot: level)
   
@@ -32,7 +34,10 @@
   (slot: hp)
   
   (slot: base-attack-bonus)
-  (slot: current-attack-bonus) ; for multiple attacks TODO have a constructor that sets it at base, when monsters handle multiple attacks (which sets this), won't be needed (and mosnters can have it as #f)
+  (slot: current-attack-bonus) ; for multiple attacks
+  ;; TODO have a constructor that sets it at base, when monsters handle
+  ;;  multiple attacks (which sets this), won't be needed (and monsters
+  ;;  can have it as #f)
   (slot: nb-attacks)
   
   (slot: speed) ; number of seconds needed to do a turn
@@ -53,7 +58,7 @@
 (define (attribute-getter attr)
   (lambda (char)
     (case attr
-      ((str)        (character-str char)) ;; TODO muck around with string->symbol instead ?
+      ((str)        (character-str char)) ;; TODO macro
       ((dex)        (character-dex char))
       ((con)        (character-con char))
       ((int)        (character-int char))
@@ -159,19 +164,26 @@
             ;; walkable, but occupied already, attack whoever is there
             ((walkable-cell? new-cell)
              (attack occ (cell-occupant (grid-ref g new-pos)))
-             #f) ;; TODO return #f ? the character did not move, but its turn is likely lost (except in the case where a monster moves over a monster, and then tries to move around it, like in flee-behavior)
+             #f)
+            ;; TODO return #f ? the character did not move, but its turn is
+            ;;  likely lost (except in the case where a monster moves over a
+            ;;  monster, and then tries to move around it, like in
+            ;;  flee-behavior)
             (else #f)))))
 
-(define-generic attack) ;; TODO these would be good candidates for call-next-method, but class seems to have trouble with it, or maybe it's my patched version, or maybe it's black hole
+(define-generic attack) ;; TODO call-next-method
 (define-generic ranged-attack)
 
 (define (check-if-hit attacker defender
-		      (bonus-fun get-melee-attack-bonus)) ;; TODO ranged weapons can currently be used in melee with no penalty, and use the strength bonus to hit
+		      (bonus-fun get-melee-attack-bonus))
+  ;; TODO ranged weapons can currently be used in melee with no penalty, and
+  ;;  use the strength bonus to hit
   (let ((roll ((dice 20))))
     (if (>= (+ roll (bonus-fun attacker))
 	    (get-armor-class defender))
 	(damage attacker defender)
-	(display " and misses.\n")))) ;; TODO depending on by how much it missed, say different things
+	(display " and misses.\n"))))
+;; TODO depending on by how much it missed, say different things
 
 (define-generic damage)
 (define-method (damage attacker defender)
@@ -188,7 +200,9 @@
 			    (when occ
                               (display "Attack of opportunity: ")
                               ;; give a turn, but don't reschedule
-                              (turn occ #f))))))) ;; TODO for now, we just give them a turn, which means they could walk away instead of attacking
+                              (turn occ #f)))))))
+            ;; TODO for now, we just give them a turn, which means they could
+            ;;  walk away instead of attacking
 	    (four-directions (character-pos char))))
 
 (define (clear-shot? grid a b) (line-of-sight? grid a b #t))

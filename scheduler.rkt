@@ -27,7 +27,8 @@
   (let* ((minimum (foldl (lambda (new acc) (min acc (car new)))
                          (caar turn-queue)
                          turn-queue))
-	 (next (filter (lambda (x) (= (car x) minimum)) turn-queue))) ;; TODO all these list traversals might be costly
+	 (next (filter (lambda (x) (= (car x) minimum)) turn-queue)))
+    ;; TODO all these list traversals might be costly
     (set! turn-no minimum)
     (for-each (lambda (x) (set! turn-queue (remove x turn-queue))) next)
     ;; order by turn-id, to preserve ordering in the case of identical speeds

@@ -9,10 +9,14 @@
    monsters ; list of functions that create monsters
    can-be-placed?) ; takes a room as parameter
   #:mutable #:transparent)
-;; TODO have more, maybe have chests, treasure, dungeon features (campfire), maybe a name for the encounter, to display when we enter the room ?
+;; TODO have more, maybe have chests, treasure, dungeon features (campfire),
+;;  maybe a name for the encounter, to display when we enter the room ?
 
-(define-struct encounter (encounter-type monsters) #:transparent) ;; TODO have more, espescially other kinds of objects that would need to be placed, such as chests or campfires
-;; TODO also have some treasure with the encounter, see DM guide for proportions and amount by encounter level
+(define-struct encounter (encounter-type monsters) #:transparent)
+;; TODO have more, espescially other kinds of objects that would need to be
+;;  placed, such as chests or campfires
+;; TODO also have some treasure with the encounter, see DM guide for
+;;  proportions and amount by encounter level
 (define (new-encounter encounter-type) ; actually creates the monsters
   (make-encounter encounter-type
 		  (map call (encounter-type-monsters encounter-type))))
@@ -33,8 +37,12 @@
                                 (encounter-points dummy-encounter))
     encounter-type))
 
-(define encounter-types ;; TODO have weights, since some would be more common, make it so it can use random-choice
-  (map new-encounter-type ;; TODO have a "language" to define encounters types, maybe make the probability a function of the level-no ?
+(define encounter-types
+  ;; TODO have weights, since some would be more common, make it so it can
+  ;;  use random-choice
+  (map new-encounter-type
+       ;; TODO have a "language" to define encounters types, maybe make the
+       ;;  probability a function of the level-no ?
        `((,new-bat ,new-bat ,new-bat)
          (,new-bat ,new-bat ,new-bat ,new-bat)
          (,new-rat ,new-rat)

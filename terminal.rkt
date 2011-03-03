@@ -25,7 +25,9 @@
 			     #:bold? (bold? #f) #:underline? (underline? #f))
   (terminal-colors bg fg bold? underline?)
   (display text)
-  (terminal-reset)) ;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc) maybe it's just my xterm that is badly configured
+  (terminal-reset))
+;; TODO dim doesn't seem to work, try the other effects (bold, underline, etc)
+;;  maybe it's just my xterm that is badly configured
 (define (clear-line)      (terminal-command "[K"))
 (define (clear-to-bottom) (terminal-command "[J"))
 (define (cursor-home)     (terminal-command "[H"))

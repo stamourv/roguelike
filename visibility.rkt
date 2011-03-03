@@ -15,7 +15,8 @@
   (if (and (= (point-x a) (point-x b))
 	   (= (point-y a) (point-y b)))
       #t ; same point, trivial solution
-      (let* ((x0 (point-x a)) (y0 (point-y a)) ;; TODO maybe have a generic bresenham, could be used for other things
+      ;; TODO maybe have a generic bresenham, could be used for other things
+      (let* ((x0 (point-x a)) (y0 (point-y a))
 	     (x1 (point-x b)) (y1 (point-y b))
 	     (steep (> (abs (- y1 y0)) (abs (- x1 x0)))))
 	(when steep
@@ -37,7 +38,8 @@
 		   
 		   (error (+ error delta-err))
 		   (cell  (grid-ref g pos)))
-	      ;; TODO if we want it generic, it would be at this point that a user function would be called, I supposed
+	      ;; TODO if we want it generic, it would be at this point that a
+              ;;  user function would be called, I suppose
 	      (cond ((equal? pos dest)          #t) ; we see it
 		    ((and (opaque-cell? cell monsters-opaque?)
 			  (not (equal? pos start))) #f) ; we hit an obstacle
@@ -57,16 +59,20 @@
 	(and (or (eq? v 'visited) (eq? v 'visible) (and edge-ok? (not v)))
 	     (not (wall? (grid-ref-check map x))))))
     (let* ((eight      (eight-directions pos))
-	   (up         (list-ref eight 0)) ;; TODO have a macro with-eight-directions that binds all these
+           ;; TODO have a macro with-eight-directions that binds all these
+           ;;  or use match...
+	   (up         (list-ref eight 0))
 	   (down       (list-ref eight 1))
 	   (left       (list-ref eight 2))
 	   (right      (list-ref eight 3))
 	   (up-left    (list-ref eight 4))
 	   (down-left  (list-ref eight 5))
 	   (up-right   (list-ref eight 6))
-	   (down-right (list-ref eight 7)) ;; TODO match
+	   (down-right (list-ref eight 7))
 	   (cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
-		      ((cond ((four-corner-wall? cell) ;; TODO looks a lot like the last pass of dungeon generation, abstract ?
+                      ;; TODO looks a lot like the last pass of dungeon
+                      ;;  generation, abstract ?
+		      ((cond ((four-corner-wall? cell)
 			      (cond ((>= (+ (if (visited? up-left)    1 0)
 					    (if (visited? up-right)   1 0)
 					    (if (visited? down-left)  1 0)

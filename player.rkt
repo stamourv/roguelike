@@ -18,7 +18,9 @@
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player-character
                  name #f #f
-                 16 14 14 10 10 10 (make-hash) 0 ;; TODO have a way to select (and also display, maybe press r for roster, c for character)
+                 ;; TODO have a way to select (and also display, maybe press r
+                 ;;  for roster, c for character)
+                 16 14 14 10 10 10 (make-hash) 0
                  1 '(10) ; hit dice
                  #f #f
                  1 #f 1 ; base and current attack bonus, nb attacks
@@ -41,8 +43,12 @@
 	;; than one attack). these "attacks" can also be used to drink
 	;; potions or anything else apart from moving. moving stops the
 	;; sequence of attacks (so the last "attack" could be a move)
-	;; TODO an interesting variant would be to move a certain amount of times, and then only be able to attack, and attack the right number of times, then start the cycle again. would help to display these numbers to the player
-	;; TODO would be nice to have both a move action and an attack, but to be able to do a full attack only if we didn't move
+	;; TODO an interesting variant would be to move a certain amount of
+        ;;  times, and then only be able to attack, and attack the right
+        ;;  number of times, then start the cycle again. would help to display
+        ;;  these numbers to the player
+	;; TODO would be nice to have both a move action and an attack, but to
+        ;;  be able to do a full attack only if we didn't move
 	(let ((pos (character-pos player))
 	      (bab (character-base-attack-bonus player))) ; to check if we moved
 	  (let loop ((n            (character-nb-attacks player))
@@ -50,9 +56,11 @@
 	    (when (and (> n 0) (equal? (character-pos player) pos))
 		(set-character-current-attack-bonus! player attack-bonus)
                 ;; if we didn't move, we can keep attacking
-                (when (not (eq? (read-command) 'move)) ;; TODO handle other full-turn actions
+                ;; TODO handle other full-turn actions
+                (when (not (eq? (read-command) 'move))
                   (loop (- n 1) (- attack-bonus 5))))))
-	(when reschedule? (reschedule player))))) ;; TODO this would be a good candidate for call-next-method, especially with multiple attack handling
+        ;; TODO call-next-method, especially with multiple attack handling
+	(when reschedule? (reschedule player)))))
 
 (define-struct player-floor
   (floor ; views are a grid of either visible, visited or unknown
@@ -152,7 +160,9 @@
                                           (player-map  player))))
 
 
-(define (update-visibility) ;; TODO maybe show visible parts in dark yellow instead of white background ? to simulate a lantern
+(define (update-visibility)
+  ;; TODO maybe show visible parts in dark yellow instead of white background?
+  ;;  to simulate a lantern
   ;; set the fog of war
   (let ((view (player-view player))
 	(pos  (character-pos player)))
@@ -162,7 +172,7 @@
 		   view)
 
     ;; field of vision using shadow casting (spiral path FOV)
-    ;; see http://roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
+    ;; see roguebasin.roguelikedevelopment.org/index.php?title=Spiral_Path_FOV
     (let* ((g     (player-map player))
 	   (x     (point-x    pos))
 	   (y     (point-y    pos)))
@@ -193,7 +203,9 @@
             (when (and (inside-grid? view new)
                        (not (eq? (grid-ref view new)
                                  'visible)) ; already seen
-                       (<= (distance pos new) 7) ; within range ;; TODO have range in a variable, maybe a player trait (elves see farther?)
+                       ;; TODO have range in a variable, maybe a player trait
+                       ;;  (elves see farther?)
+                       (<= (distance pos new) 7) ; within range
                        ;; do we have line of sight ? helps restrict the
                        ;; visibility down to a reasonable level
                        ;; note: line of sight is not necessary to see walls,
@@ -236,7 +248,11 @@
     ((#\D) 'left)
     (else  (invalid-command))))
 
-(define (read-command) ;; TODO define all this inside a macro, so that a description can be included with the commands ? or keep 2 separate lists ? or just a lookup list of commands, functions, and doc ? yeah, probably that last one, BUT how to have entries for the movement arrows ?
+(define (read-command)
+  ;; TODO define all this inside a macro, so that a description can be
+  ;;  included with the commands ? or keep 2 separate lists ? or just a
+  ;;  lookup list of commands, functions, and doc ? yeah, probably that
+  ;;  last one, BUT how to have entries for the movement arrows ?
   (update-visibility)
   (show-state)
 
@@ -251,12 +267,14 @@
     ;; escape. bizarrely unrecognizable with case...
     (if (= (char->integer char) 27)
         ;; movement
-        (begin (case (which-direction?) ;; TODO abstract with other arrow reading code below
+        (begin (case (which-direction?)
+                 ;; TODO abstract with other arrow reading code below
                  ((up)    (set-point-x! pos (- x 1)))
                  ((down)  (set-point-x! pos (+ x 1)))
                  ((right) (set-point-y! pos (+ y 1)))
                  ((left)  (set-point-y! pos (- y 1))))
-               ;; tries to move to the new position, if it fails, stay where we were
+               ;; tries to move to the new position
+               ;; if it fails, stay where we were
                (move grid player pos)
                'move)
         (case char
@@ -371,7 +389,8 @@
                               (if (file-exists? filename)
                                   (with-input-from-file filename read)
                                   '()))
-                        > #:key cadr)) ;; TODO if same score, sort with the other factors
+                        ;; TODO if same score, sort with the other factors
+                        > #:key cadr))
 	     (new (take l (min (length l) 10)))); we keep the 10 best
 	(display new (open-output-file filename #:exists 'replace))
 	new))
@@ -441,7 +460,8 @@
 			 (player-character-inventory player))))
     (choice objects
 	    (lambda (object)
-	      (let* ((place (cond ((weapon?     object) 'main-hand) ;; TODO string->symbol and co ?
+              ;; TODO macro?
+	      (let* ((place (cond ((weapon?     object) 'main-hand)
 				  ((shield?     object) 'off-hand)
 				  ((body-armor? object) 'torso)))
 		     (old   ((case place
@@ -460,7 +480,8 @@
 		   ((off-hand)  set-equipment-off-hand!)
 		   ((torso)     set-equipment-torso!))
 		 e object)
-		(cond ((and old (not (off-hand-placeholder? old))) ;; TODO generalize with all non-removable items
+                ;; TODO generalize with all non-removable items
+		(cond ((and old (not (off-hand-placeholder? old)))
 		       (back-in-inventory old))
 		      ((two-handed-weapon? old)
 		       (set-equipment-off-hand! e #f)) ; remove the placeholder
@@ -542,7 +563,8 @@
 (define-method (attack (attacker struct:player-character) defender)
   (printf "~a attacks the ~a"
           (character-name attacker)
-          (character-name defender)) ;; TODO instead of check-if-hit, use call-next-method ? with the new version of class
+          (character-name defender))
+  ;; TODO instead of check-if-hit, use call-next-method?
   (check-if-hit attacker defender))
 (define-method (ranged-attack (attacker struct:player-character) defender)
   (printf "~a shoots at the ~a"
@@ -571,7 +593,7 @@
      (else
       (let ((grid (let ((grid (grid-copy grid)))
 		    (for-each
-		     (lambda (m n) ;; TODO this, like choice, won't scale over 10
+		     (lambda (m n) ;; TODO like choice, won't scale over 10
 		       (grid-set!
 			grid
 			(character-pos m)
@@ -605,13 +627,17 @@
 (define-method (damage (attacker struct:player-character)
                        (defender struct:monster))
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
-    (printf " and deals ~a damage" dmg) ;; TODO copied from character.scm, the fallback method, use call-next-method ? (but would mess up with the .\n at the end)
+    ;; TODO copied from character.scm, the fallback method, call-next-method?
+    ;;  (but would mess up with the .\n at the end)
+    (printf " and deals ~a damage" dmg)
     (set-character-hp! defender (- (character-hp defender) dmg))
     (if (<= (character-hp defender) 0)
 	(remove-monster defender)
 	(display ".\n"))))
 
-;; TODO not all that clean to have it here, but it's the only place where it would not lead to circular dependencies
+;; TODO not all that clean to have it here, but it's the only place where it
+;;  would not lead to circular dependencies
+;;  -> parameter?
 ;; removes a monster, usually when killed
 (define (remove-monster monster)
   (printf ", which kills the ~a.\n" (character-name monster))
@@ -669,23 +695,38 @@
 			     (else (display
 				    "There is nothing to kill there.\n"))))))
 
-(define (show-help) ;; TODO maybe generate commands with a macro and have help text that can be displayed by help, everything would be automatic
+(define (show-help)
+  ;; TODO maybe generate commands with a macro and have help text that can be
+  ;;  displayed by help, everything would be automatic
   'TODO)
 
-(define (info grid pos) ;; TODO show a message about the location, occupant first (unless player), objects then, finally terrain
+(define (info grid pos)
+  ;; TODO show a message about the location, occupant first (unless player),
+  ;;  objects then, finally terrain
     (let ((cell (grid-ref grid pos)))
       (cond ((let ((occ (cell-occupant cell)))
 	       (and occ (not (player-character? occ)) occ))
 	     => (lambda (occ) (display (character-name occ))))
 ;; 	    ((car (cell-objects cell))
-;; 	     => (lambda (obj) (display (object-name obj)))) ;; TODO broken. + add monsters
+;; 	     => (lambda (obj) (display (object-name obj))))
+            ;; TODO broken. + add monsters
 	    (else
-	     (display "Nothing to see here."))))) ;; TODO describe the terrain, have a description for each type, ideally define with the type
+	     (display "Nothing to see here.")))))
+;; TODO describe the terrain, have a description for each type, ideally
+;;  define with the type
 
-(define (look grid pos) ;; TODO have a moveable cursor, and when enter is pressed, display the info of the location, pos is starting position of the cursor, if final cursor position is outside visibility, say I can't see there
+(define (look grid pos)
+  ;; TODO have a moveable cursor, and when enter is pressed, display the info
+  ;;  of the location, pos is starting position of the cursor, if final cursor
+  ;;  position is outside visibility, say I can't see there
   ;; TODO use the choose-direction command to control the cursor
-  (system "setterm -cursor on") ;; TODO maybe just be able to look at immediate squares, and just use direction-command, but we might want to identify something before we get closer (a monster, for example)
+  (system "setterm -cursor on")
+  ;; TODO maybe just be able to look at immediate squares, and just use
+  ;;  direction-command, but we might want to identify something before we
+  ;;  get closer (a monster, for example)
   (set-cursor-on-grid grid pos)
-  (read-char) ;; TODO implement the rest, and it seems that pressing l then an arrow shows some weird text in the background about terminal options
+  (read-char)
+  ;; TODO implement the rest, and it seems that pressing l then an arrow
+  ;;  shows some weird text in the background about terminal options
   (system "setterm -cursor off"))
 

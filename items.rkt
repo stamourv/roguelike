@@ -15,7 +15,8 @@
 
 
 (define (new-club)        (make-weapon "club"        1  '(6)  'bludgeoning))
-(define (new-morningstar) (make-weapon "morningstar" 8  '(8)  'bludgeoning)) ;; TODO also piercing
+;; TODO also piercing
+(define (new-morningstar) (make-weapon "morningstar" 8  '(8)  'bludgeoning))
 (define (new-shortspear)  (make-weapon "shortspear"  1  '(6)  'piercing))
 
 (define (new-greataxe) (make-two-handed-weapon "greataxe" 20 '(12) 'slashing))
@@ -24,14 +25,18 @@
 
 
 (define (new-light-healing-potion)
-  (make-potion "light healing potion" 50 ;; TODO at this price, is oly seen on the 3rd level. might be nice to see on the second
+  (make-potion "light healing potion" 50
+               ;; TODO at this price, is oly seen on the 3rd level. might be
+               ;;  nice to see on the second
 	       (lambda ()
 		 (set-character-hp! player
-				    (min (+ (character-hp player) ((dice 8 1))) ;; TODO have this in a "heal" function
+				    (min (+ (character-hp player) ((dice 8 1)))
+                                         ;; TODO have this in a "heal" function
 					 (character-max-hp player))))
 	       "You feel healthier.\n"))
 (define (new-bulls-strength-potion)
-  (make-potion "bull's strength potion" 300 ;; TODO at this price, will take a while to see
+  (make-potion "bull's strength potion" 300
+               ;; TODO at this price, will take a while to see
 	       (lambda ()
 		 (alter-attr player 'str 4 180)) ; 3 minutes/level @ level 3
 	       "You could lift boulders.\n"))
@@ -52,4 +57,5 @@
 	       (lambda ()
 		 (alter-attr player 'natural-ac 2 180))
 	       "Your skin becomes thick and rough.\n"))
-;; TODO have some bad potions (with the same price as the good ones, to avoid running only into bad potions early on) to make it riskier
+;; TODO have some bad potions (with the same price as the good ones, to avoid
+;;  running only into bad potions early on) to make it riskier
