@@ -1,7 +1,8 @@
 #lang racket
 
 (require "utilities.rkt" "common.rkt" "player.rkt" "scheduler.rkt"
-         (only-in srfi/1 iota))
+         (only-in srfi/1 iota)
+         unstable/function)
 
 ;; some more imports, that are not necessary here, but could be for the console
 ;; (import character)

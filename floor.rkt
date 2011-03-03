@@ -24,7 +24,7 @@
    encounter)
   #:mutable #:transparent)
 (define (get-room point rooms)
-  (find (lambda (room) (member point (room-cells room))) rooms))
+  (findf (lambda (room) (member point (room-cells room))) rooms))
 (define (connected? a b)
   ;; since it's commutative, no need to check both sides
   ;; TODO need to check for a and b, since this sometimes receives #f

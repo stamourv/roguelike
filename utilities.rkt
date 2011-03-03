@@ -1,18 +1,8 @@
 #lang racket
 
 (provide (all-defined-out))
-;; TODO some of these could be replaced by standard racket functions
 
-(define (repeat n l)
-  (let loop ((n n) (res '()))
-    (if (= n 0)
-	res
-	(loop (- n 1) (append res l)))))
-
-(define (find p l)
-  (cond ((null? l)   #f)
-	((p (car l)) (car l))
-	(else        (find p (cdr l)))))
+(define (repeat n l) (apply append (make-list n l)))
 
 (define-syntax-rule (take! l n)
   (let loop ((tmp l)
@@ -23,9 +13,6 @@
         (loop (cdr tmp)
                (- i 1)
                (cons (car tmp) res)))))
-
-(define (identity x)  x)
-(define (call     x) (x))
 
 ;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
 (define-struct set (parent rank) #:mutable #:transparent)
@@ -50,25 +37,8 @@
 
 
 (define (remove-at-index l i)
-  (let loop ((i i)
-	     (l l)
-	     (r '()))
-    (if (= i 0)
-	(append (reverse r) (cdr l))
-	(loop (- i 1)
-	      (cdr l)
-	      (cons (car l) r)))))
+  (append (take l i) (drop l (add1 i))))
 
-(define (randomize-list l)
-  (let loop ((n (length l))
-	     (l l)
-	     (r '()))
-    (if (= n 0)
-	r
-	(let ((i (random n)))
-	  (loop (- n 1)
-		(remove-at-index l i)
-		(cons (list-ref l i) r))))))
 
 (define (random-element l)
   (list-ref l (random (length l))))

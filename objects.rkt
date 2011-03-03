@@ -89,7 +89,7 @@
 	 '("red" "blue" "green" "yellow" "white" "black" "pink" "teal" "purple"
 	   "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
 	   "milky")))
-    (map cons types (take (randomize-list colors) (length types)))))
+    (map cons types (take (shuffle colors) (length types)))))
 ;; potion types that have been identified ;; TODO put this with the player ?
 (define identified-potions '())
 

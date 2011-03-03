@@ -279,9 +279,9 @@
 	 (when (and (eq? (room-type room) 'corridor)
                     (= (length neighbors) 1))
            (let* ((walls        (room-walls room))
-                  (current-door (find (lambda (pos)
-                                        (door? (grid-ref level pos)))
-                                      walls))
+                  (current-door (findf (lambda (pos)
+                                         (door? (grid-ref level pos)))
+                                       walls))
                   (door-candidate
                    (foldl
                     ;; we want the candidate farthest from the existing door
