@@ -375,10 +375,10 @@
   (let* ((name         (string->symbol (character-name player)))
 	 (xp           (player-character-experience player))
 	 (level        (character-level player))
-	 (floor-no     (floor-no (character-floor player))) ;; TODO if I reach floor 3, it still says 2 in the hall of fame...
+	 (floor-no     (+ (floor-no (character-floor player)) 1))
 	 (current-game (list name xp level floor-no)))
-    (define (update-hall-of-fame name score level floor)
-      (let* ((l   (sort (cons (list name score level floor)
+    (define (update-hall-of-fame)
+      (let* ((l   (sort (cons current-game
                               (unbox hall-of-fame))
                         > #:key cadr)) ;; TODO if same score, sort with the other factors
 	     (new (take l (min (length l) 10)))); we keep the 10 best
@@ -386,7 +386,7 @@
 	(display new (open-output-file "hall-of-fame"
                                        #:exists 'replace))
 	new))
-    (let loop ((hall (update-hall-of-fame name xp level floor-no))
+    (let loop ((hall (update-hall-of-fame))
 	       (highlight? #t))
       (when (not (null? hall))
         (let ((head (car hall)))
