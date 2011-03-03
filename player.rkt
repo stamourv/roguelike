@@ -225,12 +225,11 @@
        (lambda (pos)
 	 (when (and (opaque-cell? (grid-ref g pos) #f)
                     (eq? (grid-ref view pos) 'unknown)
-                    (foldl
-                     (lambda (new acc)
-                       (or acc
-                           (and (not (opaque-cell? (grid-ref-check g new) #f))
-                                (eq? (grid-ref-check view new) 'visible))))
-                     #f (eight-directions pos)))
+                    (ormap
+                     (lambda (new)
+                       (and (not (opaque-cell? (grid-ref-check g new) #f))
+                            (eq? (grid-ref-check view new) 'visible)))
+                     (eight-directions pos)))
            (grid-set! view pos 'visited)))
        view))))
 

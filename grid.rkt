@@ -119,9 +119,8 @@
      pos)))
 
 (define (next-to-a-door? g pos)
-  (foldl (lambda (new acc)
-           (or acc (door? (grid-ref-check g new))))
-         #f (four-directions pos)))
+  (ormap (lambda (new) (door? (grid-ref-check g new)))
+         (four-directions pos)))
 
 (define (grid-find g p)
   (let ((cell #f))

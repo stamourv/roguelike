@@ -85,7 +85,7 @@
 ;; returns a thunk that simulated the requested dice roll
 (define (dice . kinds)
   (lambda ()
-    (foldl (lambda (new acc) (+ acc (random new) 1)) 0 kinds)))
+    (apply + (map (lambda (new) (+ (random new) 1)) kinds))))
 
 
 (define (group-by-identical l)

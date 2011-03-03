@@ -24,9 +24,7 @@
 (define-method (reschedule x) #f)
 
 (define (find-next-active)
-  (let* ((minimum (foldl (lambda (new acc) (min acc (car new)))
-                         (caar turn-queue)
-                         turn-queue))
+  (let* ((minimum (apply min (map car turn-queue)))
 	 (next (filter (lambda (x) (= (car x) minimum)) turn-queue)))
     ;; TODO all these list traversals might be costly
     (set! turn-no minimum)

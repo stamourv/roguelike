@@ -33,15 +33,13 @@
 		      ((east) y)
 		      ((west) (+ (- y width) 1))
 		      (else   (- y (math-floor (/ width 2)))))))
-	(if (foldl ; can this new feature fit ?
-	     (lambda (x acc)
-	       (and acc
-		    (foldl
-		     (lambda (y acc)
-		       (let ((p (new-point (+ x pos-x) (+ y pos-y))))
-			 (and acc (wall? (grid-ref-check level p)))))
-		     #t (iota width))))
-	     #t (iota height))
+	(if (andmap ; can this new feature fit ?
+	     (lambda (x)
+	       (andmap (lambda (y)
+                         (let ((p (new-point (+ x pos-x) (+ y pos-y))))
+                           (wall? (grid-ref-check level p))))
+                       (iota width)))
+	     (iota height))
 	    
 	    (let ((new-walls '()) ; yes it can, add it
 		  (inside    '()))
@@ -239,9 +237,8 @@
 	 ;; right, or the other way around
 	 (when (and (not (door?      (grid-ref level pos))) ; not already a door
                     (not (stairs-up? (grid-ref level pos)))
-                    (foldl (lambda (cell acc)
-                            (and acc (inside-grid? level cell)))
-                          #t around)
+                    (andmap (lambda (cell) (inside-grid? level cell))
+                            around)
                     (let ((c-up    (grid-ref level up))
                           (c-down  (grid-ref level down))
                           (c-left  (grid-ref level left))
@@ -303,12 +300,10 @@
                        ;; to open a door, both sides must be clear
                        (let ((sides (wall-perpendicular level wall)))
                          (and (not (null? sides))
-                              (foldl
-                               (lambda (new acc)
-                                 (and acc
-                                      (walkable-cell? (grid-ref-check level
-                                                                      new))))
-                               #t sides))))
+                              (andmap
+                               (lambda (new)
+                                 (walkable-cell? (grid-ref-check level new)))
+                               sides))))
                      walls))))
              (when (not (eq? door-candidate current-door))
                (add-door door-candidate))))))

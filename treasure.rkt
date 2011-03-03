@@ -53,8 +53,7 @@
 			       (and (>= value treasure-bottom)
 				    (<= value treasure-cap))))
 			   (cdr cat)))
-		  (factor (foldl (lambda (new acc) (+ acc (car new)))
-                                 0 new-items)))
+		  (factor (apply + (map car new-items))))
 	     ;; recalculate the probabilities
 	     ;; note: the probability of each category remains unchanged
              ;; TODO change it ?
@@ -71,8 +70,7 @@
                                (map (lambda (i) (object-gp-value ((cdr i))))
                                     (apply append
                                            (map cdr possible))))))
-    (when (foldl (lambda (new acc) (and acc (null? (cdr new)))) #t possible)
-      ;; TODO andmap
+    (when (andmap (lambda (new) (null? (cdr new))) possible)
       (error "no possible treasure for this level"))
     (let loop ((pts   treasure-points)
 	       (items '()))
