@@ -110,11 +110,9 @@
     (if (null? l)
 	s
 	(loop (cdr l)
-	      (string-append
-	       s
-	       (if +? " + " "")
-	       (number->string (length (car l)))
-	       (if (= (caar l) 1) ; we don't need the d1 of Xd1
-		   ""
-		   (string-append "d" (number->string (caar l)))))
+              (format "~a~a~a~a"
+                      s (if +? " + " "") (length (car l))
+                      (if (= (caar l) 1) ; we don't need the d1 of Xd1
+                          ""
+                          (format "d~a" (caar l))))
 	      #t))))

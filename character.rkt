@@ -176,8 +176,7 @@
 (define-generic damage)
 (define-method (damage attacker defender)
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
-    (display (string-append " and deals " (number->string dmg)
-			    " damage.\n"))
+    (printf " and deals ~a damage.\n" dmg)
     (set-character-hp! defender (- (character-hp defender) dmg))))
 
 (define (attacks-of-opportunity char)

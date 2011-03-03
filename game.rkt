@@ -19,7 +19,7 @@
   (system "setterm -cursor off")) ;; TODO wrap that in exception handler
 ;; strangely, clear-to-bottom does not clear the bottom of the screen as it
 ;; should
-(for-each (lambda (dummy) (display "\n")) (iota 50))
+(for-each (lambda (dummy) (newline)) (iota 50))
 
 (define (game)
   (reschedule player)

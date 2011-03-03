@@ -30,16 +30,12 @@
     (when reschedule? (reschedule m)))) ;; TODO this would be a nice candidate for call-next-method, once it works
 
 (define-method (attack (attacker struct:monster) defender)
-  (display (string-append "The "
-			  (character-name attacker)
-			  " attacks "
-			  (character-name defender)))
+  (printf "The ~a attacks ~a"
+          (character-name attacker) (character-name defender))
   (check-if-hit attacker defender)) ;; TODO good for call-next-method too
 (define-method (ranged-attack (attacker struct:monster) defender)
-  (display (string-append "The "
-			  (character-name attacker)
-			  " shoots at "
-			  (character-name defender)))
+  (printf "The ~a shoots at ~a"
+          (character-name attacker) (character-name defender))
   (check-if-hit attacker defender get-ranged-attack-bonus)
   (attacks-of-opportunity attacker))
 

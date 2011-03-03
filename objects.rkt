@@ -25,10 +25,7 @@
   (slot: ac))
 (define-method (get-ac      (o struct:armor)) (armor-ac o))
 (define-method (object-info (o struct:armor))
-  (string-append (object-name o)
-		 " (ac: "
-		 (number->string (armor-ac o))
-		 ")"))
+  (format "~a (ac: ~a)" (object-name o) (armor-ac o)))
 
 (define-class <body-armor> (armor)
   (slot: max-dex-bonus)) ;; TODO have light, medium and heavy armor and have different display characters for each type of armor ?
@@ -49,12 +46,9 @@
 (define-method (show (o struct:weapon)) #\!)
 (define-method (get-damage-fun (o struct:weapon)) (apply dice (weapon-damage-dice o)))
 (define-method (object-info (o struct:weapon))
-  (string-append (object-name o)
-		 " (damage: "
-		 (show-dice (weapon-damage-dice o))
-		 " "
-		 (symbol->string (weapon-damage-type o))
-		 ")"))
+  (format "~a (damage: ~a ~a)"
+          (object-name o) (show-dice (weapon-damage-dice o))
+          (symbol->string (weapon-damage-type o))))
 ;; TODO have small version of items ? (small weapons do less damage) goblins now have clubs instead of small morningstars
 
 (define-class <two-handed-weapon> (weapon)) ;; TODO have a different character to display two-handed weapons ? maybe / or \
@@ -92,8 +86,7 @@
   (let ((name (object-name o)))
     (cond ((member name identified-potions) name)
 	  ;; unindentified, show the color
-	  (else (string-append (cdr (assoc name potion-colors))
-			       " potion")))))
+	  (else (format "~a potion" (cdr (assoc name potion-colors)))))))
 
 (define-generic drink)
 (define-method (drink o)          (display "I can't drink that."))

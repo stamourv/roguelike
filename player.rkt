@@ -91,70 +91,62 @@
 
 (define (show-state)
   (cursor-notification-head)
-  (display-notification (character-name player) "\n")
-  (display-notification "level "
-                        (number->string (character-level player))
-                        "\n")
-  (display-notification (number->string (player-character-experience player))
-                        " xp pts\n")
-  (display-notification "")
+  (printf-notification "~a\n" (character-name player))
+  (printf-notification "level ~a\n" (character-level player))
+  (printf-notification "~a xp pts\n" (player-character-experience player))
+  (printf-notification "")
   (when (altered-attr? player 'hp)
     (terminal-colors 'white 'black)) ;; TODO abstract that
-  (display (number->string (character-hp player)))
+  (display (character-hp player))
   (terminal-reset)
-  (display
-   (string-append "/" (number->string (character-max-hp player)) " hp\n"))
+  (printf "/~a hp\n" (character-max-hp player))
   
-  (display-notification "AC: ")
+  (printf-notification "AC: ")
   (when (altered-attr? player 'natural-ac)
     (terminal-colors 'white 'black))
-  (display (number->string (get-armor-class player)))
+  (display (get-armor-class player))
   (terminal-reset)
-  (display "\n")
+  (newline)
   
-  (display-notification "str: ")
+  (printf-notification "str: ")
   (when (altered-attr? player 'str)
     (terminal-colors 'white 'black))
-  (display (number->string (character-str player)))
+  (display (character-str player))
   (terminal-reset)
   (display "	int: ")
   (when (altered-attr? player 'int)
     (terminal-colors 'white 'black))
-  (display (number->string (character-int player)))
+  (display (character-int player))
   (terminal-reset)
-  (display "\n")
+  (newline)
   
-  (display-notification "dex: ")
+  (printf-notification "dex: ")
   (when (altered-attr? player 'dex)
     (terminal-colors 'white 'black))
-  (display (number->string (character-dex player)))
+  (display (character-dex player))
   (terminal-reset)
   (display "	wis: ")
   (when (altered-attr? player 'wis)
     (terminal-colors 'white 'black))
-  (display (number->string (character-wis player)))
+  (display (character-wis player))
   (terminal-reset)
-  (display "\n")
+  (newline)
   
-  (display-notification "con: ")
+  (printf-notification "con: ")
   (when (altered-attr? player 'con)
     (terminal-colors 'white 'black))
-  (display (number->string (character-con player)))
+  (display (character-con player))
   (terminal-reset)
   (display "	cha: ")
   (when (altered-attr? player 'cha)
     (terminal-colors 'white 'black))
-  (display (number->string (character-cha player)))
+  (display (character-cha player))
   (terminal-reset)
-  (display "\n")
+  (newline)
   
   (cursor-home)
   (clear-line)
-  (display (string-append
-	    "Floor "
-	    (number->string
-	     (+ (floor-no (character-floor player)) 1))
-	    "\n"))
+  (printf "Floor ~a\n" (+ (floor-no (character-floor player)) 1))
   (show-grid (player-map player)
 	     #:print-fun (visibility-show (player-view player)
                                           (player-map  player))))
@@ -319,15 +311,12 @@
 
 (define (choice objects f null-message question feedback)
   (if (null? objects)
-      (display (string-append null-message "\n"))
+      (printf "~a\n" null-message)
       (begin   (cursor-home)
 	       (clear-to-bottom)
-	       (display question)
-	       (display "\nq: Cancel\n")
+               (printf "~a\nq: Cancel\n" question)
 	       (for-each (lambda (o i)
-			   (display (string-append
-				     (number->string (+ i 1)) ": "
-				     (object-info o) "\n")))
+                           (printf "~a: ~a\n" (+ i 1) (object-info o)))
 			 objects
 			 (iota (length objects)))
 	       (let ((nb (read-number (length objects))))
@@ -335,13 +324,11 @@
                    (let ((object (list-ref objects nb)))
                      (show-state)
                      (f object)
-                     (display (string-append feedback
-                                             (object-info object)
-                                             ".\n"))))))))
+                     (printf "~a~a.\n" feedback (object-info object))))))))
 
 (define (direction-command name f)
   (clear-to-bottom)
-  (display (string-append name " in which direction? "))
+  (printf "~a in which direction? " name)
   (flush-output) ;; TODO may be necessary elsewhere
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (when dir
@@ -393,14 +380,8 @@
       (when (not (null? hall))
         (let ((head (car hall)))
           (terminal-print
-           (string-append (symbol->string (car    head))
-                          ":\t" ;; TODO alignment will be messed up anyways
-                          (number->string (cadr   head))
-                          "\tlevel "
-                          (number->string (caddr  head))
-                          "\tfloor "
-                          (number->string (cadddr head))
-                          "\n")
+           (format "~a:\t~a\tlevel ~a\tfloor ~a\n"
+                   (car head) (cadr head) (caddr head) (cadddr head))
            #:bg (if (and highlight? (equal? (car hall) current-game))
                     'white
                     'black)
@@ -409,7 +390,7 @@
                     'white))
           (loop (cdr hall)
                 (and highlight? (not (equal? (car hall) current-game))))))))
-  (display "\n")
+  (newline)
   ;; restore tty
   (system "stty cooked echo")
   (system "setterm -cursor on")
@@ -422,12 +403,11 @@
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (display (string-append where (if obj (object-info obj) "") "\n")))
+     (printf "~a~a\n" where (if obj (object-info obj) "")))
    (character-equipment player))
-  (display
-   (string-append "\nAC: " (number->string (get-armor-class player)) "\n"))
+  (printf "\nAC: ~a\n" (get-armor-class player))
   (display "\nInventory:\n")
-  (for-each (lambda (o) (display (string-append (object-info o) "\n")))
+  (for-each (lambda (o) (printf "~a\n" (object-info o)))
 	    (player-character-inventory player))
   (let loop ((c #f))
     (case c
@@ -435,8 +415,8 @@
       ((#\r) (take-off))
       ((#\d) (cmd-drop))
       ((#\q) #f)
-      (else  (display "\ne: Equip\nr: Take off\nd: Drop\nq: Cancel\n")
-	     (loop (read-char)))))
+      (else (display "\ne: Equip\nr: Take off\nd: Drop\nq: Cancel\n")
+            (loop (read-char)))))
   (clear-to-bottom))
 (define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-ref (player-map player) pos))
@@ -470,8 +450,7 @@
 			       ((torso)     equipment-torso))
 			     e)))
 		(define (back-in-inventory o)
-		  (display (string-append "Put " (object-name o)
-					  " back in inventory.\n"))
+                  (printf "Put ~a back in inventory.\n" (object-name o))
 		  (set-player-character-inventory!
 		   player (cons o (player-character-inventory player))))
 		(set-player-character-inventory!
@@ -561,14 +540,14 @@
 (define (cmd-close) (direction-command "Close" close))
 
 (define-method (attack (attacker struct:player-character) defender)
-  (display (string-append (character-name attacker)
-			  " attacks the "
-			  (character-name defender))) ;; TODO instead of check-if-hit, use call-next-method ? with the new version of class
+  (printf "~a attacks the ~a"
+          (character-name attacker)
+          (character-name defender)) ;; TODO instead of check-if-hit, use call-next-method ? with the new version of class
   (check-if-hit attacker defender))
 (define-method (ranged-attack (attacker struct:player-character) defender)
-  (display (string-append (character-name attacker)
-			  " shoots at the "
-			  (character-name defender)))
+  (printf "~a shoots at the ~a"
+          (character-name attacker)
+          (character-name defender))
   (check-if-hit attacker defender get-ranged-attack-bonus)
   (attacks-of-opportunity attacker))
 
@@ -606,19 +585,15 @@
 	(clear-to-bottom)	  
 	(cursor-notification-head)
 	(for-each (lambda (m n)
-		    (display-notification (number->string (+ n 1)) ": "
-					  (character-name m) "\n"))
+		    (printf-notification "~a: ~a\n"
+                                         (+ n 1) (character-name m)))
 		  targets
 		  (iota n))
-	(display "\n")
-	(display-notification "q: Cancel\n")
+        (newline)
+	(printf-notification "q: Cancel\n")
 	;; show the map with the target numbers
 	(cursor-home)
-	(display (string-append
-		  "Floor "
-		  (number->string
-		   (+ (floor-no (character-floor player)) 1))
-		  "\n"))
+        (printf "Floor ~a\n" (+ (floor-no (character-floor player)) 1))
 	(show-grid grid
 		   #:print-fun (visibility-show (player-view player)
                                                 (player-map  player)))
@@ -630,8 +605,7 @@
 (define-method (damage (attacker struct:player-character)
                        (defender struct:monster))
   (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
-    (display (string-append " and deals " (number->string dmg) ;; TODO copied from character.scm, the fallback method, use call-next-method ? (but would mess up with the .\n at the end)
-			    " damage"))
+    (printf " and deals ~a damage" dmg) ;; TODO copied from character.scm, the fallback method, use call-next-method ? (but would mess up with the .\n at the end)
     (set-character-hp! defender (- (character-hp defender) dmg))
     (if (<= (character-hp defender) 0)
 	(remove-monster defender)
@@ -640,9 +614,7 @@
 ;; TODO not all that clean to have it here, but it's the only place where it would not lead to circular dependencies
 ;; removes a monster, usually when killed
 (define (remove-monster monster)
-  (display (string-append ", which kills the "
-			  (character-name monster)
-			  ".\n"))
+  (printf ", which kills the ~a.\n" (character-name monster))
   (let* ((floor (character-floor monster))
 	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
     ;; drop equipment with a certain probability TODO TWEAK
@@ -691,9 +663,8 @@
 		     (lambda (grid cell player)
 		       (cond ((cell-occupant cell)
 			      => (lambda (occ)
-				   (display (string-append "Killed the "
-							   (character-name occ)
-							   "\n"))
+                                   (printf "Killed the ~a\n"
+                                           (character-name occ))
 				   (remove-monster occ)))
 			     (else (display
 				    "There is nothing to kill there.\n"))))))
