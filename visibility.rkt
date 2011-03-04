@@ -162,7 +162,7 @@
 				     make-north-west-wall)
 				    ((or (visited? left)
 					 (visited? up-left)
-					 (visited? up-right))
+					 (visited? down-left))
 				     make-vertical-wall)
 				    (else
 				     make-west-tee-wall))))
