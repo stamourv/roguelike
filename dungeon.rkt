@@ -234,48 +234,46 @@
     ;; add doors to anything that looks like a doorway
     (grid-for-each
      (lambda (pos)
-       (let* ((around    (four-directions pos))
-	      (up        (list-ref around 0))
-	      (down      (list-ref around 1))
-	      (left      (list-ref around 2))
-	      (right     (list-ref around 3))
-	      (direction #f))
-	 ;; we must either have wall up and down, and free space left and
-	 ;; right, or the other way around
-	 (when (and (not (door?      (grid-ref level pos))) ; not already a door
-                    (not (stairs-up? (grid-ref level pos)))
-                    (andmap (lambda (cell) (inside-grid? level cell))
-                            around)
-                    (let ((c-up    (grid-ref level up))
-                          (c-down  (grid-ref level down))
-                          (c-left  (grid-ref level left))
-                          (c-right (grid-ref level right)))
-                      (define (connection-check a b)
-                        (let* ((rooms (floor-rooms new-floor))
-                               (a     (get-room a rooms))
-                               (b     (get-room b rooms)))
-                          (not (connected? a b))))
-                      (or (and (four-corner-wall? c-up)
-                               (four-corner-wall? c-down)
-                               (walkable-cell?    c-left)
-                               (walkable-cell?    c-right)
-                               ;; must not be connected already
-                               (connection-check  left right)
-                               (begin (set! direction 'vertical)
-                                      #t))
-                          (and (four-corner-wall? c-left)
-                               (four-corner-wall? c-right)
-                               (walkable-cell?    c-up)
-                               (walkable-cell?    c-down)
-                               (connection-check  up down)
-                               (begin (set! direction 'horizontal)
-                                      #t)))))
-           ;; yes, we have found a valid doorway, if this doorway is in an
-           ;; existing room, we would separate in into two smaller ones,
-           ;; which is no fun, so only put a door if we would open a wall
-           (let ((room (get-room pos (floor-rooms new-floor))))
-             (when (not room)
-               (add-door pos direction))))))
+       (match-let*
+        ([around (four-directions pos)]
+         [(list up down left right) around]
+         [direction #f])
+        ;; we must either have wall up and down, and free space left and
+        ;; right, or the other way around
+        (when (and (not (door?      (grid-ref level pos))) ; not already a door
+                   (not (stairs-up? (grid-ref level pos)))
+                   (andmap (lambda (cell) (inside-grid? level cell))
+                           around)
+                   (let ((c-up    (grid-ref level up))
+                         (c-down  (grid-ref level down))
+                         (c-left  (grid-ref level left))
+                         (c-right (grid-ref level right)))
+                     (define (connection-check a b)
+                       (let* ((rooms (floor-rooms new-floor))
+                              (a     (get-room a rooms))
+                              (b     (get-room b rooms)))
+                         (not (connected? a b))))
+                     (or (and (four-corner-wall? c-up)
+                              (four-corner-wall? c-down)
+                              (walkable-cell?    c-left)
+                              (walkable-cell?    c-right)
+                              ;; must not be connected already
+                              (connection-check  left right)
+                              (begin (set! direction 'vertical)
+                                     #t))
+                         (and (four-corner-wall? c-left)
+                              (four-corner-wall? c-right)
+                              (walkable-cell?    c-up)
+                              (walkable-cell?    c-down)
+                              (connection-check  up down)
+                              (begin (set! direction 'horizontal)
+                                     #t)))))
+          ;; yes, we have found a valid doorway, if this doorway is in an
+          ;; existing room, we would separate in into two smaller ones,
+          ;; which is no fun, so only put a door if we would open a wall
+          (let ((room (get-room pos (floor-rooms new-floor))))
+            (when (not room)
+              (add-door pos direction))))))
      level)
 
     ;; to avoid dead-end corridors, any corridor connected to a single room

@@ -179,25 +179,22 @@
       (let loop ((queue (list pos)))
 	(define (pass-light pos new)
 	  ;; enqueue cells depending on the orientation of new from pos
-	  (let* ((pos-x (point-x pos)) (pos-y (point-y pos))
-		 (new-x (point-x new)) (new-y (point-y new))
-		 (dirs  (four-directions new))
-		 (north (list-ref dirs 0))
-		 (south (list-ref dirs 1))
-		 (west  (list-ref dirs 2))
-		 (east  (list-ref dirs 3)))
-	    (cond ((< new-x pos-x) ; somewhere north
-		   (cond ((= new-y pos-y) (list east north west)) ; due north
-			 ((< new-y pos-y) (list north west))      ; north-west
-			 ((> new-y pos-y) (list east north))))    ; north-east
-		  ((> new-x pos-x) ; somewhere south
-		   (cond ((= new-y pos-y) (list west south east)) ; due south
-			 ((< new-y pos-y) (list west south))      ; south-west
-			 ((> new-y pos-y) (list south east))))    ; south-east
-		  ((< new-y pos-y) (list north west south))       ; due west
-		  ((> new-y pos-y) (list south east north))       ; due east
-		  (else ; we are at the starting point
-		   (list east north west south)))))
+	  (match-let
+           ([pos-x (point-x pos)] [pos-y (point-y pos)]
+            [new-x (point-x new)] [new-y (point-y new)]
+            [(list north south west east) (four-directions new)])
+           (cond ((< new-x pos-x) ; somewhere north
+                  (cond ((= new-y pos-y) (list east north west)) ; due north
+                        ((< new-y pos-y) (list north west))      ; north-west
+                        ((> new-y pos-y) (list east north))))    ; north-east
+                 ((> new-x pos-x) ; somewhere south
+                  (cond ((= new-y pos-y) (list west south east)) ; due south
+                        ((< new-y pos-y) (list west south))      ; south-west
+                        ((> new-y pos-y) (list south east))))    ; south-east
+                 ((< new-y pos-y) (list north west south))       ; due west
+                 ((> new-y pos-y) (list south east north))       ; due east
+                 (else ; we are at the starting point
+                  (list east north west south)))))
 	(when (not (null? queue))
           (let ((new (car queue)))
             (when (and (inside-grid? view new)
