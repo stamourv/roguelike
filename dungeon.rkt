@@ -21,7 +21,7 @@
 				   #:cell-fun (lambda (pos) (new-void-cell))))
 	 (new-floor (make-floor no level '() #f #f '() #f)))
         
-    (define (add-rectangle pos height width direction)
+    (define (add-rectangle pos height width direction room-type)
       ;; height and width consider a wall of one cell wide on each side
       (let* ((x     (point-x pos))
 	     (y     (point-y pos))
@@ -68,19 +68,19 @@
 	       #:start-x  pos-x  #:start-y  pos-y
 	       #:length-x height #:length-y width)
 
-	      ;; the type will be filled later
-	      (make-room #f inside new-walls '() #f))
+	      (make-room room-type inside new-walls '() '() #f))
 	    
 	    #f))) ; no it can't, give up
     
     (define (add-small-room pos direction)
       ;; both dimensions 5-7 units (including walls)
-      (add-rectangle pos (random-between 5 7) (random-between 5 7) direction))
+      (add-rectangle pos (random-between 5 7) (random-between 5 7) direction
+                     'small-room))
     (define (add-large-room pos direction)
       ;; both dimensions 8-12 units (including walls)
       (let* ((height (random-between 8 12))
 	     (width  (random-between 8 12))
-	     (room   (add-rectangle pos height width direction)))
+	     (room   (add-rectangle pos height width direction 'large-room)))
         ;; TODO maybe have even bigger rooms, or longer ones, that can have
         ;;  rows of columns, maybe just a hallway type of room, with width 6
         ;;  (or maybe 7 possible too) with 2 rows of columns, handle like a
@@ -112,13 +112,32 @@
                (set-room-cells! room (remove pos (room-cells room))))
              (cartesian-product pts-x pts-y))))
 	room))
-    (define (add-corridor   pos direction)
+    (define (add-corridor pos direction)
       ;; width: 3, length: 5-17 (including walls)
       ;; TODO maybe wider corridors ?
-      (if (or (eq? direction 'east) (eq? direction 'west))
-	  ;; we generate an horizontal corridor
-	  (add-rectangle pos 3 (random-between 5 17) direction)
-	  (add-rectangle pos (random-between 5 17) 3 direction)))
+      (let* ([len    (random-between 5 17)]
+             [horiz? (memq direction '(east west))]
+             [h      (if horiz? 3 len)]
+             [w      (if horiz? len 3)]
+             [room (add-rectangle pos h w direction 'corridor)])
+        (when room ; if we successfully place the room, post-processing
+          ;; the end of the corridor is considered a preferred expansion point
+          (set-room-preferred-expansion-points!
+           room
+           (if horiz?
+               (let ([end (point-add
+                           pos (new-point
+                                0
+                                (* (add1 len)
+                                   (if (eq? direction 'west) -1 1))))])
+                 (list end (up-from end) (down-from end)))
+               (let ([end (point-add
+                           pos (new-point
+                                (* (add1 len)
+                                   (if (eq? direction 'north) -1 1))
+                                0))])
+                 (list end (left-from end) (right-from end))))))
+        room))
 
     ;; replaces a wall (horizontal or vertical) by a door, adds the doorposts
     ;; and connects the two rooms in the graph
@@ -190,13 +209,20 @@
 	(if res
 	    (begin
 	      ;; add the new room the list of rooms
-	      (set-room-type! res (car type))
 	      (set-floor-rooms! new-floor (cons res (floor-rooms new-floor)))
 	      (add-door pos)
 	      ;; return the walls of the room "weight" times, and attach the
 	      ;; type of the new room to influence room type probabilities
-	      (map (lambda (x) (cons x (car type)))
-		   (repeat weight (room-walls res))))
+              ;; in addition, if the room has preferred expansion points
+              ;; (e.g. corridor ends), add them with a heavy weight
+              (let ([preferred (room-preferred-expansion-points res)])
+                (map (lambda (x) (cons x (car type)))
+                     (append (repeat weight (room-walls res))
+                             (repeat 5 preferred)
+                             ;; the very end of a corridor is even better
+                             (if (not (null? preferred))
+                                 (repeat 5 (list (car preferred)))
+                                 '())))))
 	    #f)))
 
     ;; wall smoothing, for aesthetic reasons

@@ -20,6 +20,7 @@
    ;; TODO the 3 of these are sets, use hash tables for sets if it becomes slow
    cells
    walls
+   preferred-expansion-points ; like the opposite end of a corridor
    connected-to
    encounter)
   #:mutable #:transparent)
