@@ -105,18 +105,17 @@
 
 ;; given a wall, returns the cells that are either perpendicular or
 ;; parrallel to the direction of the wall
-(define (wall-perpendicular g pos)
-  (let ((wall (grid-ref g pos)))
-    ((cond ((horizontal-wall? wall) up-down)
-	   ((vertical-wall?   wall) left-right)
-	   (else                    (lambda (x) '()))) ; not an appropriate wall
-     pos)))
-(define (wall-parrallel     g pos)
-  (let ((wall (grid-ref g pos)))
-    ((cond ((horizontal-wall? wall) left-right)
-	   ((vertical-wall?   wall) up-down)
-	   (else                    (lambda (x) '()))) ; not an appropriate wall
-     pos)))
+(define-values (wall-perpendicular wall-parrallel)
+  (let ()
+    (define ((mk per?) g pos)
+      (define (wall-there? p) (wall? (grid-ref-check g p)))
+      ((cond [(andmap wall-there? (up-down    pos))
+              (if per? left-right up-down)]
+             [(andmap wall-there? (left-right pos))
+              (if per? up-down left-right)]
+             [else (lambda (x) '())]) ; not an appropriate wall
+       pos))
+    (values (mk #t) (mk #f))))
 
 (define (next-to-a-door? g pos)
   (ormap (lambda (new) (door? (grid-ref-check g new)))
