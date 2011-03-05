@@ -384,8 +384,15 @@
     (grid-for-each
      (lambda (pos)
        (when (door? (grid-ref level pos))
-         (cond [(random-boolean) ;; TODO tweak prob.
-                (grid-set! level pos (new-empty-cell))])))
+         (when (cond [(andmap
+                       (lambda (p)
+                         (eq? (room-type (get-room p (floor-rooms new-floor)))
+                              'corridor))
+                       (wall-perpendicular level pos))
+                      ;; a doorway is more likely between 2 corridors
+                      (random-boolean 0.7)] ;; TODO tweak prob.
+                     [else (random-boolean)]) ;; TODO tweak prob.
+           (grid-set! level pos (new-empty-cell)))))
      level)
     ;; to avoid "phantom doors"
     (smooth-walls)
