@@ -375,7 +375,18 @@
              (when (not (eq? door-candidate current-door))
                (add-door door-candidate))))))
      (floor-rooms new-floor))
+
+    ;; replace some doors with open doorways
+    (grid-for-each
+     (lambda (pos)
+       (when (door? (grid-ref level pos))
+         (cond [(random-boolean) ;; TODO tweak prob.
+                (grid-set! level pos (new-empty-cell))])))
+     ;; TODO doorways are sometimes easy to miss.
+     ;; TODO have another round of wall smoothing, to really have open doorways
+     level)
     
+    ;; register all walkable cells
     (set-floor-walkable-cells!
      new-floor
      (filter (lambda (pos)
@@ -385,8 +396,6 @@
     
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor)
-    ;; TODO try to place it as far as possible from the stairs up, see
-    ;;  building quantifiably fun maps, or something like that on the wiki
     (when stairs-down?
       (let ((pos (random-free-position new-floor)))
         (grid-set! level pos (new-stairs-down))
