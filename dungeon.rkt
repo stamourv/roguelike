@@ -194,6 +194,71 @@
 	      (map (lambda (x) (cons x (car type)))
 		   (repeat weight (room-walls res))))
 	    #f)))
+
+    ;; wall smoothing, for aesthetic reasons
+    (define (smooth-walls)
+      (grid-for-each
+       (lambda (pos)
+         (let ((cell (grid-ref level pos)))
+           (when (wall? cell)
+             (match-let
+              ([(list up down left right up-left down-left up-right down-right)
+                (map (lambda (p) (grid-ref-check level p))
+                     (eight-directions pos))])
+              (define (wall-or-door? c)
+                (and (or (wall? c) (door? c))))
+              ;; these don't count as walls for determining the shape of
+              ;; neighboring walls
+              (define (not-counting-as-wall? c)
+                (or (not c)
+                    (void-cell? c)
+                    (walkable-cell? c)))
+              (grid-set!
+               level pos
+               ((cond ((and (wall-or-door? up)   (wall-or-door? down)
+                            (wall-or-door? left) (wall-or-door? right))
+                       new-four-corner-wall)
+                      ((and (wall-or-door? down)
+                            (wall-or-door? left)
+                            (wall-or-door? right)
+                            (not-counting-as-wall? up))
+                       new-north-tee-wall)
+                      ((and (wall-or-door? up)
+                            (wall-or-door? left)
+                            (wall-or-door? right)
+                            (not-counting-as-wall? down))
+                       new-south-tee-wall)
+                      ((and (wall-or-door? up)
+                            (wall-or-door? down)
+                            (wall-or-door? right)
+                            (not-counting-as-wall? left))
+                       new-west-tee-wall)
+                      ((and (wall-or-door? up)
+                            (wall-or-door? down)
+                            (wall-or-door? left)
+                            (not-counting-as-wall? right))
+                       new-east-tee-wall)
+                      ((and (wall-or-door?  down)
+                            (wall-or-door?  right))
+                       new-north-west-wall)
+                      ((and (wall-or-door?  down)
+                            (wall-or-door?  left))
+                       new-north-east-wall)
+                      ((and (wall-or-door?  up)
+                            (wall-or-door?  right))
+                       new-south-west-wall)
+                      ((and (wall-or-door?  up)
+                            (wall-or-door?  left))
+                       new-south-east-wall)
+                      ((and (wall-or-door? up)
+                            (wall-or-door? down))
+                       new-vertical-wall)
+                      ((and (wall-or-door? left)
+                            (wall-or-door? right))
+                       new-horizontal-wall)
+                      (else
+                       new-pillar))))))))
+       level))
     
     ;; generate features
     (let loop ((n 500)
@@ -227,69 +292,8 @@
                     (grid-set! level p (new-four-corner-wall))))
                 (eight-directions stairs)))
 
-    ;; wall smoothing, for aesthetic reasons
-    (grid-for-each
-     (lambda (pos)
-       (let ((cell (grid-ref level pos)))
-	 (when (wall? cell)
-           (match-let
-            ([(list up down left right up-left down-left up-right down-right)
-              (map (lambda (p) (grid-ref-check level p))
-                   (eight-directions pos))])
-             (define (wall-or-door? c)
-               (and (or (wall? c) (door? c))))
-             ;; these don't count as walls for determining the shape of
-             ;; neighboring walls
-             (define (not-counting-as-wall? c)
-               (or (not c)
-                   (void-cell? c)
-                   (walkable-cell? c)))
-             (grid-set!
-              level pos
-              ((cond ((and (wall-or-door? up)   (wall-or-door? down)
-                           (wall-or-door? left) (wall-or-door? right))
-                      new-four-corner-wall)
-                     ((and (wall-or-door? down)
-                           (wall-or-door? left)
-                           (wall-or-door? right)
-                           (not-counting-as-wall? up))
-                      new-north-tee-wall)
-                     ((and (wall-or-door? up)
-                           (wall-or-door? left)
-                           (wall-or-door? right)
-                           (not-counting-as-wall? down))
-                      new-south-tee-wall)
-                     ((and (wall-or-door? up)
-                           (wall-or-door? down)
-                           (wall-or-door? right)
-                           (not-counting-as-wall? left))
-                      new-west-tee-wall)
-                     ((and (wall-or-door? up)
-                           (wall-or-door? down)
-                           (wall-or-door? left)
-                           (not-counting-as-wall? right))
-                      new-east-tee-wall)
-                     ((and (wall-or-door?  down)
-                           (wall-or-door?  right))
-                      new-north-west-wall)
-                     ((and (wall-or-door?  down)
-                           (wall-or-door?  left))
-                      new-north-east-wall)
-                     ((and (wall-or-door?  up)
-                           (wall-or-door?  right))
-                      new-south-west-wall)
-                     ((and (wall-or-door?  up)
-                           (wall-or-door?  left))
-                      new-south-east-wall)
-                     ((and (wall-or-door? up)
-                           (wall-or-door? down))
-                      new-vertical-wall)
-                     ((and (wall-or-door? left)
-                           (wall-or-door? right))
-                      new-horizontal-wall)
-                     (else
-                      new-pillar))))))))
-     level)
+    ;; to find where to add new doors
+    (smooth-walls)
 
     ;; add doors to anything that looks like a doorway
     (grid-for-each
@@ -382,9 +386,9 @@
        (when (door? (grid-ref level pos))
          (cond [(random-boolean) ;; TODO tweak prob.
                 (grid-set! level pos (new-empty-cell))])))
-     ;; TODO doorways are sometimes easy to miss.
-     ;; TODO have another round of wall smoothing, to really have open doorways
      level)
+    ;; to avoid "phantom doors"
+    (smooth-walls)
     
     ;; register all walkable cells
     (set-floor-walkable-cells!
