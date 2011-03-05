@@ -104,7 +104,6 @@
   (if double-walls? #\u2560 #\u251c))
 
 (define-class <solid-wall> (wall))
-;; TODO there are still behind stairs, is it bad ?
 (define (new-solid-wall) (make-solid-wall '() #f))
 (define-class <pillar>     (wall))
 (define (new-pillar)     (make-pillar     '() #f))

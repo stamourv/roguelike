@@ -3,10 +3,15 @@
 ;; TODO change the name of the file to level.rkt
 (require "utilities.rkt" "grid.rkt" "cell.rkt" "floor.rkt" "character.rkt"
          "display.rkt" "common.rkt"
+         (rename-in "grid.rkt"
+                    [up up-from]     [down down-from]
+                    [left left-from] [right right-from])
          (only-in srfi/1 iota)
          (rename-in racket/base [floor math-floor])) ;; TODO ugly
-(provide (all-defined-out))
+(provide generate-floor)
 
+;; TODO take internal definitions out and have parameters + parameterize to
+;;  keep floor-local state?
 (define (generate-floor no (stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
@@ -329,10 +334,107 @@
 
     ;; replace the solid walls next to the stairs up by some prettier walls
     (let ((stairs (floor-stairs-up new-floor)))
-      (for-each (lambda (pos)
-		  (when (solid-wall? (grid-ref-check level pos))
-                    (grid-set! level pos (new-four-corner-wall))))
-		(eight-directions stairs)))
+      (match (eight-directions stairs)
+        [(and l (list up-p down-p left-p right-p
+                      up-left-p down-left-p up-right-p down-right-p))
+         (match (map (lambda (p) (grid-ref level p)) l)
+           [(list up down left right
+                  up-left down-left up-right down-right)
+            ;; only one of the four cardinal direction will be free
+            (let ([free-side (cond [(and up    (walkable-cell? up))   'up]
+                                   [(and down  (walkable-cell? down)  'down)]
+                                   [(and left  (walkable-cell? left)  'left)]
+                                   [(and right (walkable-cell? right) 'right)]
+                                   [else (error "stairs are walled in")])])
+              ;; fix walls on the other side, then fix the corners
+              ;; TODO there are probably abstractable patterns in wall code
+              (define (wall-there? p)
+                (and (inside-grid? level p)
+                     (or (wall? (grid-ref level p))
+                         ;; doors count too
+                         (door? (grid-ref level p)))))
+              (define up-from-left     (wall-there? (up-from left-p)))
+              (define down-from-left   (wall-there? (down-from left-p)))
+              (define left-from-left   (wall-there? (left-from left-p)))
+              (define up-from-right    (wall-there? (up-from right-p)))
+              (define down-from-right  (wall-there? (down-from right-p)))
+              (define right-from-right (wall-there? (right-from right-p)))
+              (define up-from-up       (wall-there? (up-from up-p)))
+              (define down-from-down   (wall-there? (down-from down-p)))
+              (case free-side
+                [(up)
+                 (grid-set! level down-p       (new-horizontal-wall))
+                 (grid-set! level down-left-p  (new-south-west-wall))
+                 (grid-set! level down-right-p (new-south-east-wall))
+                 (grid-set!
+                  level left-p
+                  (cond [(and left-from-left up-from-left)
+                         (new-east-tee-wall)]
+                        [left-from-left (new-north-east-wall)]
+                        [up-from-left   (new-vertical-wall)]
+                        [else           (new-four-corner-wall)]))
+                 (grid-set!
+                  level right-p
+                  (cond [(and right-from-right up-from-right)
+                         (new-east-tee-wall)]
+                        [right-from-right (new-north-west-wall)]
+                        [up-from-right    (new-vertical-wall)]
+                        [else             (new-four-corner-wall)]))]
+                ;; TODO have level-ref and level-set!
+                [(down)
+                 (grid-set! level up-p         (new-horizontal-wall))
+                 (grid-set! level up-left-p    (new-north-west-wall))
+                 (grid-set! level up-right-p   (new-north-east-wall))
+                 (grid-set!
+                  level left-p
+                  (cond [(and left-from-left down-from-left)
+                         (new-east-tee-wall)]
+                        [left-from-left (new-south-east-wall)]
+                        [down-from-left (new-vertical-wall)]
+                        [else           (new-four-corner-wall)]))
+                 (grid-set!
+                  level right-p
+                  (cond [(and right-from-right down-from-right)
+                         (new-west-tee-wall)]
+                        [right-from-right (new-south-west-wall)]
+                        [down-from-right  (new-vertical-wall)]
+                        [else             (new-four-corner-wall)]))]
+                [(left)
+                 (grid-set! level right-p      (new-vertical-wall))
+                 (grid-set! level up-right-p   (new-north-east-wall))
+                 (grid-set! level down-right-p (new-south-east-wall))
+                 (grid-set!
+                  level up-p
+                  (cond [(and up-from-up up-from-left)
+                         (new-south-tee-wall)]
+                        [up-from-up   (new-south-west-wall)]
+                        [up-from-left (new-horizontal-wall)]
+                        [else         (new-four-corner-wall)]))
+                 (grid-set!
+                  level down-p
+                  (cond [(and down-from-down down-from-left)
+                         (new-north-tee-wall)]
+                        [down-from-down (new-north-west-wall)]
+                        [down-from-left (new-horizontal-wall)]
+                        [else           (new-four-corner-wall)]))]
+                [(right)
+                 (grid-set! level left-p       (new-vertical-wall))
+                 (grid-set! level up-left-p    (new-north-west-wall))
+                 (grid-set! level down-left-p  (new-south-west-wall))
+                 (grid-set!
+                  level up-p
+                  (cond [(and up-from-up up-from-right)
+                         (new-south-tee-wall)]
+                        [up-from-up    (new-south-east-wall)]
+                        [up-from-right (new-horizontal-wall)]
+                        [else          (new-four-corner-wall)]))
+                 (grid-set!
+                  level down-p
+                  (cond [(and down-from-down down-from-right)
+                         (new-north-tee-wall)]
+                        [down-from-down  (new-north-east-wall)]
+                        [down-from-right (new-horizontal-wall)]
+                        [else            (new-four-corner-wall)]))]))])]))
     
     ;; replace generic corner walls by the appropriate wall cell, for
     ;; aesthetic reasons
