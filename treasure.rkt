@@ -91,10 +91,13 @@
     (let loop ((chests chests))
       (when (not (null? chests))
         (let ((pos (random-free-position floor)))
-          (grid-set! (floor-map floor) pos (car chests))
-          (set-floor-walkable-cells!
-           floor (remove pos (floor-walkable-cells floor)))
-          (loop (cdr chests)))))
+          (cond [(next-to-a-door? (floor-map floor) pos)
+                 (loop chests)] ; try again
+                [else
+                 (grid-set! (floor-map floor) pos (car chests))
+                 (set-floor-walkable-cells!
+                  floor (remove pos (floor-walkable-cells floor)))
+                 (loop (cdr chests))]))))
     ;; fill the chests
     (for-each (lambda (item) (add-object (random-element chests) item))
 	      (generate-treasure (+ (floor-no floor) 1)))))
