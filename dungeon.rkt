@@ -6,13 +6,13 @@
          (rename-in "grid.rkt"
                     [up up-from]     [down down-from]
                     [left left-from] [right right-from])
-         (only-in srfi/1 iota)
+         (only-in srfi/1 iota lset-difference)
          (rename-in racket/base [floor math-floor])) ;; TODO ugly
 (provide generate-floor)
 
 ;; TODO take internal definitions out and have parameters + parameterize to
 ;;  keep floor-local state?
-(define (generate-floor no (stairs-down? #t))
+(define (generate-floor no (place-stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 18)
@@ -126,12 +126,16 @@
     ;; a door on a free space, for example)), the direction of the wall can be
     ;; given
     (define (add-door cell (direction #f))
+      (unless (inside-grid? level cell)
+        (error "adding door outside of level"))
       ;; connect the two rooms
       (let* ((sides (wall-perpendicular level cell))
 	     (dirs  (if (null? sides)
 			((case direction
 			   ((horizontal) up-down)
-			   ((vertical)   left-right)) cell)
+			   ((vertical)   left-right)
+                           (else (error "trying to add invalid door")))
+                         cell)
 			sides))
 	     (rooms (floor-rooms new-floor))
 	     (a     (get-room (car  dirs) rooms))
@@ -407,11 +411,30 @@
     
     ;; if needed, add the stairs down on a random free square in a room
     ;; (not a corridor)
-    (when stairs-down?
+    (when place-stairs-down?
       (let ((pos (random-free-position new-floor)))
         (grid-set! level pos (new-stairs-down))
         (set-floor-walkable-cells!
          new-floor (remove pos (floor-walkable-cells new-floor)))
         (set-floor-stairs-down! new-floor pos)))
 
+    ;; make sure the exit is reachable from the entrance. otherwise start again
+    ;; done with simple flood-fill that goes through doors
+    (let loop ([queue (list (floor-stairs-up new-floor))]
+               [visited '()])
+      (cond [(null? queue) ; exit unreachable, reset generation
+             (generate-floor no place-stairs-down?)]
+            [else
+             (let* ([head    (car queue)]
+                    [at-head (grid-ref level head)]
+                    [tail    (cdr queue)])
+               (cond [(stairs-down? at-head) #t] ; done
+                     [(wall? at-head) (loop tail (cons head visited))]
+                     [else
+                      (loop (append tail
+                                    (lset-difference equal?
+                                                     (four-directions head)
+                                                     (append queue visited)))
+                            (cons head visited))]))]))
+    
     new-floor))
