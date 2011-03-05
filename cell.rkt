@@ -30,6 +30,11 @@
 	 (show (car (cell-objects cell))))
 	(else char)))
 
+;; what the level initially starts as
+;; doesn't have any properties
+(define-class <void-cell> (cell))
+(define (new-void-cell) (make-void-cell '() #f))
+(define-method (show (c struct:void-cell)) "*") ; for debugging purposes
 
 (define-class <empty-cell> (cell))
 (define (new-empty-cell) (make-empty-cell '() #f))

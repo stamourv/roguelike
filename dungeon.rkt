@@ -18,7 +18,7 @@
   (let* ((level-height 18)
 	 (level-width  60)
 	 (level        (empty-grid level-height level-width
-				   #:cell-fun (lambda (pos) (new-solid-wall))))
+				   #:cell-fun (lambda (pos) (new-void-cell))))
 	 (new-floor (make-floor no level '() #f #f '() #f)))
         
     (define (add-rectangle pos height width direction)
@@ -41,8 +41,10 @@
 	(if (andmap ; can this new feature fit ?
 	     (lambda (x)
 	       (andmap (lambda (y)
-                         (let ((p (new-point (+ x pos-x) (+ y pos-y))))
-                           (wall? (grid-ref-check level p))))
+                         (let* ((p (new-point (+ x pos-x) (+ y pos-y)))
+                                (c (grid-ref-check level p)))
+                           (or (void-cell? c) ; unused yet
+                               (wall?      c)))) ; neghboring room
                        (iota width)))
 	     (iota height))
 	    
@@ -453,12 +455,12 @@
                   (down-right (grid-ref-check level (list-ref eight 7))))
              (define (wall-or-door? c)
                (and (or (wall? c) (door? c))
-                    (not (solid-wall? c)))) ; for the dungeon edges
+                    (not (void-cell? c)))) ; for the dungeon edges
              ;; these don't count as walls for determining the shape of
              ;; neighboring walls
              (define (not-counting-as-wall? c)
                (or (not c)
-                   (solid-wall? c)
+                   (void-cell? c)
                    (walkable-cell? c)))
              (grid-set!
               level pos
