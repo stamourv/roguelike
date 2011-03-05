@@ -58,18 +58,10 @@
       (let ((v (grid-ref-check view x)))
 	(and (or (eq? v 'visited) (eq? v 'visible) (and edge-ok? (not v)))
 	     (not (wall? (grid-ref-check map x))))))
-    (let* ((eight      (eight-directions pos))
-           ;; TODO have a macro with-eight-directions that binds all these
-           ;;  or use match...
-	   (up         (list-ref eight 0))
-	   (down       (list-ref eight 1))
-	   (left       (list-ref eight 2))
-	   (right      (list-ref eight 3))
-	   (up-left    (list-ref eight 4))
-	   (down-left  (list-ref eight 5))
-	   (up-right   (list-ref eight 6))
-	   (down-right (list-ref eight 7))
-	   (cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
+    (match-let
+     ([(list up down left right up-left down-left up-right down-right)
+       (eight-directions pos)])
+     (let [(cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
                       ;; TODO looks a lot like the last pass of dungeon
                       ;;  generation, abstract ?
 		      ((cond ((four-corner-wall? cell)
@@ -168,23 +160,23 @@
 				    (else
 				     make-west-tee-wall))))
 		       (cell-objects cell) (cell-occupant cell))
-		      cell)))
-      (let ((c (show cell)))
-	(case (grid-ref view pos)
-	  ((visible)
-	   (if (opaque-cell? cell #f)
-	       (print-sprite (darken-sprite  c))
-	       (print-sprite (lighten-sprite c))))
-	  ((visited)
-	   ;; (terminal-print c bg: 'black fg: 'white)
-	   ;; these are the default colors of the terminal, and not having to
-	   ;; print the control characters speeds up the game
-	   ;; we don't show enemies if they would be in the fog of war
-	   (cond ((cell-occupant cell) =>
-		  (lambda (occ)
-		    (set-cell-occupant! cell #f)
-		    (print-sprite (show cell))
-		    (set-cell-occupant! cell occ)))
-		 (else (print-sprite c)))) ; no enemy to hide
-	  ((unknown)
-	   (terminal-print " ")))))))
+		      cell))] ;; TODO use wall-smoothing instead
+       (let ((c (show cell)))
+         (case (grid-ref view pos)
+           ((visible)
+            (if (opaque-cell? cell #f)
+                (print-sprite (darken-sprite  c))
+                (print-sprite (lighten-sprite c))))
+           ((visited)
+            ;; (terminal-print c bg: 'black fg: 'white)
+            ;; these are the default colors of the terminal, and not having to
+            ;; print the control characters speeds up the game
+            ;; we don't show enemies if they would be in the fog of war
+            (cond ((cell-occupant cell) =>
+                   (lambda (occ)
+                     (set-cell-occupant! cell #f)
+                     (print-sprite (show cell))
+                     (set-cell-occupant! cell occ)))
+                  (else (print-sprite c)))) ; no enemy to hide
+           ((unknown)
+            (terminal-print " "))))))))
