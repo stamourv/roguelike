@@ -73,12 +73,13 @@
                       ;; TODO looks a lot like the last pass of dungeon
                       ;;  generation, abstract ?
 		      ((cond ((four-corner-wall? cell)
-			      (cond ((>= (+ (if (visited? up-left)    1 0)
-					    (if (visited? up-right)   1 0)
-					    (if (visited? down-left)  1 0)
-					    (if (visited? down-right) 1 0))
-					 3)
-				     ;; at least 3 corners are seen
+			      (cond ((or (>= (+ (if (visited? up-left)    1 0)
+                                                (if (visited? up-right)   1 0)
+                                                (if (visited? down-left)  1 0)
+                                                (if (visited? down-right) 1 0))
+                                             3) ; at least 3 corners are seen
+                                         (andmap visited? ; or the 4 walls
+                                                 (list up down left right)))
 				     make-four-corner-wall)
 				    ((and (visited? down-left)
 					  (visited? down-right))
