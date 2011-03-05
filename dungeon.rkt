@@ -134,9 +134,6 @@
     ;; a door on a free space, for example)), the direction of the wall can be
     ;; given
     (define (add-door cell (direction #f))
-      ;; add the doorposts
-      (for-each (lambda (post) (grid-set! level post (new-four-corner-wall)))
-		(wall-parrallel level cell))
       ;; connect the two rooms
       (let* ((sides (wall-perpendicular level cell))
 	     (dirs  (if (null? sides)
