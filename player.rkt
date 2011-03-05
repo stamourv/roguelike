@@ -67,7 +67,7 @@
    view)
   #:transparent)
 (define (new-player-floor no player-level)
-  (let ((floor (generate-floor no (< no (- n-levels 1)))))
+  (let ((floor (generate-floor no)))
     ;; add everything else on top
     (place-encounters floor player-level)
     (place-treasure   floor)
