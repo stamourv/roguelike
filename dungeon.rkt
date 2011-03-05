@@ -342,17 +342,18 @@
               (add-door pos direction))))))
      level)
 
-    ;; to avoid dead-end corridors, any corridor connected to a single room
-    ;; tries to open a door to another room
+    ;; to avoid unconnected rooms and dead-end corridors, open more doors
     (for-each
      (lambda (room)
        (let ((neighbors (room-connected-to room)))
-	 (when (and (eq? (room-type room) 'corridor)
-                    (= (length neighbors) 1))
+	 (when (or (null? neighbors)
+                   (and (eq? (room-type room) 'corridor)
+                        (= (length neighbors) 1)))
            (let* ((walls        (room-walls room))
-                  (current-door (findf (lambda (pos)
-                                         (door? (grid-ref level pos)))
-                                       walls))
+                  (current-door (or (findf (lambda (pos)
+                                             (door? (grid-ref level pos)))
+                                           walls)
+                                    (car walls))) ; unconnected room
                   (door-candidate
                    (foldl
                     ;; we want the candidate farthest from the existing door
@@ -376,7 +377,8 @@
                                  (walkable-cell? (grid-ref-check level new)))
                                sides))))
                      walls))))
-             (when (not (eq? door-candidate current-door))
+             (when (or (not (eq? door-candidate current-door))
+                       (null? neighbors)) ; we _have_ to open a door
                (add-door door-candidate))))))
      (floor-rooms new-floor))
 
