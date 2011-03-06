@@ -1,8 +1,7 @@
 #lang racket
 
 (require swindle/clos swindle/extra)
-(provide (all-defined-out)
-         make)
+(provide (all-defined-out))
 
 ;; wrapper over swindle to emulate David Saint-Hilaire's class.scm
 
