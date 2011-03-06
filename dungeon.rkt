@@ -160,8 +160,12 @@
 	     (a     (get-room (car  dirs) rooms))
 	     (b     (get-room (cadr dirs) rooms)))
 	(if (and a b)
-	    (begin (grid-set! level cell (new-door)) ; put the door
-		   (connect!  a b))
+            (if (and (empty-cell? (grid-ref-check level (car  dirs)))
+                     (empty-cell? (grid-ref-check level (cadr dirs))))
+                ;; clear on both sides, we can add the door
+                (begin (grid-set! level cell (new-door))
+                       (connect!  a b))
+                (error "trying to add an obstructed door"))
 	    ;; when we place the first room, there is nothing to connect to,
 	    ;; and we place the stairs if they were not placed already
 	    (when (not (floor-stairs-up new-floor))
@@ -229,7 +233,7 @@
     (define (smooth-walls)
       (grid-for-each
        (lambda (pos)
-         (let ((cell (grid-ref level pos)))
+         (let ((cell (grid-ref-check level pos)))
            (when (wall? cell)
              (match-let
               ([(list up down left right up-left down-left up-right down-right)
@@ -338,10 +342,10 @@
                    (not (stairs-up? (grid-ref level pos)))
                    (andmap (lambda (cell) (inside-grid? level cell))
                            around)
-                   (let ((c-up    (grid-ref level up))
-                         (c-down  (grid-ref level down))
-                         (c-left  (grid-ref level left))
-                         (c-right (grid-ref level right)))
+                   (let ((c-up    (grid-ref-check level up))
+                         (c-down  (grid-ref-check level down))
+                         (c-left  (grid-ref-check level left))
+                         (c-right (grid-ref-check level right)))
                      (define (doorway-wall? p)
                        (or (corner-wall? p) (tee-wall? p)))
                      (define (connection-check a b)
@@ -381,7 +385,7 @@
                     (= (length neighbors) 1))
            (let* ((walls        (room-walls room))
                   (current-door (findf (lambda (pos)
-                                         (door? (grid-ref level pos)))
+                                         (door? (grid-ref-check level pos)))
                                        walls))
                   (door-candidate
                    (foldl
@@ -431,7 +435,7 @@
     (set-floor-walkable-cells!
      new-floor
      (filter (lambda (pos)
-	       (walkable-cell? (grid-ref (floor-map new-floor) pos)))
+	       (walkable-cell? (grid-ref-check (floor-map new-floor) pos)))
 	     (apply append
 		    (map room-cells (floor-rooms new-floor)))))
     
