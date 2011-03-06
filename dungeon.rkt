@@ -449,18 +449,19 @@
     (let loop ([queue (list (floor-stairs-up new-floor))]
                [visited '()])
       (cond [(null? queue) ; exit unreachable, reset generation
-             (generate-floor no place-stairs-down?)]
+             (set! new-floor (generate-floor no place-stairs-down?))]
             [else
              (let* ([head    (car queue)]
-                    [at-head (grid-ref level head)]
+                    [at-head (grid-ref-check level head)]
                     [tail    (cdr queue)])
                (cond [(stairs-down? at-head) #t] ; done
+                     [(member head visited) (loop tail visited)]
                      [(wall? at-head) (loop tail (cons head visited))]
-                     [else
-                      (loop (append tail
-                                    (lset-difference equal?
-                                                     (four-directions head)
-                                                     (append queue visited)))
-                            (cons head visited))]))]))
+                     [(or (empty-cell? at-head) (door? at-head))
+                      (loop (append tail (four-directions head))
+                            (cons head visited))]
+                     [else ; something bad happened to the flood fill
+                      ;; better start again
+                      (loop '() '())]))]))
     
     new-floor))
