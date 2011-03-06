@@ -2,8 +2,8 @@
 
 (require "class.rkt" "utilities.rkt" "cell.rkt" "grid.rkt" "scheduler.rkt"
          "character.rkt" "objects.rkt" "items.rkt" "floor-utils.rkt"
-         "dungeon.rkt" "encounters.rkt" "treasure.rkt" "visibility.rkt"
-         "common.rkt" "terminal.rkt" "display.rkt")
+         "floor.rkt" "visibility.rkt" "common.rkt" "terminal.rkt"
+         "display.rkt")
 (provide (all-defined-out))
 
 (define-class <player-character> (character)
@@ -39,10 +39,8 @@
 (define (new-player-floor no)
   ;; if we're not generating the first floor, generate the stairs up from the
   ;; new floor where the stairs down of the previous floor are
-  (let ((floor (generate-dungeon-floor (and player (character-pos player)))))
-    ;; add everything else on top
-    (place-encounters floor (character-level player))
-    (place-treasure   floor no)
+  (let ((floor (generate-floor no (character-level player)
+                               (and player (character-pos player)))))
     (make-player-floor floor (init-visibility (floor-map floor)))))
 
 
