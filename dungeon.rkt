@@ -8,11 +8,11 @@
                     [left left-from] [right right-from])
          (only-in srfi/1 iota lset-difference)
          (rename-in racket/base [floor math-floor])) ;; TODO ugly
-(provide generate-floor)
+(provide generate-dungeon-floor)
 
 ;; TODO take internal definitions out and have parameters + parameterize to
 ;;  keep floor-local state?
-(define (generate-floor no (stairs-up-pos #f) (place-stairs-down? #t))
+(define (generate-dungeon-floor no (stairs-up-pos #f) (place-stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 18)
@@ -453,7 +453,8 @@
                [visited '()])
       (cond [(null? queue) ; exit unreachable, reset generation
              (set! new-floor
-                   (generate-floor no stairs-up-pos place-stairs-down?))]
+                   (generate-dungeon-floor
+                    no stairs-up-pos place-stairs-down?))]
             [else
              (let* ([head    (car queue)]
                     [at-head (grid-ref-check level head)]

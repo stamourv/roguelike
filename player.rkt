@@ -37,7 +37,8 @@
 (define (new-player-floor no player-level)
   ;; if we're not generating the first floor, generate the stairs up from the
   ;; new floor where the stairs down of the previous floor are
-  (let ((floor (generate-floor no (and player (character-pos player)))))
+  (let ((floor (generate-dungeon-floor
+                no (and player (character-pos player)))))
     ;; add everything else on top
     (place-encounters floor player-level)
     (place-treasure   floor)
