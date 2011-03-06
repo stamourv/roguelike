@@ -309,7 +309,7 @@
 					 #f)))))))
       ;; although unlikely, we might run out of walls (happened once, no
       ;; idea how)
-      (when (or (> n 0) (null? walls))
+      (when (and (> n 0) (not (null? walls)))
         (let* ((i     (random (length walls)))
                (start (list-ref walls i)))
           (loop (- n 1)
