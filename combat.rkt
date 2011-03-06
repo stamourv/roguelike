@@ -1,7 +1,7 @@
 #lang racket
 
 (require "class.rkt" "character.rkt" "player.rkt" "monsters.rkt"
-         "objects.rkt" "utilities.rkt" "grid.rkt" "floor.rkt"
+         "objects.rkt" "utilities.rkt" "grid.rkt" "floor-utils.rkt"
          "cell.rkt" "scheduler.rkt"
          (only-in racket/base [floor math-floor]))
 (provide (all-defined-out))

@@ -1,9 +1,9 @@
 #lang racket
 
 (require "class.rkt" "utilities.rkt" "cell.rkt" "grid.rkt" "scheduler.rkt"
-         "character.rkt" "objects.rkt" "items.rkt" "floor.rkt" "dungeon.rkt"
-         "encounters.rkt" "treasure.rkt" "visibility.rkt" "common.rkt"
-         "terminal.rkt" "display.rkt")
+         "character.rkt" "objects.rkt" "items.rkt" "floor-utils.rkt"
+         "dungeon.rkt" "encounters.rkt" "treasure.rkt" "visibility.rkt"
+         "common.rkt" "terminal.rkt" "display.rkt")
 (provide (all-defined-out))
 
 (define-class <player-character> (character)

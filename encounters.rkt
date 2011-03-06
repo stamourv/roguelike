@@ -1,7 +1,7 @@
 #lang racket
 
 (require "utilities.rkt" "cell.rkt" "grid.rkt" "character.rkt" "monsters.rkt"
-         "floor.rkt"
+         "floor-utils.rkt"
          unstable/function)
 (provide (all-defined-out))
 

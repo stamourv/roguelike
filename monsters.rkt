@@ -1,7 +1,7 @@
 #lang racket
 
 (require "class.rkt" "utilities.rkt" "character.rkt" "scheduler.rkt"
-         "objects.rkt" "items.rkt" "cell.rkt" "grid.rkt" "floor.rkt"
+         "objects.rkt" "items.rkt" "cell.rkt" "grid.rkt" "floor-utils.rkt"
          "visibility.rkt" "display.rkt" "common.rkt")
 (provide (all-defined-out))
 

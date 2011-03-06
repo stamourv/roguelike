@@ -1,7 +1,7 @@
 #lang racket
 
 (require "player.rkt" "character.rkt" "class.rkt" "common.rkt"
-         "scheduler.rkt" "grid.rkt" "floor.rkt" "terminal.rkt"
+         "scheduler.rkt" "grid.rkt" "floor-utils.rkt" "terminal.rkt"
          "cell.rkt" "objects.rkt" "visibility.rkt" "combat.rkt"
          (only-in srfi/1 iota))
 

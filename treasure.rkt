@@ -1,6 +1,6 @@
 #lang racket
 
-(require "utilities.rkt" "cell.rkt" "grid.rkt" "floor.rkt" "objects.rkt"
+(require "utilities.rkt" "cell.rkt" "grid.rkt" "floor-utils.rkt" "objects.rkt"
          "items.rkt" (only-in srfi/1 iota))
 (provide (all-defined-out))
 
