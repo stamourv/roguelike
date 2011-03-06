@@ -32,25 +32,6 @@
      m (character-pos player))
     (when reschedule? (reschedule m)))) ;; TODO call-next-method
 
-(define-method (attack (attacker struct:monster) defender)
-  (printf "The ~a attacks ~a"
-          (character-name attacker) (character-name defender))
-  (check-if-hit attacker defender)) ;; TODO good for call-next-method too
-(define-method (ranged-attack (attacker struct:monster) defender)
-  (printf "The ~a shoots at ~a"
-          (character-name attacker) (character-name defender))
-  (check-if-hit attacker defender get-ranged-attack-bonus)
-  (attacks-of-opportunity attacker))
-
-;; monsters don't attack other monsters
-(define-method (attack (attacker struct:monster)
-                       (defender struct:monster))
-  #f)
-(define-method (ranged-attack (attacker struct:monster)
-                              (defender struct:monster))
-  #f)
-
-
 (define-class <goblin> (monster))
 (define (new-goblin)
   (new-monster make-goblin

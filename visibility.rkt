@@ -49,6 +49,9 @@
 					   (math-floor (+ y y-step)) y)))
 			    (loop error (+ x 1) y))))))))))
 
+(define (clear-shot? grid a b) (line-of-sight? grid a b #t))
+
+
 (define (visibility-show view map)
   (lambda (pos cell)
     ;; visibility for walls that consider only seen walls

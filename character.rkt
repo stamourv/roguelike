@@ -1,8 +1,7 @@
 #lang racket
 
-(require "class.rkt" "utilities.rkt" "objects.rkt" "floor.rkt" "scheduler.rkt"
-         "visibility.rkt" "cell.rkt" "grid.rkt"
-         (only-in racket/base [floor math-floor]))
+(require "class.rkt" "utilities.rkt" "objects.rkt" "scheduler.rkt" "cell.rkt"
+         "grid.rkt")
 (provide (all-defined-out))
 
 (define-class <character> ()
@@ -123,16 +122,11 @@
        (get-ac (equipment-torso    e))
        (get-ac (equipment-off-hand e))))) ;; TODO add more
 
-(define (get-damage c)
-  (let ((weapon (equipment-main-hand (character-equipment c))))
-    (+ ((get-damage-fun weapon))
-       (math-floor (* (get-attribute-bonus 'str c)
-                      (cond ((ranged-weapon?     weapon) 0)
-                            ((two-handed-weapon? weapon) 3/2)
-                            (else                        1)))))))
-
 (define-method (reschedule (char struct:character))
   (schedule (lambda () (turn char #t)) (+ turn-no (character-speed char))))
+
+(define-generic attack) ;; TODO call-next-method
+(define-generic ranged-attack)
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns #t if it actually moved
@@ -153,39 +147,3 @@
             ;;  monster, and then tries to move around it, like in
             ;;  flee-behavior)
             (else #f)))))
-
-(define-generic attack) ;; TODO call-next-method
-(define-generic ranged-attack)
-
-(define (check-if-hit attacker defender
-		      (bonus-fun get-melee-attack-bonus))
-  ;; TODO ranged weapons can currently be used in melee with no penalty, and
-  ;;  use the strength bonus to hit
-  (let ((roll ((dice 20))))
-    (if (>= (+ roll (bonus-fun attacker))
-	    (get-armor-class defender))
-	(damage attacker defender)
-	(display " and misses.\n"))))
-;; TODO depending on by how much it missed, say different things
-
-(define-generic damage)
-(define-method (damage attacker defender)
-  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
-    (printf " and deals ~a damage.\n" dmg)
-    (set-character-hp! defender (- (character-hp defender) dmg))))
-
-(define (attacks-of-opportunity char)
-  (for-each (lambda (pos)
-	      (cond ((grid-ref-check
-		      (floor-map (character-floor char)) pos)
-		     => (lambda (cell)
-			  (let ((occ (cell-occupant cell)))
-			    (when occ
-                              (display "Attack of opportunity: ")
-                              ;; give a turn, but don't reschedule
-                              (turn occ #f)))))))
-            ;; TODO for now, we just give them a turn, which means they could
-            ;;  walk away instead of attacking
-	    (four-directions (character-pos char))))
-
-(define (clear-shot? grid a b) (line-of-sight? grid a b #t))
