@@ -2,7 +2,7 @@
 
 (require "class.rkt" "character.rkt" "player.rkt" "monsters.rkt"
          "objects.rkt" "utilities.rkt" "grid.rkt" "floor.rkt"
-         "cell.rkt" "scheduler.rkt" "common.rkt"
+         "cell.rkt" "scheduler.rkt"
          (only-in racket/base [floor math-floor]))
 (provide (all-defined-out))
 
@@ -106,12 +106,4 @@
     ;; remove the monster
     (set-cell-occupant! cell #f)
     (set-floor-monsters! floor (remove monster (floor-monsters floor)))
-    ;; give experience
-    (let* ((challenge     (character-level monster))
-	   (xp-same-level (* challenge 300))
-	   (delta-level   (- challenge (character-level player))))
-      (add-experience (if (= delta-level 0)
-			  xp-same-level
-			  (max 0
-			       (ceiling (* xp-same-level
-					   (+ 1 (* 1/3 delta-level))))))))))
+    (add-monster-experience monster)))

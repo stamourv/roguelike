@@ -201,6 +201,15 @@
        view))))
 
 
+(define (add-monster-experience m)
+  (let* ((challenge     (character-level m))
+         (xp-same-level (* challenge 300))
+         (delta-level   (- challenge (character-level player))))
+    (add-experience (if (= delta-level 0)
+                        xp-same-level
+                        (max 0
+                             (ceiling (* xp-same-level
+                                         (+ 1 (* 1/3 delta-level)))))))))
 (define (add-experience xp)
   (let ((total (+ (player-character-experience player) xp))
 	(level (character-level player)))
