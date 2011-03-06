@@ -3,7 +3,7 @@
 (require "utilities.rkt" "cell.rkt" "grid.rkt" "character.rkt" "monsters.rkt"
          "floor-utils.rkt"
          unstable/function)
-(provide (all-defined-out))
+(provide place-encounters)
 
 (define-struct encounter-type
   (points

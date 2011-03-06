@@ -2,7 +2,7 @@
 
 (require "utilities.rkt" "cell.rkt" "grid.rkt" "floor-utils.rkt" "objects.rkt"
          "items.rkt" (only-in srfi/1 iota))
-(provide (all-defined-out))
+(provide place-treasure)
 
 ;; contains the probability of eahc kind of item, and the probability of each
 ;; item within each category
