@@ -1,7 +1,7 @@
 #lang racket
 
 ;; TODO change the name of the file to level.rkt
-(require "utilities.rkt" "grid.rkt" "cell.rkt" "floor.rkt" "character.rkt"
+(require "utilities.rkt" "grid.rkt" "cell.rkt" "floor.rkt"
          "display.rkt" "common.rkt"
          (rename-in "grid.rkt"
                     [up up-from]     [down down-from]
@@ -12,7 +12,7 @@
 
 ;; TODO take internal definitions out and have parameters + parameterize to
 ;;  keep floor-local state?
-(define (generate-floor no (place-stairs-down? #t))
+(define (generate-floor no (stairs-up-pos #f) (place-stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 18)
@@ -300,12 +300,11 @@
 			(if res
 			    res
 			    (loop (add-random-feature
-				   (cons (if player
-					     ;; if this is not the first floor,
-					     ;; the stairs up should be at the
-					     ;; same coordinates as the previous
-					     ;; floor's stairs down
-					     (character-pos player)
+                                   ;; if this is not the first floor, the
+                                   ;; stairs up should be at the same
+                                   ;; coordinates as the previous floor's
+                                   ;; stairs down
+				   (cons (or stairs-up-pos
 					     (random-position level))
 					 #f)))))))
       ;; although unlikely, we might run out of walls (happened once, no

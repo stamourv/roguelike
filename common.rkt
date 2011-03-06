@@ -2,7 +2,7 @@
 
 (provide (all-defined-out))
 
-(define player #f) ; needed for level-generation
+(define player #f)
 (define (set-player! p)
   (set! player p))
 
