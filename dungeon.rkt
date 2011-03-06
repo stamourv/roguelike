@@ -1,13 +1,12 @@
 #lang racket
 
-;; TODO change the name of the file to level.rkt
 (require "utilities.rkt" "grid.rkt" "cell.rkt" "floor-utils.rkt"
          "display.rkt" "common.rkt"
          (rename-in "grid.rkt"
                     [up up-from]     [down down-from]
                     [left left-from] [right right-from])
          (only-in srfi/1 iota lset-difference)
-         (rename-in racket/base [floor math-floor])) ;; TODO ugly
+         (rename-in racket/base [floor math-floor]))
 (provide generate-dungeon-floor)
 
 ;; TODO take internal definitions out and have parameters + parameterize to
