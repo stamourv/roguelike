@@ -1,6 +1,7 @@
 #lang racket
 
 (require "utilities.rkt" "common.rkt" "player.rkt" "scheduler.rkt"
+         "commands.rkt"
          (only-in srfi/1 iota)
          unstable/function)
 
