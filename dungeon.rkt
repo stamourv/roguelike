@@ -124,19 +124,19 @@
           ;; the end of the corridor is considered a preferred expansion point
           (set-room-preferred-expansion-points!
            room
-           (if horiz?
-               (let ([end (point-add
-                           pos (new-point
-                                0
-                                (* (add1 len)
-                                   (if (eq? direction 'west) -1 1))))])
-                 (list end (up-from end) (down-from end)))
-               (let ([end (point-add
-                           pos (new-point
-                                (* (add1 len)
-                                   (if (eq? direction 'north) -1 1))
-                                0))])
-                 (list end (left-from end) (right-from end))))))
+           (case direction
+             [(north)
+              (let ([end (point-add pos (new-point (- (sub1 len)) 0))])
+                (list end (down-left end) (down-right end)))]
+             [(south)
+              (let ([end (point-add pos (new-point (sub1 len) 0))])
+                (list end (up-left end) (up-right end)))]
+             [(east)
+              (let ([end (point-add pos (new-point 0 (sub1 len)))])
+                (list end (up-left end) (down-left end)))]
+             [(west)
+              (let ([end (point-add pos (new-point 0 (- (sub1 len))))])
+                (list end (up-right end) (down-right end)))])))
         room))
 
     ;; replaces a wall (horizontal or vertical) by a door, adds the doorposts
