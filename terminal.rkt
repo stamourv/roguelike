@@ -39,3 +39,12 @@
   (terminal-command (format "[60C")) ; 60th column
   (clear-line)
   (apply printf f s))
+
+(define (cursor-on)  (system "setterm -cursor on"))
+(define (cursor-off) (system "setterm -cursor off"))
+(define (intercept-tty)
+  (system "stty raw -echo opost")
+  (cursor-off))
+(define (restore-tty)
+  (system "stty cooked echo")
+  (cursor-on))

@@ -1,7 +1,7 @@
 #lang racket
 
 (require "utilities.rkt" "common.rkt" "player.rkt" "scheduler.rkt"
-         "commands.rkt"
+         "commands.rkt" "terminal.rkt"
          (only-in srfi/1 iota)
          unstable/function)
 
@@ -16,9 +16,7 @@
 
 (define debug #f)
 
-(when (not debug)
-  (system "stty raw -echo opost")
-  (system "setterm -cursor off")) ;; TODO wrap that in exception handler
+(when (not debug) (intercept-tty)) ;; TODO wrap that in exception handler
 ;; strangely, clear-to-bottom does not clear the bottom of the screen as it
 ;; should
 (for-each (lambda (dummy) (newline)) (iota 50))

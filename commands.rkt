@@ -156,14 +156,11 @@
 
 ;; console from which arbitrary expressions can be evaluated
 (define (console)
-  (system "stty cooked echo")
-  (system "setterm -cursor on")
+  (restore-tty)
   (display ": ")
   (display (eval (read))) ;; TODO not sure this is going to work...
   (read-char)
-  (system "setterm -cursor off")
-  (system "stty raw -echo opost") ;; TODO abstract these somewhere
-  )
+  (intercept-tty))
 
 ;; for debugging
 (define (reveal-map)
@@ -210,9 +207,7 @@
           (loop (cdr hall)
                 (and highlight? (not (equal? (car hall) current-game))))))))
   (newline)
-  ;; restore tty
-  (system "stty cooked echo")
-  (system "setterm -cursor on")
+  (restore-tty)
   (exit))
 
 
@@ -448,7 +443,7 @@
   ;;  of the location, pos is starting position of the cursor, if final cursor
   ;;  position is outside visibility, say I can't see there
   ;; TODO use the choose-direction command to control the cursor
-  (system "setterm -cursor on")
+  (cursor-on)
   ;; TODO maybe just be able to look at immediate squares, and just use
   ;;  direction-command, but we might want to identify something before we
   ;;  get closer (a monster, for example)
@@ -456,5 +451,4 @@
   (read-char)
   ;; TODO implement the rest, and it seems that pressing l then an arrow
   ;;  shows some weird text in the background about terminal options
-  (system "setterm -cursor off"))
-
+  (cursor-off))
