@@ -4,8 +4,7 @@
 (provide (all-defined-out))
 
 (define-struct floor ;; TODO also have a dungeon type ?
-  (no
-   map
+  (map
    rooms ;; TODO have a set ?
    stairs-up
    stairs-down

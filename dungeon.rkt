@@ -17,7 +17,7 @@
 	 (level-width  60)
 	 (level        (empty-grid level-height level-width
 				   #:cell-fun (lambda (pos) (new-void-cell))))
-	 (new-floor (make-floor #f level '() #f #f '() #f)))
+	 (new-floor (make-floor level '() #f #f '() #f)))
         
     (define (add-rectangle pos height width direction room-type)
       ;; height and width consider a wall of one cell wide on each side

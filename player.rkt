@@ -7,6 +7,7 @@
 (provide (all-defined-out))
 
 (define-class <player-character> (character)
+  floor-no
   floors-before ; pairs (map . view)
   current-floor
   floors-after
@@ -19,15 +20,16 @@
     ;; TODO have a way to select (and also display, maybe press r
     ;;  for roster, c for character)
     16 14 14 10 10 10 (make-hash) 0
-    1 '(10)                       ; hit dice
+    1 '(10) ; hit dice
     #f #f
-    1 #f 1           ; base and current attack bonus, nb attacks
-    6                ; speed, 6 seconds for a turn
+    1 #f 1  ; base and current attack bonus, nb attacks
+    6       ; speed, 6 seconds for a turn
     (new-equipment #:main-hand (new-club))
-    '() #f '()
+    ;; player-character attributes:
+    1 '() #f '()
     0 '()))
   (init-hp player #t) ; the player gets maxed out hp
-  (place-player player (new-player-floor 0)))
+  (place-player player (new-player-floor (player-character-floor-no player))))
 (define-method (show (p struct:player-character)) #\@)
 
 (define-struct player-floor
@@ -38,10 +40,9 @@
   ;; if we're not generating the first floor, generate the stairs up from the
   ;; new floor where the stairs down of the previous floor are
   (let ((floor (generate-dungeon-floor (and player (character-pos player)))))
-    (set-floor-no! floor no)
     ;; add everything else on top
     (place-encounters floor (character-level player))
-    (place-treasure   floor)
+    (place-treasure   floor no)
     (make-player-floor floor (init-visibility (floor-map floor)))))
 
 
@@ -125,7 +126,7 @@
   
   (cursor-home)
   (clear-line)
-  (printf "Floor ~a\n" (+ (floor-no (character-floor player)) 1))
+  (printf "Floor ~a\n" (player-character-floor-no player))
   (show-grid (player-map player)
 	     #:print-fun (visibility-show (player-view player)
                                           (player-map  player))))

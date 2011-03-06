@@ -177,7 +177,7 @@
   (let* ((name         (string->symbol (character-name player)))
          (xp           (player-character-experience player))
          (level        (character-level player))
-         (floor-no     (+ (floor-no (character-floor player)) 1))
+         (floor-no     (player-character-floor-no player))
          (current-game (list name xp level floor-no))
          (filename     "hall-of-fame"))
     (define (update-hall-of-fame)
@@ -333,19 +333,22 @@
                        player new
                        #:start-pos (floor-stairs-down
                                     (player-floor-floor new)))
+                      (set-player-character-floor-no!
+                       player (sub1 (player-character-floor-no player)))
                       (set-player-character-floors-after!
                        player (cons current after))
                       (set-player-character-floors-before!
                        player (cdr before))))
                    (else (display "This would lead to the surface.\n"))))
             ((stairs-down? cell)
+             (set-player-character-floor-no!
+              player (add1 (player-character-floor-no player)))
              (set-player-character-floors-before! player (cons current before))
              (if (null? after)
-                 ;; if we would generate the last floor, don't put stairs down
                  (place-player player
                                (new-player-floor
-                                (+ (floor-no (character-floor player)) 1)))
-                 (begin (place-player             player (car after))
+                                (player-character-floor-no player)))
+                 (begin (place-player player (car after))
                         (set-player-character-floors-after!
                          player (cdr after)))))
             (else (display "There are no stairs here.\n"))))))
@@ -396,7 +399,7 @@
         (printf-notification "q: Cancel\n")
         ;; show the map with the target numbers
         (cursor-home)
-        (printf "Floor ~a\n" (+ (floor-no (character-floor player)) 1))
+        (printf "Floor ~a\n" (player-character-floor-no player))
         (show-grid grid
                    #:print-fun (visibility-show (player-view player)
                                                 (player-map  player)))

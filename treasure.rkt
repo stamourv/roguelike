@@ -83,7 +83,7 @@
 		(loop pts items))) ; try something else
 	  items))))
 
-(define (place-treasure floor)
+(define (place-treasure floor no)
   ;; the number of chests is level number independent
   (let ((chests (map (lambda (x) (new-chest '())) ; will be filled later
 		     (iota (random-between 4 8)))))
@@ -100,7 +100,7 @@
                  (loop (cdr chests))]))))
     ;; fill the chests
     (for-each (lambda (item) (add-object (random-element chests) item))
-	      (generate-treasure (+ (floor-no floor) 1)))))
+	      (generate-treasure no))))
 
 ;; for debugging purposes
 (define (show-treasure no) (map object-name (generate-treasure no)))
