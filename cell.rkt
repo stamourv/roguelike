@@ -4,8 +4,8 @@
 (provide (all-defined-out))
 
 (define-class <cell> ()
-  (slot: objects)
-  (slot: occupant)) ; player, monster, ...
+  objects
+  occupant) ; player, monster, ...
 
 (define (add-object cell object)
   (set-cell-objects! cell (cons object (cell-objects cell))))
@@ -120,8 +120,7 @@
 (define-method (close grid x closer) (display "I can't close that.\n"))
 
 
-(define-class <door> (cell)
-  (slot: open?))
+(define-class <door> (cell) open?)
 (define (new-door) (make-door '() #f #f))
 (define-method (show (c struct:door))
   (if (door-open? c)
@@ -143,8 +142,7 @@
       (and occupants-opaque? (cell-occupant c)))) ;; TODO call-next-method?
 
 
-(define-class <chest> (cell)
-  (slot: open?))
+(define-class <chest> (cell) open?)
 (define (new-chest contents) (make-chest contents #f #f))
 (define-method (show (c struct:chest))
   (if (chest-open? c)
@@ -158,7 +156,6 @@
 (define-method (walkable-cell? (c struct:chest)) (chest-open? c))
 
 ;; used to display special information, for instance when taking aim
-(define-class <display-cell> (cell)
-  (slot: char))
+(define-class <display-cell> (cell) char)
 (define (new-display-cell c) (make-display-cell #f #f c))
 (define-method (show (c struct:display-cell)) (display-cell-char c))

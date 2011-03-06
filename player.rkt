@@ -8,13 +8,11 @@
 (provide (all-defined-out))
 
 (define-class <player-character> (character)
-  (slot: floors-before) ; pairs (map . view)
-  (slot: current-floor)
-  (slot: floors-after)
-
-  (slot: experience)
-    
-  (slot: inventory)) ; list of objects
+  floors-before ; pairs (map . view)
+  current-floor
+  floors-after
+  experience
+  inventory) ; list of objects
 (define (new-player name) ;; TODO constructor ?
   (let ((player (make-player-character
                  name #f #f

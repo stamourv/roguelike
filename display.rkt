@@ -9,12 +9,7 @@
 (define-generic print-sprite)
 (define-method (print-sprite x) (display x))
 
-(define-class <sprite> ()
-  (slot: char)
-  (slot: bg)
-  (slot: fg)
-  (slot: bold?)
-  (slot: underline?))
+(define-class <sprite> () char bg fg bold? underline?)
 (define (new-sprite char #:bg (bg 'black) #:fg (fg 'white)
 		         #:bold? (bold? #f) #:underline? (underline? #f))
   (make-sprite char bg fg bold? underline?))

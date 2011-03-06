@@ -12,6 +12,6 @@
   (defmethod (name args ...) body ...))
 ;; TODO get rid of the struct: in specifiers
 ;; TODO not sure this will work, syntax is probably bad for fallback case
-(define-syntax-rule (define-class name super-list (slot-key slot) ...)
-  (defstruct name super-list slot ...)) ;; TODO get rid of slot-key
+(define-syntax-rule (define-class name super-list slot ...)
+  (defstruct name super-list slot ...))
 ;; TODO use init args instead of all my new-X functions?

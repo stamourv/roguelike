@@ -6,43 +6,26 @@
 (provide (all-defined-out))
 
 (define-class <character> ()
-  (slot: name)
-  
-  (slot: pos)
-  (slot: floor)
-
-  (slot: str)
-  (slot: dex)
-  (slot: con)
-  (slot: int)
-  (slot: wis)
-  (slot: cha)
-
+  name
+  pos floor
+  str dex con int wis cha
   ;; table that contains, for each attribute, how many temporary effects are
   ;; affecting it. if this non-zero, the attribute will be displayed
   ;; differently
-  (slot: altered-attrs)
-
-  (slot: natural-ac)
+  altered-attrs
+  natural-ac
   ;; TODO have natural weapons too, which are used when no weapon is equipped
   ;;  (change get-damage-fun)
-
-  (slot: level)
-  
-  (slot: hit-dice)
-  (slot: max-hp)
-  (slot: hp)
-  
-  (slot: base-attack-bonus)
-  (slot: current-attack-bonus) ; for multiple attacks
+  level
+  hit-dice max-hp hp
+  base-attack-bonus
+  current-attack-bonus ; for multiple attacks
   ;; TODO have a constructor that sets it at base, when monsters handle
   ;;  multiple attacks (which sets this), won't be needed (and monsters
   ;;  can have it as #f)
-  (slot: nb-attacks)
-  
-  (slot: speed) ; number of seconds needed to do a turn
-
-  (slot: equipment))
+  nb-attacks
+  speed ; number of seconds needed to do a turn
+  equipment)
 
 (define (init-hp c (max? #f))
   (let* ((hd (character-hit-dice c))

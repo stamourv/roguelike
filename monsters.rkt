@@ -8,7 +8,7 @@
 (define-class <monster> (character)
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
-  (slot: behavior))
+  behavior)
 ;; TODO have different speeds (maybe even initiative?) to determine which
 ;;  monster moves first
 

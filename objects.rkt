@@ -3,9 +3,7 @@
 (require "class.rkt" "display.rkt" "utilities.rkt")
 (provide (all-defined-out))
 
-(define-class <object> ()
-  (slot: name)
-  (slot: gp-value))
+(define-class <object> () name gp-value)
 
 (define-generic object-info)
 (define-method (object-info o) (object-name o))
@@ -21,14 +19,12 @@
 (define-generic max-dex-bonus)
 (define-method (max-dex-bonus o) #f)
 
-(define-class <armor> (equipable-object)
-  (slot: ac))
+(define-class <armor> (equipable-object) ac)
 (define-method (get-ac      (o struct:armor)) (armor-ac o))
 (define-method (object-info (o struct:armor))
   (format "~a (ac: ~a)" (object-name o) (armor-ac o)))
 
-(define-class <body-armor> (armor)
-  (slot: max-dex-bonus))
+(define-class <body-armor> (armor) max-dex-bonus)
 ;; TODO have light, medium and heavy armor and have different display
 ;;  characters for each type of armor ?
 (define-method (max-dex-bonus (o struct:body-armor))
@@ -43,8 +39,8 @@
 (define-method (get-damage-fun o) (dice 4)) ; unarmed strike
 
 (define-class <weapon> (equipable-object)
-  (slot: damage-dice) ; function that returns the damage
-  (slot: damage-type))
+  damage-dice ; function that returns the damage
+  damage-type)
 ;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee
 ;; and ranged, ...
 (define-method (show (o struct:weapon)) #\!)
@@ -70,9 +66,7 @@
 (define-method (show (o struct:ranged-weapon)) #\))
 
 
-(define-class <potion> (object)
-  (slot: thunk)
-  (slot: message))
+(define-class <potion> (object) thunk message)
 (define-method (show (o struct:potion)) #\;)
 
 ;; important: make sure there is at least as many colors as potion types
@@ -109,6 +103,5 @@
       (set! identified-potions (cons name identified-potions)))))
 
 
-(define-class <food> (object)
-  (slot: thunk))
+(define-class <food> (object) thunk)
 ;; TODO add some, should be cheaper than potions, but should heal less
