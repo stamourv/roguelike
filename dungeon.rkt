@@ -452,7 +452,8 @@
     (let loop ([queue (list (floor-stairs-up new-floor))]
                [visited '()])
       (cond [(null? queue) ; exit unreachable, reset generation
-             (set! new-floor (generate-floor no place-stairs-down?))]
+             (set! new-floor
+                   (generate-floor no stairs-up-pos place-stairs-down?))]
             [else
              (let* ([head    (car queue)]
                     [at-head (grid-ref-check level head)]
