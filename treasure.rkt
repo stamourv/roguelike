@@ -4,7 +4,7 @@
          "items.rkt" (only-in srfi/1 iota))
 (provide place-treasure)
 
-;; contains the probability of eahc kind of item, and the probability of each
+;; contains the probability of each kind of item, and the probability of each
 ;; item within each category
 ;; TODO with a lot of items, this will end up being unmanageable
 (define treasure-table
