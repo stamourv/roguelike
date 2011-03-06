@@ -295,7 +295,7 @@
        level))
     
     ;; generate features
-    (let loop ((n 500)
+    (let loop ((n 1000)
 	       (walls (let loop ((res #f)) ; we place the first feature
 			(if res
 			    res
