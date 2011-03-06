@@ -13,34 +13,34 @@
   experience
   inventory) ; list of objects
 (define (new-player name) ;; TODO constructor ?
-  (let ((player (make-player-character
-                 name #f #f
-                 ;; TODO have a way to select (and also display, maybe press r
-                 ;;  for roster, c for character)
-                 16 14 14 10 10 10 (make-hash) 0
-                 1 '(10) ; hit dice
-                 #f #f
-                 1 #f 1 ; base and current attack bonus, nb attacks
-                 6 ; speed, 6 seconds for a turn
-                 (new-equipment #:main-hand (new-club))
-                 '() #f '()
-                 0 '())))
-    (init-hp player #t) ; the player gets maxed out hp
-    (place-player player (new-player-floor 0 1))
-    player))
+  (set-player!
+   (make-player-character
+    name #f #f
+    ;; TODO have a way to select (and also display, maybe press r
+    ;;  for roster, c for character)
+    16 14 14 10 10 10 (make-hash) 0
+    1 '(10)                       ; hit dice
+    #f #f
+    1 #f 1           ; base and current attack bonus, nb attacks
+    6                ; speed, 6 seconds for a turn
+    (new-equipment #:main-hand (new-club))
+    '() #f '()
+    0 '()))
+  (init-hp player #t) ; the player gets maxed out hp
+  (place-player player (new-player-floor 0)))
 (define-method (show (p struct:player-character)) #\@)
 
 (define-struct player-floor
   (floor ; views are a grid of either visible, visited or unknown
    view)
   #:transparent)
-(define (new-player-floor no player-level)
+(define (new-player-floor no)
   ;; if we're not generating the first floor, generate the stairs up from the
   ;; new floor where the stairs down of the previous floor are
-  (let ((floor (generate-dungeon-floor
-                no (and player (character-pos player)))))
+  (let ((floor (generate-dungeon-floor (and player (character-pos player)))))
+    (set-floor-no! floor no)
     ;; add everything else on top
-    (place-encounters floor player-level)
+    (place-encounters floor (character-level player))
     (place-treasure   floor)
     (make-player-floor floor (init-visibility (floor-map floor)))))
 

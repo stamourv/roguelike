@@ -28,6 +28,5 @@
     (increment-turn-no)
     (loop)))
 
-(set-player! (new-player (getenv "LOGNAME")))
-
+(new-player (getenv "LOGNAME"))
 (when (not debug) (game))

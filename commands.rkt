@@ -344,9 +344,7 @@
                  ;; if we would generate the last floor, don't put stairs down
                  (place-player player
                                (new-player-floor
-                                (+ (floor-no (character-floor player))
-                                   1)
-                                (character-level player)))
+                                (+ (floor-no (character-floor player)) 1)))
                  (begin (place-player             player (car after))
                         (set-player-character-floors-after!
                          player (cdr after)))))

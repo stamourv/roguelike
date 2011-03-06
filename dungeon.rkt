@@ -1,7 +1,6 @@
 #lang racket
 
 (require "utilities.rkt" "grid.rkt" "cell.rkt" "floor-utils.rkt"
-         "display.rkt" "common.rkt"
          (rename-in "grid.rkt"
                     [up up-from]     [down down-from]
                     [left left-from] [right right-from])
@@ -11,14 +10,14 @@
 
 ;; TODO take internal definitions out and have parameters + parameterize to
 ;;  keep floor-local state?
-(define (generate-dungeon-floor no (stairs-up-pos #f) (place-stairs-down? #t))
+(define (generate-dungeon-floor (stairs-up-pos #f) (place-stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
   (let* ((level-height 18)
 	 (level-width  60)
 	 (level        (empty-grid level-height level-width
 				   #:cell-fun (lambda (pos) (new-void-cell))))
-	 (new-floor (make-floor no level '() #f #f '() #f)))
+	 (new-floor (make-floor #f level '() #f #f '() #f)))
         
     (define (add-rectangle pos height width direction room-type)
       ;; height and width consider a wall of one cell wide on each side
@@ -452,8 +451,7 @@
                [visited '()])
       (cond [(null? queue) ; exit unreachable, reset generation
              (set! new-floor
-                   (generate-dungeon-floor
-                    no stairs-up-pos place-stairs-down?))]
+                   (generate-dungeon-floor stairs-up-pos place-stairs-down?))]
             [else
              (let* ([head    (car queue)]
                     [at-head (grid-ref-check level head)]
