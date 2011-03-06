@@ -3,7 +3,7 @@
 (require "class.rkt" "utilities.rkt" "cell.rkt" "grid.rkt" "scheduler.rkt"
          "character.rkt" "objects.rkt" "items.rkt" "floor.rkt" "dungeon.rkt"
          "encounters.rkt" "treasure.rkt" "visibility.rkt" "common.rkt"
-         "monsters.rkt" "terminal.rkt" "display.rkt")
+         "terminal.rkt" "display.rkt")
 (provide (all-defined-out))
 
 (define-class <player-character> (character)
