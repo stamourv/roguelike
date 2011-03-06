@@ -1,7 +1,11 @@
 #lang racket
 
-(require "class.rkt" "utilities.rkt" "objects.rkt" "scheduler.rkt" "cell.rkt"
-         "grid.rkt")
+(require "utilities/utilities.rkt"
+         "utilities/class.rkt"
+         "utilities/cell.rkt"
+         "utilities/grid.rkt")
+(require "objects.rkt"
+         "scheduler.rkt")
 (provide (all-defined-out))
 
 (define-class <character> ()

@@ -1,7 +1,12 @@
 #lang racket
 
-(require "utilities.rkt" "cell.rkt" "grid.rkt" "floor-utils.rkt" "objects.rkt"
-         "items.rkt" (only-in srfi/1 iota))
+(require (only-in srfi/1 iota))
+(require "../utilities/utilities.rkt"
+         "../utilities/floor-utils.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/grid.rkt")
+(require "../objects.rkt"
+         "../items.rkt")
 (provide place-treasure)
 
 ;; contains the probability of each kind of item, and the probability of each

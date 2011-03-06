@@ -1,11 +1,14 @@
 #lang racket
 
-(require "utilities.rkt" "grid.rkt" "cell.rkt" "floor-utils.rkt"
-         (rename-in "grid.rkt"
-                    [up up-from]     [down down-from]
-                    [left left-from] [right right-from])
-         (only-in srfi/1 iota lset-difference)
+(require (only-in srfi/1 iota lset-difference)
          (rename-in racket/base [floor math-floor]))
+(require "../utilities/utilities.rkt"
+         "../utilities/floor-utils.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/grid.rkt"
+         (rename-in "../utilities/grid.rkt"
+                    [up up-from]     [down down-from]
+                    [left left-from] [right right-from]))
 (provide generate-dungeon-floor)
 
 ;; TODO take internal definitions out and have parameters + parameterize to

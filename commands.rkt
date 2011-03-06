@@ -1,9 +1,18 @@
 #lang racket
 
-(require "player.rkt" "character.rkt" "class.rkt" "common.rkt"
-         "scheduler.rkt" "grid.rkt" "floor-utils.rkt" "terminal.rkt"
-         "cell.rkt" "objects.rkt" "visibility.rkt" "combat.rkt"
-         (only-in srfi/1 iota))
+(require (only-in srfi/1 iota))
+(require "utilities/class.rkt"
+         "utilities/grid.rkt"
+         "utilities/cell.rkt"
+         "utilities/floor-utils.rkt"
+         "utilities/terminal.rkt")
+(require "common.rkt"
+         "character.rkt"
+         "player.rkt"
+         "scheduler.rkt"
+         "objects.rkt"
+         "visibility.rkt"
+         "combat.rkt")
 
 (define-method (turn (p struct:player-character) reschedule?)
   (if (and (<= (character-hp player) 0)

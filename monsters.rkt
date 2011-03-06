@@ -1,8 +1,17 @@
 #lang racket
 
-(require "class.rkt" "utilities.rkt" "character.rkt" "scheduler.rkt"
-         "objects.rkt" "items.rkt" "cell.rkt" "grid.rkt" "floor-utils.rkt"
-         "visibility.rkt" "display.rkt" "common.rkt")
+(require "utilities/utilities.rkt"
+         "utilities/class.rkt"
+         "utilities/cell.rkt"
+         "utilities/grid.rkt"
+         "utilities/floor-utils.rkt"
+         "utilities/display.rkt")
+(require "character.rkt"
+         "scheduler.rkt"
+         "objects.rkt"
+         "items.rkt"
+         "visibility.rkt"
+         "common.rkt")
 (provide (all-defined-out))
 
 (define-class <monster> (character)

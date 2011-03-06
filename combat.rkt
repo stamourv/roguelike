@@ -1,9 +1,16 @@
 #lang racket
 
-(require "class.rkt" "character.rkt" "player.rkt" "monsters.rkt"
-         "objects.rkt" "utilities.rkt" "grid.rkt" "floor-utils.rkt"
-         "cell.rkt" "scheduler.rkt"
-         (only-in racket/base [floor math-floor]))
+(require (only-in racket/base [floor math-floor]))
+(require "utilities/utilities.rkt"
+         "utilities/class.rkt"
+         "utilities/grid.rkt"
+         "utilities/cell.rkt"
+         "utilities/floor-utils.rkt")
+(require "character.rkt"
+         "player.rkt"
+         "monsters.rkt"
+         "objects.rkt"
+         "scheduler.rkt")
 (provide (all-defined-out))
 
 (define-method (attack (attacker struct:player-character) defender)

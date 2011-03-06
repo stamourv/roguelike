@@ -1,8 +1,12 @@
 #lang racket
 
-(require "utilities.rkt" "cell.rkt" "grid.rkt" "character.rkt" "monsters.rkt"
-         "floor-utils.rkt"
-         unstable/function)
+(require unstable/function)
+(require "../utilities/utilities.rkt"
+         "../utilities/floor-utils.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/grid.rkt")
+(require "../character.rkt"
+         "../monsters.rkt")
 (provide place-encounters)
 
 (define-struct encounter-type

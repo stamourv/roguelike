@@ -1,7 +1,9 @@
 #lang racket
 
-(require "cell.rkt" "grid.rkt" "terminal.rkt" "display.rkt"
-         (rename-in racket/base [floor math-floor]))
+(require (rename-in racket/base [floor math-floor]))
+(require "utilities/cell.rkt"
+         "utilities/grid.rkt"
+         "utilities/display.rkt")
 (provide (all-defined-out))
 
 (define (init-visibility g)
@@ -182,4 +184,4 @@
                      (set-cell-occupant! cell occ)))
                   (else (print-sprite c)))) ; no enemy to hide
            ((unknown)
-            (terminal-print " "))))))))
+            (display " "))))))))

@@ -1,9 +1,19 @@
 #lang racket
 
-(require "class.rkt" "utilities.rkt" "cell.rkt" "grid.rkt" "scheduler.rkt"
-         "character.rkt" "objects.rkt" "items.rkt" "floor-utils.rkt"
-         "floor.rkt" "visibility.rkt" "common.rkt" "terminal.rkt"
-         "display.rkt")
+(require "utilities/utilities.rkt"
+         "utilities/class.rkt"
+         "utilities/cell.rkt"
+         "utilities/grid.rkt"
+         "utilities/floor-utils.rkt"
+         "utilities/terminal.rkt"
+         "utilities/display.rkt")
+(require "scheduler.rkt"
+         "character.rkt"
+         "objects.rkt"
+         "items.rkt"
+         "visibility.rkt"
+         "common.rkt")
+(require "generation/generation.rkt")
 (provide (all-defined-out))
 
 (define-class <player-character> (character)
