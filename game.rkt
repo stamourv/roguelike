@@ -7,7 +7,7 @@
 (require "common.rkt"
          "player.rkt"
          "scheduler.rkt"
-         "commands.rkt")
+         "ui.rkt")
 
 ;; some more imports, that are not necessary here, but could be for the console
 ;; (import character)
