@@ -1,10 +1,10 @@
 #lang racket
 
-(require "utilities/utilities.rkt"
-         "utilities/display.rkt")
-(require "common.rkt"
-         "objects.rkt"
-         "character.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/display.rkt")
+(require "../common.rkt"
+         "../objects.rkt"
+         "../character.rkt")
 (provide (all-defined-out))
 
 ;; TODO have generation probabilities here, not separately
