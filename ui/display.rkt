@@ -1,11 +1,11 @@
 #lang racket
 
-(require "utilities/grid.rkt"
-         "utilities/terminal.rkt")
-(require "character.rkt"
-         "player.rkt"
-         "common.rkt"
-         "visibility.rkt")
+(require "../utilities/grid.rkt"
+         "../utilities/terminal.rkt")
+(require "../character.rkt"
+         "../player.rkt"
+         "../common.rkt"
+         "../visibility.rkt")
 (provide show-state)
 
 (define (show-state)

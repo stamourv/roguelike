@@ -1,13 +1,13 @@
 #lang racket
 
 (require (only-in srfi/1 iota))
-(require "utilities/grid.rkt"
-         "utilities/terminal.rkt")
-(require "character.rkt"
-         "player.rkt"
-         "common.rkt"
-         "objects.rkt"
-         "ui-display.rkt")
+(require "../utilities/grid.rkt"
+         "../utilities/terminal.rkt")
+(require "../character.rkt"
+         "../player.rkt"
+         "../common.rkt"
+         "../objects.rkt")
+(require "display.rkt")
 (provide (all-defined-out))
 
 (define (invalid-command) (display "Invalid command.\n"))

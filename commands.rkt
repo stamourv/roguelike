@@ -10,9 +10,9 @@
          "combat.rkt"
          "objects.rkt"
          "common.rkt"
-         "visibility.rkt"
-         "ui-utils.rkt"
-         "ui-display.rkt")
+         "visibility.rkt")
+(require "ui/utilities.rkt"
+         "ui/display.rkt")
 (provide (all-defined-out))
 
 (define (inventory)

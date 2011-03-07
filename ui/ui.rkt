@@ -1,17 +1,17 @@
 #lang racket
 
-(require "utilities/class.rkt"
-         "utilities/grid.rkt"
-         "utilities/cell.rkt"
-         "utilities/floor-utils.rkt"
-         "utilities/terminal.rkt")
-(require "common.rkt"
-         "character.rkt"
-         "player.rkt"
-         "scheduler.rkt"
-         "commands.rkt"
-         "ui-utils.rkt"
-         "ui-display.rkt")
+(require "../utilities/class.rkt"
+         "../utilities/grid.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/floor-utils.rkt"
+         "../utilities/terminal.rkt")
+(require "../common.rkt"
+         "../character.rkt"
+         "../player.rkt"
+         "../scheduler.rkt"
+         "../commands.rkt")
+(require "utilities.rkt"
+         "display.rkt")
 
 (define-method (turn (p struct:player-character) reschedule?)
   (if (and (<= (character-hp player) 0)
