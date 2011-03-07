@@ -6,6 +6,9 @@
 (provide find-path)
 
 ;; simple pathfinding using A*
+;; it's currently usable only for monsters, given that it includes
+;; an anti-congestion heuristic that only makes sense for monsters
+;; this should be made generic at one point
 (define (find-path g a b)
   ;; grid of pairs (cost . previous)
   (let* ((height  (grid-height g))
