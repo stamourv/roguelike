@@ -43,7 +43,7 @@
            (- (char->integer nb)
               (char->integer #\0) 1)))))
 
-(define (choice objects f null-message question feedback reprint)
+(define (choice objects f null-message question feedback)
   (if (null? objects)
       (printf "~a\n" null-message)
       (begin   (cursor-home)
@@ -56,7 +56,7 @@
                (let ((nb (read-number (length objects))))
                  (when nb
                    (let ((object (list-ref objects nb)))
-                     (reprint)
+                     (show-state)
                      (f object)
                      (printf "~a~a.\n" feedback (object-info object))))))))
 

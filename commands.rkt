@@ -43,8 +43,7 @@
               (remove-object cell object)
               (set-player-character-inventory!
                player (cons object (player-character-inventory player))))
-            "There is nothing to pick up." "Pick up what?" "Picked up "
-            show-state)))
+            "There is nothing to pick up." "Pick up what?" "Picked up ")))
 (define (cmd-drop)
   (let ((cell    (grid-ref (player-map player) (character-pos player)))
         (objects (player-character-inventory player)))
@@ -52,8 +51,7 @@
             (lambda (object)
               (set-player-character-inventory! player (remove object objects))
               (add-object cell object))
-            "You have nothing to drop." "Drop what?" "Dropped "
-            show-state)))
+            "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip)
   (let ((e       (character-equipment player))
         (objects (filter (lambda (x) (equipable-object? x))
@@ -94,8 +92,7 @@
                     (when (and old-off (not (off-hand-placeholder? old-off)))
                       (back-in-inventory old-off))
                     (set-equipment-off-hand! e (new-off-hand-placeholder))))))
-            "You have nothing to equip." "Equip what?" "Equipped "
-            show-state)))
+            "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off)
   (let* ((e       (character-equipment player))
          (objects (filter (lambda (obj) (and obj (removable? obj)))
@@ -113,8 +110,7 @@
                      (set-equipment-torso!     e #f)))
               (set-player-character-inventory!
                player (cons object (player-character-inventory player))))
-            "You have nothing to take off." "Take off what?" "Took off "
-            show-state)))
+            "You have nothing to take off." "Take off what?" "Took off ")))
 (define (cmd-drink)
   (let* ((e       (character-equipment player))
          (objects (player-character-inventory player))
@@ -123,8 +119,7 @@
             (lambda (object)
               (set! o object)
               (set-player-character-inventory! player (remove object objects)))
-            "You have nothing to drink." "Drink what?" "Drank "
-            show-state)
+            "You have nothing to drink." "Drink what?" "Drank ")
     ;; necessary to display the messages in the right order
     (when o (drink o) (attacks-of-opportunity player))))
 
