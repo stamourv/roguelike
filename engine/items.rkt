@@ -99,7 +99,7 @@
 (define-method (drink o)          (display "I can't drink that."))
 (define-method (drink (o struct:potion))
   ((potion-thunk o))
-  (display (potion-message o))
+  (display ((potion-message o)))
   (let ((name (item-name o)))
     (when (not (member name identified-potions))
       (set! identified-potions (cons name identified-potions)))))
