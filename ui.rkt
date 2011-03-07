@@ -95,8 +95,10 @@
           ((#\l) (look grid pos) 'look)
 
           ;; debugging
-          ((#\k) (kill)    'kill) ; insta-kill a monster
-          ((#\:) (console) 'console)
+          ((#\k) (kill)       'kill) ; insta-kill a monster
+          ((#\R) (reveal-map) 'reveal-map)
+          ((#\G) (god-mode)   'god-mode)
+          ((#\:) (console)    'console)
 
           ((#\space) (display "Nothing happens.\n") 'noop)
           ((#\q)     (quit)                         'quit)
