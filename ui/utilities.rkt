@@ -6,7 +6,7 @@
 (require "../character.rkt"
          "../player.rkt"
          "../common.rkt"
-         "../objects.rkt")
+         "../items.rkt")
 (require "display.rkt")
 (provide (all-defined-out))
 

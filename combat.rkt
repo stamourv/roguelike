@@ -9,7 +9,7 @@
 (require "character.rkt"
          "player.rkt"
          "monsters.rkt"
-         "objects.rkt"
+         "items.rkt"
          "scheduler.rkt")
 (provide (all-defined-out))
 

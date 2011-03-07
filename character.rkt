@@ -4,7 +4,7 @@
          "utilities/class.rkt"
          "utilities/cell.rkt"
          "utilities/grid.rkt")
-(require "objects.rkt"
+(require "items.rkt"
          "scheduler.rkt")
 (provide (all-defined-out))
 

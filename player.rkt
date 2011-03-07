@@ -9,7 +9,7 @@
          "utilities/display.rkt")
 (require "scheduler.rkt"
          "character.rkt"
-         "objects.rkt"
+         "items.rkt"
          "visibility.rkt"
          "common.rkt")
 (require "data/items.rkt")

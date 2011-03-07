@@ -3,7 +3,7 @@
 (require "../utilities/utilities.rkt"
          "../utilities/display.rkt")
 (require "../common.rkt"
-         "../objects.rkt"
+         "../items.rkt"
          "../character.rkt")
 (provide (all-defined-out))
 

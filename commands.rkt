@@ -8,7 +8,7 @@
 (require "character.rkt"
          "player.rkt"
          "combat.rkt"
-         "objects.rkt"
+         "items.rkt"
          "common.rkt"
          "visibility.rkt")
 (require "ui/utilities.rkt"

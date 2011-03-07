@@ -9,7 +9,7 @@
 (require "data/items.rkt")
 (require "character.rkt"
          "scheduler.rkt"
-         "objects.rkt"
+         "items.rkt"
          "visibility.rkt"
          "common.rkt")
 (provide (all-defined-out))
