@@ -1,7 +1,7 @@
 #lang racket
 
-(require "utilities/utilities.rkt"
-         "utilities/class.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/class.rkt")
 (provide (all-defined-out))
 
 (define-generic turn)

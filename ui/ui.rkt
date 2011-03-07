@@ -5,11 +5,11 @@
          "../utilities/cell.rkt"
          "../utilities/floor-utils.rkt"
          "../utilities/terminal.rkt")
-(require "../common.rkt"
-         "../character.rkt"
-         "../player.rkt"
-         "../scheduler.rkt"
-         "../commands.rkt")
+(require "../engine/common.rkt"
+         "../engine/character.rkt"
+         "../engine/player.rkt"
+         "../engine/scheduler.rkt")
+(require "../commands.rkt")
 (require "utilities.rkt"
          "display.rkt")
 

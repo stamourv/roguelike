@@ -3,10 +3,10 @@
 (require (only-in srfi/1 iota))
 (require "../utilities/grid.rkt"
          "../utilities/terminal.rkt")
-(require "../character.rkt"
-         "../player.rkt"
-         "../common.rkt"
-         "../items.rkt")
+(require "../engine/character.rkt"
+         "../engine/player.rkt"
+         "../engine/common.rkt"
+         "../engine/items.rkt")
 (require "display.rkt")
 (provide (all-defined-out))
 

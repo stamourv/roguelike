@@ -1,8 +1,8 @@
 #lang racket
 
-(require "utilities/utilities.rkt"
-         "utilities/class.rkt")
-(require "data/items.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/class.rkt")
+(require "../data/items.rkt")
 (require "character.rkt"
          "scheduler.rkt"
          "common.rkt")

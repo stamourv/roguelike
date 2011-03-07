@@ -2,9 +2,9 @@
 
 (require "../utilities/class.rkt"
          "../utilities/display.rkt")
-(require "../character.rkt"
-         "../monsters.rkt"
-         "../ai.rkt")
+(require "../engine/character.rkt"
+         "../engine/monsters.rkt"
+         "../engine/ai.rkt")
 (require "items.rkt")
 
 (provide (all-defined-out))

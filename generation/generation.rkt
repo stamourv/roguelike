@@ -1,7 +1,9 @@
 #lang racket
 
 (require "../utilities/floor-utils.rkt")
-(require "dungeon.rkt" "encounters.rkt" "treasure.rkt")
+(require "dungeon.rkt"
+         "encounters.rkt"
+         "treasure.rkt")
 (provide generate-floor)
 
 (define (generate-floor no player-level [pos-stairs-up #f])

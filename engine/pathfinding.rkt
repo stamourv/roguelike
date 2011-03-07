@@ -1,7 +1,7 @@
 #lang racket
 
-(require "utilities/grid.rkt"
-         "utilities/cell.rkt")
+(require "../utilities/grid.rkt"
+         "../utilities/cell.rkt")
 (require "monsters.rkt")
 (provide find-path)
 

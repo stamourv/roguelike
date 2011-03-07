@@ -5,7 +5,7 @@
          "../utilities/floor-utils.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "../character.rkt")
+(require "../engine/character.rkt")
 (require "../data/monsters.rkt")
 (provide place-encounters)
 

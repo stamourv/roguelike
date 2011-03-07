@@ -1,9 +1,9 @@
 #lang racket
 
-(require "utilities/utilities.rkt"
-         "utilities/class.rkt"
-         "utilities/cell.rkt"
-         "utilities/grid.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/class.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/grid.rkt")
 (require "items.rkt"
          "scheduler.rkt")
 (provide (all-defined-out))

@@ -5,7 +5,7 @@
          "../utilities/floor-utils.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "../items.rkt")
+(require "../engine/items.rkt")
 (require "../data/items.rkt")
 (provide place-treasure)
 

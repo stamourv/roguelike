@@ -1,8 +1,8 @@
 #lang racket
 
-(require "utilities/utilities.rkt"
-         "utilities/class.rkt"
-         "utilities/display.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/class.rkt"
+         "../utilities/display.rkt")
 (provide (all-defined-out))
 
 (define-class <object> () name gp-value)

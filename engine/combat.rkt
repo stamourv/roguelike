@@ -1,11 +1,11 @@
 #lang racket
 
 (require (only-in racket/base [floor math-floor]))
-(require "utilities/utilities.rkt"
-         "utilities/class.rkt"
-         "utilities/grid.rkt"
-         "utilities/cell.rkt"
-         "utilities/floor-utils.rkt")
+(require "../utilities/utilities.rkt"
+         "../utilities/class.rkt"
+         "../utilities/grid.rkt"
+         "../utilities/cell.rkt"
+         "../utilities/floor-utils.rkt")
 (require "character.rkt"
          "player.rkt"
          "monsters.rkt"

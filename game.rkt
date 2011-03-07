@@ -4,19 +4,11 @@
          unstable/function)
 (require "utilities/utilities.rkt"
          "utilities/terminal.rkt")
-(require "common.rkt"
-         "player.rkt"
-         "scheduler.rkt")
+(require "engine/common.rkt"
+         "engine/player.rkt"
+         "engine/scheduler.rkt")
 (require "ui/ui.rkt")
 
-;; some more imports, that are not necessary here, but could be for the console
-;; (import character)
-;; (import monsters)
-;; (import objects)
-;; (import cell)
-;; (import grid)
-;; (import visibility) ;; TODO fix console
-;; TODO more ?
 
 (define debug #f)
 

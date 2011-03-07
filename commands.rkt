@@ -5,12 +5,12 @@
          "utilities/grid.rkt"
          "utilities/cell.rkt"
          "utilities/floor-utils.rkt")
-(require "character.rkt"
-         "player.rkt"
-         "combat.rkt"
-         "items.rkt"
-         "common.rkt"
-         "visibility.rkt")
+(require "engine/character.rkt"
+         "engine/player.rkt"
+         "engine/combat.rkt"
+         "engine/items.rkt"
+         "engine/common.rkt"
+         "engine/visibility.rkt")
 (require "ui/utilities.rkt"
          "ui/display.rkt")
 (provide (all-defined-out))

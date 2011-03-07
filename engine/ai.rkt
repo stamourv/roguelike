@@ -1,9 +1,9 @@
 #lang racket
 
-(require "utilities/cell.rkt"
-         "utilities/grid.rkt"
-         "utilities/floor-utils.rkt"
-         "utilities/display.rkt")
+(require "../utilities/cell.rkt"
+         "../utilities/grid.rkt"
+         "../utilities/floor-utils.rkt"
+         "../utilities/display.rkt")
 (require "character.rkt"
          "monsters.rkt"
          "items.rkt"

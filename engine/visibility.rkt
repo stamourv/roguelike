@@ -1,9 +1,9 @@
 #lang racket
 
 (require (rename-in racket/base [floor math-floor]))
-(require "utilities/cell.rkt"
-         "utilities/grid.rkt"
-         "utilities/display.rkt")
+(require "../utilities/cell.rkt"
+         "../utilities/grid.rkt"
+         "../utilities/display.rkt")
 (provide (all-defined-out))
 
 (define (init-visibility g)
