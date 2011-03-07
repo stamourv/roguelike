@@ -2,4 +2,4 @@ Simple Roguelike
 
 Combat system and data mostly stolen from DND 3E.
 
-Keybindings can be found in the defimnition of read-command in ui/ui.rkt.
+Keybindings can be found in the defimnition of read-command in ui/input.rkt.
