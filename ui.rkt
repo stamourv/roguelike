@@ -10,7 +10,8 @@
          "player.rkt"
          "scheduler.rkt"
          "commands.rkt"
-         "ui-utils.rkt")
+         "ui-utils.rkt"
+         "ui-display.rkt")
 
 (define-method (turn (p struct:player-character) reschedule?)
   (if (and (<= (character-hp player) 0)
