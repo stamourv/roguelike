@@ -1,15 +1,28 @@
 #lang racket
 
+(require unstable/function)
 (require "../utilities/class.rkt")
-(require "../engine/common.rkt"
-         "../engine/character.rkt"
-         "../engine/player.rkt"
-         "../engine/scheduler.rkt")
-(require "utilities.rkt"
-         "input.rkt"
-         "display.rkt")
+(require "common.rkt"
+         "character.rkt"
+         "player.rkt"
+         "scheduler.rkt")
+(require "../ui/utilities.rkt"
+         "../ui/input.rkt"
+         "../ui/display.rkt")
+(provide new-game)
 
-;; game loop
+(define (new-game player-name)
+  (new-player player-name)
+  (game-loop))
+
+(define (game-loop)
+  (reschedule player)
+  (let loop ()
+    (for-each call (find-next-active))
+    (increment-turn-no)
+    (loop)))
+
+
 (define-method (turn (p struct:player-character) reschedule?)
   (if (and (<= (character-hp player) 0)
 	   (not (unbox god-mode?))) ; for debugging
