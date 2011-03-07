@@ -12,7 +12,8 @@
          "scheduler.rkt"
          "objects.rkt"
          "visibility.rkt"
-         "combat.rkt")
+         "combat.rkt"
+         "ui-utils.rkt")
 
 (define-method (turn (p struct:player-character) reschedule?)
   (if (and (<= (character-hp player) 0)
@@ -43,9 +44,6 @@
         ;; TODO call-next-method, especially with multiple attack handling
 	(when reschedule? (reschedule player)))))
 
-
-;; commands
-(define (invalid-command) (display "Invalid command.\n"))
 
 (define (read-command)
   ;; TODO define all this inside a macro, so that a description can be
@@ -105,71 +103,6 @@
           (else      (invalid-command)              'invalid)))))
 ;; TODO have a README with all that...
 
-(define (choose-direction)
-  (if (= (char->integer (read-char)) 27) ; escape
-      (case (which-direction?)
-        ((up)    up)
-        ((down)  down)
-        ((left)  left)
-        ((right) right))
-      (begin (invalid-command)
-             #f)))
-
-(define (which-direction?)
-  (when (not (eq? (read-char) #\[))
-    (invalid-command))
-  (case (read-char)
-    ((#\A) 'up)
-    ((#\B) 'down)
-    ((#\C) 'right)
-    ((#\D) 'left)
-    (else  (invalid-command))))
-
-(define (read-number n) ; read a number up to n, or q to cancel
-  (let loop ((nb (read-char)))
-    (cond ((eq? nb #\q)
-           #f) ; cancel
-          ((not (and (char>=? nb #\1)
-                     (<= (- (char->integer nb) (char->integer #\0)) n)))
-           (loop (read-char)))
-          (else
-           (- (char->integer nb)
-              (char->integer #\0) 1)))))
-
-(define (choice objects f null-message question feedback)
-  (if (null? objects)
-      (printf "~a\n" null-message)
-      (begin   (cursor-home)
-               (clear-to-bottom)
-               (printf "~a\nq: Cancel\n" question)
-               (for-each (lambda (o i)
-                           (printf "~a: ~a\n" (+ i 1) (object-info o)))
-                         objects
-                         (iota (length objects)))
-               (let ((nb (read-number (length objects))))
-                 (when nb
-                   (let ((object (list-ref objects nb)))
-                     (show-state)
-                     (f object)
-                     (printf "~a~a.\n" feedback (object-info object))))))))
-
-(define (direction-command name f)
-  (clear-to-bottom)
-  (printf "~a in which direction? " name)
-  (flush-output) ;; TODO may be necessary elsewhere
-  (let ((dir (choose-direction))) ; evaluates to a function, or #f
-    (when dir
-      (let* ((grid (player-map player))
-             (cell (grid-ref grid (dir (character-pos player)))))
-        (f grid cell player)))))
-
-;; console from which arbitrary expressions can be evaluated
-(define (console)
-  (restore-tty)
-  (display ": ")
-  (display (eval (read))) ;; TODO not sure this is going to work...
-  (read-char)
-  (intercept-tty))
 
 ;; for debugging
 (define (reveal-map)
@@ -249,7 +182,8 @@
               (remove-object cell object)
               (set-player-character-inventory!
                player (cons object (player-character-inventory player))))
-            "There is nothing to pick up." "Pick up what?" "Picked up ")))
+            "There is nothing to pick up." "Pick up what?" "Picked up "
+            show-state)))
 (define (cmd-drop)
   (let ((cell    (grid-ref (player-map player) (character-pos player)))
         (objects (player-character-inventory player)))
@@ -257,7 +191,8 @@
             (lambda (object)
               (set-player-character-inventory! player (remove object objects))
               (add-object cell object))
-            "You have nothing to drop." "Drop what?" "Dropped ")))
+            "You have nothing to drop." "Drop what?" "Dropped "
+            show-state)))
 (define (equip)
   (let ((e       (character-equipment player))
         (objects (filter (lambda (x) (equipable-object? x))
@@ -298,7 +233,8 @@
                     (when (and old-off (not (off-hand-placeholder? old-off)))
                       (back-in-inventory old-off))
                     (set-equipment-off-hand! e (new-off-hand-placeholder))))))
-            "You have nothing to equip." "Equip what?" "Equipped ")))
+            "You have nothing to equip." "Equip what?" "Equipped "
+            show-state)))
 (define (take-off)
   (let* ((e       (character-equipment player))
          (objects (filter (lambda (obj) (and obj (removable? obj)))
@@ -316,7 +252,8 @@
                      (set-equipment-torso!     e #f)))
               (set-player-character-inventory!
                player (cons object (player-character-inventory player))))
-            "You have nothing to take off." "Take off what?" "Took off ")))
+            "You have nothing to take off." "Take off what?" "Took off "
+            show-state)))
 
 (define (cmd-drink)
   (let* ((e       (character-equipment player))
@@ -326,7 +263,8 @@
             (lambda (object)
               (set! o object)
               (set-player-character-inventory! player (remove object objects)))
-            "You have nothing to drink." "Drink what?" "Drank ")
+            "You have nothing to drink." "Drink what?" "Drank "
+            show-state)
     ;; necessary to display the messages in the right order
     (when o (drink o) (attacks-of-opportunity player))))
 
