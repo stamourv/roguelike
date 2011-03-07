@@ -3,7 +3,8 @@
 (require "../utilities/class.rkt"
          "../utilities/display.rkt")
 (require "../character.rkt"
-         "../monsters.rkt")
+         "../monsters.rkt"
+         "../ai.rkt")
 (require "items.rkt")
 
 (provide (all-defined-out))
