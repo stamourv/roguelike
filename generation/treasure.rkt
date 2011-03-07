@@ -47,14 +47,14 @@
 			       (foldl
 				min
 				treasure-cap
-				(map (lambda (i) (object-gp-value ((cdr i))))
+				(map (lambda (i) (item-gp-value ((cdr i))))
 				     (apply append
 					    (map cdr treasure-table)))))))
     (map (lambda (cat)
 	   ;; keep only the items that respect the conditions
 	   (let* ((new-items
 		   (filter (lambda (i)
-			     (let ((value (object-gp-value ((cdr i)))))
+			     (let ((value (item-gp-value ((cdr i)))))
 			       (and (>= value treasure-bottom)
 				    (<= value treasure-cap))))
 			   (cdr cat)))
@@ -72,7 +72,7 @@
 	 (possible        (possible-treasure no))
 	 (actual-bottom (foldl min ; lowest value of the possible treasure
                                treasure-points ; generous upper bound
-                               (map (lambda (i) (object-gp-value ((cdr i))))
+                               (map (lambda (i) (item-gp-value ((cdr i))))
                                     (apply append
                                            (map cdr possible))))))
     (when (andmap (lambda (new) (null? (cdr new))) possible)
@@ -82,7 +82,7 @@
       (if (>= pts actual-bottom)
 	  (let* ((cat   (random-choice possible))
 		 (item  (if (null? cat) #f ((random-choice cat))))
-		 (value (if item (object-gp-value item) #f)))
+		 (value (if item (item-gp-value item) #f)))
 	    (if (and value (<= value pts))
 		(loop (- pts value) (cons item items))
 		(loop pts items))) ; try something else
@@ -104,8 +104,8 @@
                   floor (remove pos (floor-walkable-cells floor)))
                  (loop (cdr chests))]))))
     ;; fill the chests
-    (for-each (lambda (item) (add-object (random-element chests) item))
+    (for-each (lambda (item) (add-item (random-element chests) item))
 	      (generate-treasure no))))
 
 ;; for debugging purposes
-(define (show-treasure no) (map object-name (generate-treasure no)))
+(define (show-treasure no) (map item-name (generate-treasure no)))

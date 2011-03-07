@@ -4,13 +4,13 @@
 (provide (all-defined-out))
 
 (define-class <cell> ()
-  objects
+  items
   occupant) ; player, monster, ...
 
-(define (add-object cell object)
-  (set-cell-objects! cell (cons object (cell-objects cell))))
-(define (remove-object cell object)
-  (set-cell-objects! cell (remove object (cell-objects cell))))
+(define (add-item cell item)
+  (set-cell-items! cell (cons item (cell-items cell))))
+(define (remove-item cell item)
+  (set-cell-items! cell (remove item (cell-items cell))))
 
 (define-generic walkable-cell?)
 (define-method (walkable-cell? c) #f)
@@ -26,8 +26,8 @@
 (define (walkable-cell-show cell char)
   (cond ((cell-occupant cell)
 	 => show)
-	((not (null? (cell-objects cell)))
-	 (show (car (cell-objects cell))))
+	((not (null? (cell-items cell)))
+	 (show (car (cell-items cell))))
 	(else char)))
 
 ;; what the level initially starts as

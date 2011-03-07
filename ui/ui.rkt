@@ -109,11 +109,11 @@
   (display "Equipment:\n")
   (for-each-equipped
    (lambda (obj where)
-     (printf "~a~a\n" where (if obj (object-info obj) "")))
+     (printf "~a~a\n" where (if obj (item-info obj) "")))
    (character-equipment player))
   (printf "\nAC: ~a\n" (get-armor-class player))
   (display "\nInventory:\n")
-  (for-each (lambda (o) (printf "~a\n" (object-info o)))
+  (for-each (lambda (o) (printf "~a\n" (item-info o)))
             (player-character-inventory player))
   (let loop ((c #f))
     (case c

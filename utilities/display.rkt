@@ -3,7 +3,7 @@
 (require "class.rkt" "terminal.rkt")
 (provide (all-defined-out))
 
-(define-generic show) ; used for objects, cells, etc.
+(define-generic show) ; used for items, cells, etc.
 (define-method (show o) #\space)
 
 (define-generic print-sprite)

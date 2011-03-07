@@ -43,22 +43,22 @@
            (- (char->integer nb)
               (char->integer #\0) 1)))))
 
-(define (choice objects f null-message question feedback)
-  (if (null? objects)
+(define (choice items f null-message question feedback)
+  (if (null? items)
       (printf "~a\n" null-message)
       (begin   (cursor-home)
                (clear-to-bottom)
                (printf "~a\nq: Cancel\n" question)
                (for-each (lambda (o i)
-                           (printf "~a: ~a\n" (+ i 1) (object-info o)))
-                         objects
-                         (iota (length objects)))
-               (let ((nb (read-number (length objects))))
+                           (printf "~a: ~a\n" (+ i 1) (item-info o)))
+                         items
+                         (iota (length items)))
+               (let ((nb (read-number (length items))))
                  (when nb
-                   (let ((object (list-ref objects nb)))
+                   (let ((item (list-ref items nb)))
                      (show-state)
-                     (f object)
-                     (printf "~a~a.\n" feedback (object-info object))))))))
+                     (f item)
+                     (printf "~a~a.\n" feedback (item-info item))))))))
 
 (define (direction-command name f)
   (clear-to-bottom)

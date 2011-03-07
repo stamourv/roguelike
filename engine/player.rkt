@@ -22,7 +22,7 @@
   current-floor
   floors-after
   experience
-  inventory) ; list of objects
+  inventory) ; list of items
 (define (new-player name) ;; TODO constructor ?
   (set-player!
    (make-player-character

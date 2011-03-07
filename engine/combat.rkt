@@ -108,7 +108,7 @@
     ;; drop equipment with a certain probability TODO TWEAK
     (for-each-equipped (lambda (obj where)
 			 (when (and obj (removable? obj) (random-boolean 0.3))
-                           (add-object cell obj)))
+                           (add-item cell obj)))
 		       (character-equipment monster))
     ;; remove the monster
     (set-cell-occupant! cell #f)

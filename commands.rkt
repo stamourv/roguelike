@@ -17,47 +17,47 @@
 
 (define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-ref (player-map player) pos))
-         (objects (cell-objects cell)))
-    (choice objects
-            (lambda (object)
-              (remove-object cell object)
+         (items (cell-items cell)))
+    (choice items
+            (lambda (item)
+              (remove-item cell item)
               (set-player-character-inventory!
-               player (cons object (player-character-inventory player))))
+               player (cons item (player-character-inventory player))))
             "There is nothing to pick up." "Pick up what?" "Picked up ")))
 (define (cmd-drop)
   (let ((cell    (grid-ref (player-map player) (character-pos player)))
-        (objects (player-character-inventory player)))
-    (choice objects
-            (lambda (object)
-              (set-player-character-inventory! player (remove object objects))
-              (add-object cell object))
+        (items (player-character-inventory player)))
+    (choice items
+            (lambda (item)
+              (set-player-character-inventory! player (remove item items))
+              (add-item cell item))
             "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip)
   (let ((e       (character-equipment player))
-        (objects (filter (lambda (x) (equipable-object? x))
+        (items (filter (lambda (x) (equipable-item? x))
                          (player-character-inventory player))))
-    (choice objects
-            (lambda (object)
+    (choice items
+            (lambda (item)
               ;; TODO macro?
-              (let* ((place (cond ((weapon?     object) 'main-hand)
-                                  ((shield?     object) 'off-hand)
-                                  ((body-armor? object) 'torso)))
+              (let* ((place (cond ((weapon?     item) 'main-hand)
+                                  ((shield?     item) 'off-hand)
+                                  ((body-armor? item) 'torso)))
                      (old   ((case place
                                ((main-hand) equipment-main-hand)
                                ((off-hand)  equipment-off-hand)
                                ((torso)     equipment-torso))
                              e)))
                 (define (back-in-inventory o)
-                  (printf "Put ~a back in inventory.\n" (object-name o))
+                  (printf "Put ~a back in inventory.\n" (item-name o))
                   (set-player-character-inventory!
                    player (cons o (player-character-inventory player))))
                 (set-player-character-inventory!
-                 player (remove object objects))
+                 player (remove item items))
                 ((case place
                    ((main-hand) set-equipment-main-hand!)
                    ((off-hand)  set-equipment-off-hand!)
                    ((torso)     set-equipment-torso!))
-                 e object)
+                 e item)
                 ;; TODO generalize with all non-removable items
                 (cond ((and old (not (off-hand-placeholder? old)))
                        (back-in-inventory old))
@@ -67,7 +67,7 @@
                        ;; we have to remove the two-handed weapon itself
                        (back-in-inventory (equipment-main-hand e))
                        (set-equipment-main-hand! e #f)))
-                (when (two-handed-weapon? object)
+                (when (two-handed-weapon? item)
                   (let ((old-off (equipment-off-hand e)))
                     (when (and old-off (not (off-hand-placeholder? old-off)))
                       (back-in-inventory old-off))
@@ -75,30 +75,30 @@
             "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off)
   (let* ((e       (character-equipment player))
-         (objects (filter (lambda (obj) (and obj (removable? obj)))
+         (items (filter (lambda (obj) (and obj (removable? obj)))
                           (map car (equipment->list e)))))
-    (choice objects
-            (lambda (object)
-              (cond ((weapon?     object)
+    (choice items
+            (lambda (item)
+              (cond ((weapon?     item)
                      (set-equipment-main-hand! e #f)
-                     (when (two-handed-weapon? object)
+                     (when (two-handed-weapon? item)
                        ;; remove the placeholder
                        (set-equipment-off-hand! e #f)))
-                    ((shield?     object)
+                    ((shield?     item)
                      (set-equipment-off-hand!  e #f))
-                    ((body-armor? object)
+                    ((body-armor? item)
                      (set-equipment-torso!     e #f)))
               (set-player-character-inventory!
-               player (cons object (player-character-inventory player))))
+               player (cons item (player-character-inventory player))))
             "You have nothing to take off." "Take off what?" "Took off ")))
 (define (cmd-drink)
   (let* ((e       (character-equipment player))
-         (objects (player-character-inventory player))
+         (items (player-character-inventory player))
          (o       #f))
-    (choice objects
-            (lambda (object)
-              (set! o object)
-              (set-player-character-inventory! player (remove object objects)))
+    (choice items
+            (lambda (item)
+              (set! o item)
+              (set-player-character-inventory! player (remove item items)))
             "You have nothing to drink." "Drink what?" "Drank ")
     ;; necessary to display the messages in the right order
     (when o (drink o) (attacks-of-opportunity player))))
@@ -223,13 +223,13 @@
 
 (define (info grid pos)
   ;; TODO show a message about the location, occupant first (unless player),
-  ;;  objects then, finally terrain
+  ;;  items then, finally terrain
   (let ((cell (grid-ref grid pos)))
     (cond ((let ((occ (cell-occupant cell)))
              (and occ (not (player-character? occ)) occ))
            => (lambda (occ) (display (character-name occ))))
-          ;;        ((car (cell-objects cell))
-          ;;         => (lambda (obj) (display (object-name obj))))
+          ;;        ((car (cell-items cell))
+          ;;         => (lambda (obj) (display (item-name obj))))
           ;; TODO broken. + add monsters
           (else
            (display "Nothing to see here.")))))

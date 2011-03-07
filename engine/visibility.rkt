@@ -164,7 +164,7 @@
 				     make-vertical-wall)
 				    (else
 				     make-west-tee-wall))))
-		       (cell-objects cell) (cell-occupant cell))
+		       (cell-items cell) (cell-occupant cell))
 		      cell))] ;; TODO use wall-smoothing instead
        (let ((c (show cell)))
          (case (grid-ref view pos)
