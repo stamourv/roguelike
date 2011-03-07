@@ -3,8 +3,7 @@
 (require (only-in srfi/1 iota))
 (require "utilities/terminal.rkt"
          "utilities/grid.rkt"
-         "utilities/cell.rkt"
-         "utilities/floor-utils.rkt")
+         "utilities/cell.rkt")
 (require "engine/character.rkt"
          "engine/player.rkt"
          "engine/combat.rkt"
@@ -15,126 +14,42 @@
          "ui/display.rkt")
 (provide (all-defined-out))
 
-(define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
-  (let* ((cell    (grid-ref (player-map player) pos))
+(define (pick-up)
+  (let* ((cell    (grid-ref (player-map player) (character-pos player)))
          (items (cell-items cell)))
-    (choice items
-            (lambda (item)
-              (remove-item cell item)
-              (set-player-character-inventory!
-               player (cons item (player-character-inventory player))))
+    (choice items inventory-pick-up
             "There is nothing to pick up." "Pick up what?" "Picked up ")))
 (define (cmd-drop)
-  (let ((cell    (grid-ref (player-map player) (character-pos player)))
-        (items (player-character-inventory player)))
-    (choice items
-            (lambda (item)
-              (set-player-character-inventory! player (remove item items))
-              (add-item cell item))
+  (let ([items (player-character-inventory player)])
+    (choice items inventory-drop
             "You have nothing to drop." "Drop what?" "Dropped ")))
 (define (equip)
-  (let ((e       (character-equipment player))
-        (items (filter (lambda (x) (equipable-item? x))
-                         (player-character-inventory player))))
-    (choice items
-            (lambda (item)
-              ;; TODO macro?
-              (let* ((place (cond ((weapon?     item) 'main-hand)
-                                  ((shield?     item) 'off-hand)
-                                  ((body-armor? item) 'torso)))
-                     (old   ((case place
-                               ((main-hand) equipment-main-hand)
-                               ((off-hand)  equipment-off-hand)
-                               ((torso)     equipment-torso))
-                             e)))
-                (define (back-in-inventory o)
-                  (printf "Put ~a back in inventory.\n" (item-name o))
-                  (set-player-character-inventory!
-                   player (cons o (player-character-inventory player))))
-                (set-player-character-inventory!
-                 player (remove item items))
-                ((case place
-                   ((main-hand) set-equipment-main-hand!)
-                   ((off-hand)  set-equipment-off-hand!)
-                   ((torso)     set-equipment-torso!))
-                 e item)
-                ;; TODO generalize with all non-removable items
-                (cond ((and old (not (off-hand-placeholder? old)))
-                       (back-in-inventory old))
-                      ((two-handed-weapon? old)
-                       (set-equipment-off-hand! e #f)) ; remove the placeholder
-                      ((off-hand-placeholder? old)
-                       ;; we have to remove the two-handed weapon itself
-                       (back-in-inventory (equipment-main-hand e))
-                       (set-equipment-main-hand! e #f)))
-                (when (two-handed-weapon? item)
-                  (let ((old-off (equipment-off-hand e)))
-                    (when (and old-off (not (off-hand-placeholder? old-off)))
-                      (back-in-inventory old-off))
-                    (set-equipment-off-hand! e (new-off-hand-placeholder))))))
+  (let ([items (filter (lambda (x) (equipable-item? x))
+                       (player-character-inventory player))])
+    (choice items inventory-equip
             "You have nothing to equip." "Equip what?" "Equipped ")))
 (define (take-off)
-  (let* ((e       (character-equipment player))
-         (items (filter (lambda (obj) (and obj (removable? obj)))
-                          (map car (equipment->list e)))))
-    (choice items
-            (lambda (item)
-              (cond ((weapon?     item)
-                     (set-equipment-main-hand! e #f)
-                     (when (two-handed-weapon? item)
-                       ;; remove the placeholder
-                       (set-equipment-off-hand! e #f)))
-                    ((shield?     item)
-                     (set-equipment-off-hand!  e #f))
-                    ((body-armor? item)
-                     (set-equipment-torso!     e #f)))
-              (set-player-character-inventory!
-               player (cons item (player-character-inventory player))))
+  (let* ([e     (character-equipment player)]
+         [items (filter (lambda (obj) (and obj (removable? obj)))
+                        (map car (equipment->list e)))])
+    (choice items inventory-take-off
             "You have nothing to take off." "Take off what?" "Took off ")))
 (define (cmd-drink)
-  (let* ((e       (character-equipment player))
-         (items (player-character-inventory player))
-         (o       #f))
-    (choice items
-            (lambda (item)
-              (set! o item)
-              (set-player-character-inventory! player (remove item items)))
+  (let* ([e     (character-equipment player)]
+         [items (filter potion? ; currently, we can only drink potions
+                        (player-character-inventory player))]
+         [o     #f])
+    (choice items (lambda (item) (set! o item) (inventory-remove item))
             "You have nothing to drink." "Drink what?" "Drank ")
     ;; necessary to display the messages in the right order
-    (when o (drink o) (attacks-of-opportunity player))))
+    (when o (drink-action o player))))
 
 
 (define (climb-stairs)
   (let ((cell (grid-ref (player-map player) (character-pos player))))
-    (let ((current      (player-character-current-floor player))
-          (before       (player-character-floors-before player))
-          (after        (player-character-floors-after  player)))
-      (cond ((stairs-up? cell)
-             (cond ((not (null? before))
-                    (let ((new (car before)))
-                      (place-player
-                       player new
-                       #:start-pos (floor-stairs-down
-                                    (player-floor-floor new)))
-                      (set-player-character-floor-no!
-                       player (sub1 (player-character-floor-no player)))
-                      (set-player-character-floors-after!
-                       player (cons current after))
-                      (set-player-character-floors-before!
-                       player (cdr before))))
-                   (else (display "This would lead to the surface.\n"))))
-            ((stairs-down? cell)
-             (set-player-character-floor-no!
-              player (add1 (player-character-floor-no player)))
-             (set-player-character-floors-before! player (cons current before))
-             (if (null? after)
-                 (place-player player
-                               (new-player-floor
-                                (player-character-floor-no player)))
-                 (begin (place-player player (car after))
-                        (set-player-character-floors-after!
-                         player (cdr after)))))
-            (else (display "There are no stairs here.\n"))))))
+    (cond [(stairs-up? cell)   (go-up-stairs)]
+          [(stairs-down? cell) (go-down-stairs)]
+          [else (display "There are no stairs here.\n")])))
 
 (define (cmd-open)  (direction-command "Open"  open))
 (define (cmd-close) (direction-command "Close" close))
@@ -143,14 +58,7 @@
 (define (shoot)
   (let* ((grid    (player-map player))
          (weapon  (equipment-main-hand (character-equipment player)))
-         (targets (filter (lambda (m)
-                            (and (eq? (grid-ref (player-view player)
-                                                (character-pos m))
-                                      'visible)
-                                 (clear-shot? grid
-                                              (character-pos player)
-                                              (character-pos m))))
-                          (floor-monsters (character-floor player))))
+         (targets (available-targets player))
          (n       (length targets)))
     (cond
      ((not (ranged-weapon? weapon))
@@ -191,7 +99,8 @@
           (when nb (ranged-attack player (list-ref targets nb)))))))))
 
 
-(define (kill) ; insta-kill something, for debugging purposes
+;; for debugging purposes
+(define (kill) ; insta-kill something
   (direction-command "Kill"
                      (lambda (grid cell player)
                        (cond ((cell-occupant cell)
@@ -201,13 +110,9 @@
                                    (remove-monster occ)))
                              (else (display
                                     "There is nothing to kill there.\n"))))))
-
-
-;; for debugging
 (define (reveal-map)
   (let ((view (player-view player)))
-    (grid-for-each (lambda (p) (grid-set! view p 'visited))
-                   view)))
+    (grid-for-each (lambda (p) (grid-set! view p 'visited)) view)))
 (define (god-mode)
   (reveal-map)
   (set-box! god-mode? #t))

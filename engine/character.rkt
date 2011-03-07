@@ -131,6 +131,9 @@
 
 (define-generic attack) ;; TODO call-next-method
 (define-generic ranged-attack)
+;; for ranged attacks. returns a list of characters
+(define-generic available-targets)
+
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns #t if it actually moved

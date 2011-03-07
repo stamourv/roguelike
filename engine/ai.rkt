@@ -76,12 +76,10 @@
        (when (not (ranged-weapon? (equipment-main-hand
                                    (character-equipment monster))))
          (error "monster " monster " has no ranged weapon"))
-       (let ((pos (character-pos monster)) ;; TODO have that in a macro
-	     (map (floor-map (character-floor monster))))
-         ;; TODO not very interesting for the moment
-	 (if (clear-shot? map pos player-pos)
-	     (ranged-attack monster (cell-occupant (grid-ref map player-pos)))
-	     #f)))))) ;; stay there
+       ;; TODO have these monsters move a bit, esp. if they saw the player
+       (let ([targets (available-targets monster)])
+         (when (not (null? targets))
+           (ranged-attack monster (car targets))))))))
 
 
 (define (move-or-increment-idle map monster dest)

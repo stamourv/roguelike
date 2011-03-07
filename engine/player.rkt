@@ -37,7 +37,7 @@
     (new-equipment #:main-hand (new-club))
     ;; player-character attributes:
     1 '() #f '()
-    0 '()))
+    0 (list)))
   (init-hp player #t) ; the player gets maxed out hp
   (place-player player (new-player-floor (player-character-floor-no player))))
 (define-method (show (p struct:player-character)) #\@)
@@ -178,3 +178,101 @@
     (when (= (modulo old-level 5) 0) ; 6, 11, ...
       ;; add a new attack
       (set-character-nb-attacks! player (+ (character-nb-attacks player) 1)))))
+
+
+;; inventory actions
+(define (inventory-pick-up item)
+  (remove-item (grid-ref (player-map player) (character-pos player))
+               item)
+  (set-player-character-inventory!
+   player (cons item (player-character-inventory player))))
+(define (inventory-drop item)
+  (set-player-character-inventory!
+   player (remove item (player-character-inventory player)))
+  (add-item (grid-ref (player-map player) (character-pos player))
+            item))
+(define (inventory-equip item)
+  ;; TODO macro?
+  (let* ([place (cond ((weapon?     item) 'main-hand)
+                      ((shield?     item) 'off-hand)
+                      ((body-armor? item) 'torso))]
+         [e     (character-equipment player)]
+         [old   ((case place
+                   ((main-hand) equipment-main-hand)
+                   ((off-hand)  equipment-off-hand)
+                   ((torso)     equipment-torso))
+                 e)])
+    (define (back-in-inventory o) ;; TODO move back into UI
+      (printf "Put ~a back in inventory.\n" (item-name o))
+      (set-player-character-inventory!
+       player (cons o (player-character-inventory player))))
+    (set-player-character-inventory!
+     player (remove item (player-character-inventory player)))
+    ((case place
+       ((main-hand) set-equipment-main-hand!)
+       ((off-hand)  set-equipment-off-hand!)
+       ((torso)     set-equipment-torso!))
+     e item)
+    ;; TODO generalize with all non-removable items
+    (cond ((and old (not (off-hand-placeholder? old)))
+           (back-in-inventory old))
+          ((two-handed-weapon? old)
+           (set-equipment-off-hand! e #f)) ; remove the placeholder
+          ((off-hand-placeholder? old)
+           ;; we have to remove the two-handed weapon itself
+           (back-in-inventory (equipment-main-hand e))
+           (set-equipment-main-hand! e #f)))
+    (when (two-handed-weapon? item)
+      (let ((old-off (equipment-off-hand e)))
+        (when (and old-off (not (off-hand-placeholder? old-off)))
+          (back-in-inventory old-off))
+        (set-equipment-off-hand! e (new-off-hand-placeholder))))))
+(define (inventory-take-off item)
+  (let ([e (character-equipment player)])
+    (cond ((weapon?     item)
+           (set-equipment-main-hand! e #f)
+           (when (two-handed-weapon? item)
+             ;; remove the placeholder
+             (set-equipment-off-hand! e #f)))
+          ((shield?     item)
+           (set-equipment-off-hand!  e #f))
+          ((body-armor? item)
+           (set-equipment-torso!     e #f)))
+    (set-player-character-inventory!
+     player (cons item (player-character-inventory player)))))
+(define (inventory-remove item)
+  (set-player-character-inventory!
+   player (remove item (player-character-inventory player))))
+
+
+(define (go-up-stairs)
+  (let ([current (player-character-current-floor player)]
+        [before  (player-character-floors-before player)]
+        [after   (player-character-floors-after  player)])
+    (cond [(not (null? before))
+           (let ([new (car before)])
+             (place-player
+              player new
+              #:start-pos (floor-stairs-down
+                           (player-floor-floor new)))
+             (set-player-character-floor-no!
+              player (sub1 (player-character-floor-no player)))
+             (set-player-character-floors-after!
+              player (cons current after))
+             (set-player-character-floors-before!
+              player (cdr before)))]
+          [else (display "This would lead to the surface.\n")])))
+(define (go-down-stairs)
+  (let ([current (player-character-current-floor player)]
+        [before  (player-character-floors-before player)]
+        [after   (player-character-floors-after  player)])
+    (set-player-character-floor-no!
+     player (add1 (player-character-floor-no player)))
+    (set-player-character-floors-before! player (cons current before))
+    (if (null? after)
+        (place-player player
+                      (new-player-floor
+                       (player-character-floor-no player)))
+        (begin (place-player player (car after))
+               (set-player-character-floors-after!
+                player (cdr after))))))

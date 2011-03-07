@@ -9,8 +9,10 @@
 (require "character.rkt"
          "player.rkt"
          "monsters.rkt"
+         "common.rkt"
          "items.rkt"
-         "scheduler.rkt")
+         "scheduler.rkt"
+         "visibility.rkt")
 (provide (all-defined-out))
 
 (define-method (attack (attacker struct:player-character) defender)
@@ -43,7 +45,6 @@
 (define-method (ranged-attack (attacker struct:monster)
                               (defender struct:monster))
   #f)
-
 
 (define (get-damage c)
   (let ((weapon (equipment-main-hand (character-equipment c))))
@@ -114,3 +115,25 @@
     (set-cell-occupant! cell #f)
     (set-floor-monsters! floor (remove monster (floor-monsters floor)))
     (add-monster-experience monster)))
+
+
+(define-method (available-targets (shooter struct:player-character))
+  (filter (lambda (m)
+            (and (eq? (grid-ref (player-view player)
+                                (character-pos m))
+                      'visible)
+                 (clear-shot? (player-map player)
+                              (character-pos player)
+                              (character-pos m))))
+          (floor-monsters (character-floor player))))
+(define-method (available-targets (shooter struct:monster))
+  (let ((pos (character-pos shooter))
+        (map (floor-map (character-floor shooter))))
+    (if (clear-shot? map pos (character-pos player))
+        (list player)
+        '())))
+
+
+(define (drink-action item user)
+  (drink item)
+  (attacks-of-opportunity user))
