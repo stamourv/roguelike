@@ -67,8 +67,6 @@
      ([(list up down left right up-left down-left up-right down-right)
        (eight-directions pos)])
      (let [(cell  (if (or (four-corner-wall? cell) (tee-wall? cell))
-                      ;; TODO looks a lot like the last pass of dungeon
-                      ;;  generation, abstract ?
 		      ((cond ((four-corner-wall? cell)
 			      (cond ((or (>= (+ (if (visited? up-left)    1 0)
                                                 (if (visited? up-right)   1 0)
@@ -165,7 +163,7 @@
 				    (else
 				     make-west-tee-wall))))
 		       (cell-items cell) (cell-occupant cell))
-		      cell))] ;; TODO use wall-smoothing instead
+		      cell))]
        (let ((c (show cell)))
          (case (grid-ref view pos)
            ((visible)
