@@ -15,27 +15,6 @@
          "ui/display.rkt")
 (provide (all-defined-out))
 
-(define (inventory)
-  (cursor-home)
-  (clear-to-bottom)
-  (display "Equipment:\n")
-  (for-each-equipped
-   (lambda (obj where)
-     (printf "~a~a\n" where (if obj (object-info obj) "")))
-   (character-equipment player))
-  (printf "\nAC: ~a\n" (get-armor-class player))
-  (display "\nInventory:\n")
-  (for-each (lambda (o) (printf "~a\n" (object-info o)))
-            (player-character-inventory player))
-  (let loop ((c #f))
-    (case c
-      ((#\e) (equip))
-      ((#\r) (take-off))
-      ((#\d) (cmd-drop))
-      ((#\q) #f)
-      (else (display "\ne: Equip\nr: Take off\nd: Drop\nq: Cancel\n")
-            (loop (read-char)))))
-  (clear-to-bottom))
 (define (pick-up pos) ;; TODO pos can be useful if we can pick up at a distance
   (let* ((cell    (grid-ref (player-map player) pos))
          (objects (cell-objects cell)))

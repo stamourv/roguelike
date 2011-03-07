@@ -8,7 +8,8 @@
 (require "../engine/common.rkt"
          "../engine/character.rkt"
          "../engine/player.rkt"
-         "../engine/scheduler.rkt")
+         "../engine/scheduler.rkt"
+         "../engine/items.rkt")
 (require "../commands.rkt")
 (require "utilities.rkt"
          "display.rkt")
@@ -100,7 +101,29 @@
           ((#\space) (display "Nothing happens.\n") 'noop)
           ((#\q)     (quit)                         'quit)
           (else      (invalid-command)              'invalid)))))
-;; TODO have a README with all that...
+
+
+(define (inventory)
+  (cursor-home)
+  (clear-to-bottom)
+  (display "Equipment:\n")
+  (for-each-equipped
+   (lambda (obj where)
+     (printf "~a~a\n" where (if obj (object-info obj) "")))
+   (character-equipment player))
+  (printf "\nAC: ~a\n" (get-armor-class player))
+  (display "\nInventory:\n")
+  (for-each (lambda (o) (printf "~a\n" (object-info o)))
+            (player-character-inventory player))
+  (let loop ((c #f))
+    (case c
+      ((#\e) (equip))
+      ((#\r) (take-off))
+      ((#\d) (cmd-drop))
+      ((#\q) #f)
+      (else (display "\ne: Equip\nr: Take off\nd: Drop\nq: Cancel\n")
+            (loop (read-char)))))
+  (clear-to-bottom))
 
 
 (define (quit)
