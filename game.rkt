@@ -7,7 +7,7 @@
 
 (define debug #f)
 
-(when (not debug) (intercept-tty)) ;; TODO wrap that in exception handler
+(when (not debug) (intercept-tty))
 
 ;; strangely, clear-to-bottom does not clear the bottom of the screen as it
 ;; should

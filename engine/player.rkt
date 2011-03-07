@@ -202,7 +202,7 @@
                    ((off-hand)  equipment-off-hand)
                    ((torso)     equipment-torso))
                  e)])
-    (define (back-in-inventory o) ;; TODO move back into UI
+    (define (back-in-inventory o)
       (printf "Put ~a back in inventory.\n" (item-name o))
       (set-player-character-inventory!
        player (cons o (player-character-inventory player))))
