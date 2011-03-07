@@ -5,8 +5,8 @@
          "../utilities/floor-utils.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "../character.rkt"
-         "../monsters.rkt")
+(require "../character.rkt")
+(require "../data/monsters.rkt")
 (provide place-encounters)
 
 (define-struct encounter-type
