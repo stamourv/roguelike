@@ -2,7 +2,7 @@
 
 (require "../utilities/cell.rkt"
          "../utilities/grid.rkt"
-         "../utilities/floor-utils.rkt"
+         "../utilities/floor.rkt"
          "../utilities/display.rkt")
 (require "character.rkt"
          "monsters.rkt"

@@ -3,7 +3,7 @@
 (require "../utilities/class.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt"
-         "../utilities/floor-utils.rkt"
+         "../utilities/floor.rkt"
          "../utilities/terminal.rkt"
          "../utilities/display.rkt")
 (require "scheduler.rkt"

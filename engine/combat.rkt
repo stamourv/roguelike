@@ -5,7 +5,7 @@
          "../utilities/class.rkt"
          "../utilities/grid.rkt"
          "../utilities/cell.rkt"
-         "../utilities/floor-utils.rkt")
+         "../utilities/floor.rkt")
 (require "character.rkt"
          "player.rkt"
          "monsters.rkt"

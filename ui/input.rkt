@@ -4,7 +4,7 @@
 (require "../utilities/terminal.rkt"
          "../utilities/grid.rkt"
          "../utilities/cell.rkt"
-         "../utilities/floor-utils.rkt")
+         "../utilities/floor.rkt")
 (require "../engine/character.rkt"
          "../engine/player.rkt"
          "../engine/combat.rkt"

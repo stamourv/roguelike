@@ -2,7 +2,7 @@
 
 (require unstable/function)
 (require "../utilities/random.rkt"
-         "../utilities/floor-utils.rkt"
+         "../utilities/floor.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt")
 (require "../engine/character.rkt")
