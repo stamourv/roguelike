@@ -1,7 +1,7 @@
 #lang racket
 
 (require (only-in srfi/1 iota))
-(require "../utilities/utilities.rkt"
+(require "../utilities/random.rkt"
          "../utilities/floor-utils.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt")

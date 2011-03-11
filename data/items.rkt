@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../utilities/utilities.rkt"
+(require "../utilities/random.rkt"
          "../utilities/display.rkt")
 (require "../engine/common.rkt"
          "../engine/items.rkt"

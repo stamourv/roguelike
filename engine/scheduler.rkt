@@ -1,7 +1,6 @@
 #lang racket
 
-(require "../utilities/utilities.rkt"
-         "../utilities/class.rkt")
+(require "../utilities/class.rkt")
 (provide turn schedule reschedule
          reset-turn-no increment-turn-no
          reset-turn-id reset-turn-queue

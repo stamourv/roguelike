@@ -1,6 +1,6 @@
 #lang racket
 
-(require "class.rkt" "display.rkt" "utilities.rkt")
+(require "class.rkt" "display.rkt")
 (provide (all-defined-out))
 
 (define-class <cell> ()

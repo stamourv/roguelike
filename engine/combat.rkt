@@ -1,7 +1,7 @@
 #lang racket
 
 (require (only-in racket/base [floor math-floor]))
-(require "../utilities/utilities.rkt"
+(require "../utilities/random.rkt"
          "../utilities/class.rkt"
          "../utilities/grid.rkt"
          "../utilities/cell.rkt"

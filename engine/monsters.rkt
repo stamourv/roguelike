@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../utilities/utilities.rkt"
+(require "../utilities/list.rkt"
          "../utilities/class.rkt")
 (require "../data/items.rkt")
 (require "character.rkt"

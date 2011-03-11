@@ -1,6 +1,6 @@
 #lang racket
 
-(require "utilities.rkt" "cell.rkt" "display.rkt" "terminal.rkt"
+(require "cell.rkt" "display.rkt" "terminal.rkt"
          (only-in srfi/1 iota))
 (provide (all-defined-out))
 

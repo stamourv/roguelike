@@ -1,7 +1,6 @@
 #lang racket
 
-(require "../utilities/utilities.rkt"
-         "../utilities/class.rkt"
+(require "../utilities/class.rkt"
          "../utilities/cell.rkt"
          "../utilities/grid.rkt"
          "../utilities/floor-utils.rkt"
