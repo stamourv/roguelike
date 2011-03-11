@@ -14,27 +14,6 @@
                (- i 1)
                (cons (car tmp) res)))))
 
-;; disjoint sets : http://en.wikipedia.org/wiki/Disjoint-set_data_structure
-(define-struct set (parent rank) #:mutable #:transparent)
-(define (new-set) (make-set (gensym) 0))
-(define (set-find x)
-  (if (symbol? (set-parent x)) ; we hit the gensym, we're at the root
-      x
-      (begin (set-set-parent! x (set-find (set-parent x)))
-	     (set-parent x))))
-(define (set-union x y)
-  (let* ((x-root (set-find x))
-	 (x-rank (set-rank x-root))
-	 (y-root (set-find y))
-	 (y-rank (set-rank y-root)))
-    (cond ((> x-rank y-rank) (set-set-parent! y-root x-root) x)
-	  ((> y-rank x-rank) (set-set-parent! x-root y-root) y)
-	  (else              (set-set-parent! y-root x-root)
-			     (set-set-rank!   x-root (+ (set-rank x-root) 1))
-			     x))))
-(define (set-equal? x y)
-  (equal? (set-find x) (set-find y)))
-
 
 (define (remove-at-index l i)
   (append (take l i) (drop l (add1 i))))
