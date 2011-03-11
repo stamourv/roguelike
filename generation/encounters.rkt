@@ -1,6 +1,7 @@
 #lang racket
 
 (require unstable/function)
+(require "utilities.rkt")
 (require "../utilities/random.rkt"
          "../utilities/floor.rkt"
          "../utilities/cell.rkt"
