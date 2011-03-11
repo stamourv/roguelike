@@ -2,7 +2,10 @@
 
 (require "../utilities/utilities.rkt"
          "../utilities/class.rkt")
-(provide (all-defined-out))
+(provide turn schedule reschedule
+         reset-turn-no increment-turn-no
+         reset-turn-id reset-turn-queue
+         find-next-active)
 
 (define-generic turn)
 (define-method (turn x reschedule?) #f)
@@ -17,8 +20,8 @@
 (define (reset-turn-id)     (set! turn-id 0))
 (define (reset-turn-queue)  (set! turn-queue '()))
 
-(define (schedule thunk t)
-  (set! turn-queue (cons (list t turn-id thunk) turn-queue))
+(define (schedule thunk duration)
+  (set! turn-queue (cons (list (+ turn-id duration) turn-id thunk) turn-queue))
   (set! turn-id (+ turn-id 1)))
 
 (define-generic reschedule)

@@ -88,7 +88,7 @@
      (lambda ()
        (setter char (- (getter char) n))
        (hash-set! alt attr (- (hash-ref alt attr) 1)))
-     (+ turn-no duration))))
+     duration)))
 (define (altered-attr? char attr)
   (> (hash-ref (character-altered-attrs char) attr 0) 0))
 
@@ -127,7 +127,7 @@
        (get-ac (equipment-off-hand e))))) ;; TODO add more
 
 (define-method (reschedule (char struct:character))
-  (schedule (lambda () (turn char #t)) (+ turn-no (character-speed char))))
+  (schedule (lambda () (turn char #t)) (character-speed char)))
 
 (define-generic attack) ;; TODO call-next-method
 (define-generic ranged-attack)
