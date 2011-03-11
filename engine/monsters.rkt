@@ -1,7 +1,6 @@
 #lang racket
 
-(require "../utilities/list.rkt"
-         "../utilities/class.rkt")
+(require "../utilities/class.rkt")
 (require "../data/items.rkt")
 (require "character.rkt"
          "scheduler.rkt"
@@ -18,15 +17,20 @@
 ;; to handle the repetitive part of generating the hp
 ;; TODO could be done with a constructor ?
 (define (new-monster f . args)
-  (let ((m (apply f `(,@(take! args 1) ; name
-		      #f #f            ; pos, floor
-		      ,@(take! args 6) ; str, dex, con, int, wis, cha
-		      ,(make-hash)     ; altered-attrs
-		      ,@(take! args 3) ; natural-ac, level, hit-dice
-		      #f #f            ; hp, max-hp
-		      ,@args))))       ; rest
-    (init-hp m)
-    m))
+  (match args
+    [(list-rest name
+                str dex con int wis cha
+                natural-ac level hit-dice
+                rest)
+     (let ((m (apply f name
+                     #f #f            ; pos, floor
+                     str dex con int wis cha
+                     (make-hash)      ; altered-attrs
+                     natural-ac level hit-dice
+                     #f #f            ; hp, max-hp
+                     rest)))
+       (init-hp m)
+       m)]))
 
 (define-method (turn (m struct:monster) reschedule?)
   (when (and (> (character-hp m) 0)
