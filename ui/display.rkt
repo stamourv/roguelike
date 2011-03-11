@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../utilities/grid.rkt"
+(require "../utilities/display.rkt"
          "../utilities/terminal.rkt")
 (require "../engine/character.rkt"
          "../engine/player.rkt"

@@ -1,6 +1,7 @@
 #lang racket
 
-(require "class.rkt" "terminal.rkt")
+(require (only-in srfi/1 iota))
+(require "class.rkt" "terminal.rkt" "grid.rkt")
 (provide (all-defined-out))
 
 (define-generic show) ; used for items, cells, etc.
@@ -39,3 +40,33 @@
 	      #:bold?      (sprite-bold?      s)
 	      #:underline? (sprite-underline? s)))
 (define-method (lighten-sprite s) (new-sprite s #:bg 'white #:fg 'black))
+
+
+(define (show-grid
+	 g
+	 #:print-fun (print-fun (lambda (pos cell) (print-sprite (show cell))))
+	 #:border? (border? #f))
+  (define (draw-border-line)
+    (when border?
+      (display "+")
+      (for-each (lambda (x) (display "-")) (iota (grid-width g)))
+      (display "+\n")))
+  (draw-border-line)
+  (grid-for-each
+   (lambda (pos)
+     (when (and border? (= (point-y pos) 0)) ; beginning of line
+       (display "|"))
+     (print-fun pos (grid-ref g pos))
+     (when (= (point-y pos) (- (grid-width g) 1)) ; end of line
+       (when border? (display "|"))
+       (display "\n")))
+   g)
+  (draw-border-line))
+
+(define (set-cursor-on-grid grid pos)
+  (let ((x (point-x pos))
+	(y (point-y pos)))
+    ;; we have to account for the borders
+    (if (inside-grid? grid pos)
+	(set-cursor-position! (+ x 2) (+ y 2))
+	#f)))

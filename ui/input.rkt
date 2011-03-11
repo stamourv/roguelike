@@ -3,6 +3,7 @@
 (require (only-in srfi/1 iota))
 (require "../utilities/terminal.rkt"
          "../utilities/grid.rkt"
+         "../utilities/display.rkt"
          "../utilities/cell.rkt"
          "../utilities/floor.rkt")
 (require "../engine/character.rkt"

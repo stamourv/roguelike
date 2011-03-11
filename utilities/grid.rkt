@@ -1,7 +1,6 @@
 #lang racket
 
-(require "cell.rkt" "display.rkt" "terminal.rkt"
-         (only-in srfi/1 iota))
+(require (only-in srfi/1 iota))
 (provide (all-defined-out))
 
 (define-struct point (x y) #:mutable #:transparent)
@@ -15,7 +14,7 @@
 (define-struct grid (height width cells) #:transparent)
 (define (empty-grid height (width height)
 		    ;; function that takes the position, and returns the content
-		    #:cell-fun (cell-fun (lambda (pos) (new-empty-cell))))
+		    #:cell-fun [cell-fun (lambda (pos) #f)])
   (make-grid height width
 	     (list->vector
 	      (map (lambda (p) (cell-fun (new-point (quotient p width)
@@ -75,29 +74,6 @@
   (list (up-left pos) (down-left pos) (up-right pos) (down-right pos)))
 (define (eight-directions pos) (append (four-directions pos) (diagonals pos)))
 
-(define (cartesian-product l1 l2)
-  (apply append
-	 (map (lambda (x) (map (lambda (y) (new-point x y))
-			       l2))
-	      l1)))
-
-;; given a wall, returns the cells that are either perpendicular or
-;; parrallel to the direction of the wall
-(define-values (wall-perpendicular wall-parrallel)
-  (let ()
-    (define ((mk per?) g pos)
-      (define (wall-there? p) (wall? (grid-ref-check g p)))
-      ((cond [(andmap wall-there? (up-down    pos))
-              (if per? left-right up-down)]
-             [(andmap wall-there? (left-right pos))
-              (if per? up-down left-right)]
-             [else (lambda (x) '())]) ; not an appropriate wall
-       pos))
-    (values (mk #t) (mk #f))))
-
-(define (next-to-a-door? g pos)
-  (ormap (lambda (new) (door? (grid-ref-check g new)))
-         (four-directions pos)))
 
 (define (grid-find g p)
   (let ((cell #f))
@@ -109,34 +85,6 @@
   (new-point (random (grid-height g))
 	     (random (grid-width g))))
 
-(define (show-grid
-	 g
-	 #:print-fun (print-fun (lambda (pos cell) (print-sprite (show cell))))
-	 #:border? (border? #f))
-  (define (draw-border-line)
-    (when border?
-      (display "+")
-      (for-each (lambda (x) (display "-")) (iota (grid-width g)))
-      (display "+\n")))
-  (draw-border-line)
-  (grid-for-each
-   (lambda (pos)
-     (when (and border? (= (point-y pos) 0)) ; beginning of line
-       (display "|"))
-     (print-fun pos (grid-ref g pos))
-     (when (= (point-y pos) (- (grid-width g) 1)) ; end of line
-       (when border? (display "|"))
-       (display "\n")))
-   g)
-  (draw-border-line))
-
-(define (set-cursor-on-grid grid pos)
-  (let ((x (point-x pos))
-	(y (point-y pos)))
-    ;; we have to account for the borders
-    (if (inside-grid? grid pos)
-	(set-cursor-position! (+ x 2) (+ y 2))
-	#f)))
 
 (define (octant c p)
   ;; TODO might have bugs, an algorithm built on top of it (the old shadow
@@ -160,70 +108,3 @@
                 ;;  theoretical result gives wrong practical results
 		((> slope 0)         (if (> c-x p-x) 'ne 'sw))
 		(else                (if (> c-x p-x) 'nw 'se)))))))
-
-
-;; wall smoothing, for aesthetic reasons
-(define (smooth-walls level)
-  (grid-for-each
-   (lambda (pos) (smooth-single-wall pos level))
-   level))
-(define (smooth-single-wall pos level)
-  (let ((cell (grid-ref-check level pos)))
-    (when (wall? cell)
-      (match-let
-       ([(list up down left right up-left down-left up-right down-right)
-         (map (lambda (p) (grid-ref-check level p))
-              (eight-directions pos))])
-       (define (wall-or-door? c)
-         (and (or (wall? c) (door? c))))
-       ;; these don't count as walls for determining the shape of
-       ;; neighboring walls
-       (define (not-counting-as-wall? c)
-         (or (not c)
-             (void-cell? c)
-             (walkable-cell? c)))
-       (grid-set!
-        level pos
-        ((cond ((and (wall-or-door? up)   (wall-or-door? down)
-                     (wall-or-door? left) (wall-or-door? right))
-                new-four-corner-wall)
-               ((and (wall-or-door? down)
-                     (wall-or-door? left)
-                     (wall-or-door? right)
-                     (not-counting-as-wall? up))
-                new-north-tee-wall)
-               ((and (wall-or-door? up)
-                     (wall-or-door? left)
-                     (wall-or-door? right)
-                     (not-counting-as-wall? down))
-                new-south-tee-wall)
-               ((and (wall-or-door? up)
-                     (wall-or-door? down)
-                     (wall-or-door? right)
-                     (not-counting-as-wall? left))
-                new-west-tee-wall)
-               ((and (wall-or-door? up)
-                     (wall-or-door? down)
-                     (wall-or-door? left)
-                     (not-counting-as-wall? right))
-                new-east-tee-wall)
-               ((and (wall-or-door?  down)
-                     (wall-or-door?  right))
-                new-north-west-wall)
-               ((and (wall-or-door?  down)
-                     (wall-or-door?  left))
-                new-north-east-wall)
-               ((and (wall-or-door?  up)
-                     (wall-or-door?  right))
-                new-south-west-wall)
-               ((and (wall-or-door?  up)
-                     (wall-or-door?  left))
-                new-south-east-wall)
-               ((and (wall-or-door? up)
-                     (wall-or-door? down))
-                new-vertical-wall)
-               ((and (wall-or-door? left)
-                     (wall-or-door? right))
-                new-horizontal-wall)
-               (else
-                new-pillar))))))))
