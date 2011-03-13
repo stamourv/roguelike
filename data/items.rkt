@@ -10,21 +10,34 @@
 ;; TODO have generation probabilities here, not separately
 
 (define (new-leather-armor)
-  (make-body-armor "leather armor"         10 2 6))
+  (make-body-armor "leather armor"         10  2 6))
 (define (new-studded-leather-armor)
-  (make-body-armor "studded leather armor" 25 3 5))
+  (make-body-armor "studded leather armor" 25  3 5))
+(define (new-scale-mail)
+  (make-body-armor "scale mail"            50  4 3))
+(define (new-chain-mail)
+  (make-body-armor "chain mail"            150 5 2))
 
-(define (new-light-shield) (make-shield "light shield" 3 1))
+(define (new-light-shield) (make-shield "light shield" 3  1)) ; wood
+(define (new-heavy-shield) (make-shield "heavy shield" 20 2)) ; steel
 
 
 (define (new-club)        (make-weapon "club"        1  '(6)  'bludgeoning))
+(define (new-shortspear)  (make-weapon "shortspear"  1  '(6)  'piercing))
 ;; TODO also piercing
 (define (new-morningstar) (make-weapon "morningstar" 8  '(8)  'bludgeoning))
-(define (new-shortspear)  (make-weapon "shortspear"  1  '(6)  'piercing))
+(define (new-short-sword) (make-weapon "short sword" 10 '(6)  'slashing))
+(define (new-battleaxe)   (make-weapon "battleaxe"   10 '(8)  'slashing))
+(define (new-warhammer)   (make-weapon "warhammer"   12 '(8)  'bludgeoning))
+(define (new-long-sword)  (make-weapon "long sword"   15 '(8)  'slashing))
 
-(define (new-greataxe) (make-two-handed-weapon "greataxe" 20 '(12) 'slashing))
+(define (new-greataxe)
+  (make-two-handed-weapon "greataxe"    20 '(12)  'slashing))
+(define (new-great-sword)
+  (make-two-handed-weapon "great sword" 50 '(6 6) 'slashing))
 
 (define (new-shortbow) (make-ranged-weapon "shortbow" 30 '(6) 'piercing))
+(define (new-longbow)  (make-ranged-weapon "longbow"  75 '(8) 'piercing))
 
 
 (define (new-light-healing-potion)
