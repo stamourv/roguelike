@@ -11,6 +11,16 @@
          "pathfinding.rkt")
 (provide (all-defined-out))
 
+;; if we would pass through another monster, take into account the number of
+;; turns it has been stuck there, to avoid congestion
+(define (anti-congestion-heuristic g pos)
+  (let ((occ (cell-occupant (grid-ref g pos))))
+    (if (and occ (monster? occ))
+        (* (behavior-nb-turns-idle
+            (monster-behavior occ))
+           5)
+        0)))
+
 (define (rush-behavior)
   (new-behavior
    (lambda (b)
@@ -18,7 +28,9 @@
        (let ((pos (character-pos monster))
 	     (map (floor-map (character-floor monster))))
 	 (when (line-of-sight? map pos player-pos)
-           (let ((next (find-path map pos player-pos)))
+           (let ((next (find-path
+                        map pos player-pos
+                        #:extra-heuristic anti-congestion-heuristic)))
              (when next (move-or-increment-idle map monster next)))))))))
 
 (define (pursue-behavior)
@@ -32,7 +44,10 @@
 			       (set! last-player-pos player-pos)
 			       player-pos)
 			      (else last-player-pos)))) ; we try to pursue
-	   (let ((next (and target (find-path map pos target))))
+	   (let ((next (and target
+                            (find-path
+                             map pos target
+                             #:extra-heuristic anti-congestion-heuristic))))
 	     (when next (move-or-increment-idle map monster next)))))))))
 
 (define (flee-behavior)

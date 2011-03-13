@@ -2,14 +2,11 @@
 
 (require "../utilities/grid.rkt"
          "../utilities/cell.rkt")
-(require "monsters.rkt")
 (provide find-path)
 
 ;; simple pathfinding using A*
-;; it's currently usable only for monsters, given that it includes
-;; an anti-congestion heuristic that only makes sense for monsters
-;; this should be made generic at one point
-(define (find-path g a b)
+(define (find-path g a b
+                   #:extra-heuristic [extra-heuristic (lambda (g pos) 0)])
   ;; grid of pairs (cost . previous)
   (let* ((height  (grid-height g))
 	 (width   (grid-width g))
@@ -50,17 +47,7 @@
 				    (+ (car (grid-ref costs next))
 				       ;; heuristic cost
 				       (distance pos b)
-				       ;; if we would pass through another
-				       ;; monster, take into account the number
-				       ;; of turns it has been stuck there, to
-				       ;; avoid congestion
-				       (let ((occ (cell-occupant
-						   (grid-ref g pos))))
-					 (if (and occ (monster? occ))
-					     (* (behavior-nb-turns-idle
-						 (monster-behavior occ))
-						5)
-					     0)))))
+                                       (extra-heuristic g pos))))
 			       (if (< new-cost cost)
 				   (begin
 				     (grid-set! costs pos (cons new-cost next))
