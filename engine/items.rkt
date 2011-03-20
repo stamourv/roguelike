@@ -32,10 +32,10 @@
 ;;  characters for each type of armor ?
 (define-method (max-dex-bonus (o struct:body-armor))
   (body-armor-max-dex-bonus o))
-(add-show-method struct:body-armor #\& "A piece of body armor.")
+(add-show-method struct:body-armor #\& 'item "A piece of body armor.")
 
 (define-class <shield> (armor))
-(add-show-method struct:shield #\0 "A shield.")
+(add-show-method struct:shield #\0 'item "A shield.")
 
 
 (define-generic get-damage-fun)
@@ -44,7 +44,7 @@
 (define-class <weapon> (equipable-item)
   damage-dice ; function that returns the damage
   damage-type)
-(add-show-method struct:weapon #\! "A melee weapon.")
+(add-show-method struct:weapon #\! 'item "A melee weapon.")
 (define-method (get-damage-fun (o struct:weapon))
   (apply dice (weapon-damage-dice o)))
 (define-method (item-info (o struct:weapon))
@@ -64,11 +64,11 @@
 
 (define-class <ranged-weapon> (two-handed-weapon))
 ;; TODO what about slings, darts, shuriken, etc, which are one handed
-(add-show-method struct:ranged-weapon #\) "A ranged weapon.")
+(add-show-method struct:ranged-weapon #\) 'item "A ranged weapon.")
 
 
 (define-class <potion> (item) thunk message)
-(add-show-method struct:potion #\; "A potion.")
+(add-show-method struct:potion #\; 'item "A potion.")
 
 ;; important: make sure there is at least as many colors as potion types
 (define potion-colors

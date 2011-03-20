@@ -213,11 +213,13 @@
 (define (describe)
   (displayln "Type the character you want me to describe.")
   (echo-on)
-  (let* ([what (read-char)]
-         [desc (dict-ref descriptions-table what
-                         "I don't know what that is.")])
+  (let* ([what      (read-char)]
+         [type+desc (dict-ref descriptions-table what
+                              "I don't know what that is.")])
     (newline)
-    (displayln desc))
+    (displayln (if (pair? type+desc)
+                   (format "~a (~a)" (cdr type+desc) (car type+desc))
+                   type+desc)))
   (echo-off))
 
 (define (info grid pos)
