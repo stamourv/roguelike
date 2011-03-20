@@ -4,7 +4,8 @@
          "../utilities/display.rkt")
 (require "../engine/character.rkt"
          "../engine/monsters.rkt"
-         "../engine/ai.rkt")
+         "../engine/ai.rkt"
+         "../engine/descriptions.rkt")
 (require "items.rkt")
 
 (provide (all-defined-out))
@@ -21,7 +22,7 @@
 		#:off-hand  (new-light-shield)
 		#:torso     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (show (m struct:goblin)) #\g)
+(add-show-method struct:goblin 'monster #\g "A goblin.")
 (define-class <goblin-archer> (goblin))
 (define (new-goblin-archer)
   (new-monster make-goblin-archer
@@ -32,7 +33,8 @@
 	       (new-equipment ;; TODO maybe also have a melee weapon
 		#:main-hand (new-shortbow)) ; no armor to compensate for the bow
 	       (ranged-behavior)))
-(define-method (show (m struct:goblin-archer)) (new-sprite #\g #:fg 'magenta))
+(add-show-method struct:goblin-archer 'monster (new-sprite #\g #:fg 'magenta)
+                 "A goblin archer.")
 
 (define-class <kobold> (monster))
 (define (new-kobold)
@@ -45,7 +47,7 @@
 		#:main-hand (new-shortspear)
 		#:torso     (new-leather-armor))
 	       (rush-behavior)))
-(define-method (show (m struct:kobold)) #\k)
+(add-show-method struct:kobold 'monster #\k "A kobold.")
 
 (define-class <orc> (monster))
 (define (new-orc)
@@ -58,7 +60,7 @@
 		#:main-hand (new-greataxe)
 		#:torso     (new-studded-leather-armor))
 	       (pursue-behavior)))
-(define-method (show (m struct:orc)) #\o)
+(add-show-method struct:orc 'monster #\o "An orc.")
 
 
 (define-class <animal> (monster))
@@ -72,7 +74,7 @@
 	       0 0 1 6 ;; TODO make faster, and raise the challenge rating
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
-(define-method (show (m struct:bat)) #\b)
+(add-show-method struct:bat 'monster #\b "A bat.")
 
 (define-class <rat> (animal))
 (define (new-rat)
@@ -84,7 +86,7 @@
 	       (new-equipment) ; also unarmed strike
                ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
-(define-method (show (m struct:rat)) #\r)
+(add-show-method struct:rat 'monster #\r "A rat.")
 
 
 (define-class <undead> (monster)) ;; TODO add some
