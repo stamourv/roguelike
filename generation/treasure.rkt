@@ -31,9 +31,7 @@
 	     ;; recalculate the probabilities
 	     ;; note: the probability of each category remains unchanged
              ;; TODO change it ?
-	     (cons (car cat)
-		   (map (lambda (i) (cons (/ (car i) factor) (cdr i)))
-			new-items))))
+	     (cons (car cat) (normalize-probability-table new-items))))
 	 treasure-table)))
 
 (define (generate-treasure no)
