@@ -77,7 +77,7 @@
                                     (apply append
                                            (map cdr possible))))))
     (when (andmap (lambda (new) (null? (cdr new))) possible)
-      (error "no possible treasure for this level"))
+      (generate-treasure (sub1 no)))
     (let loop ((pts   treasure-points)
 	       (items '()))
       (if (>= pts actual-bottom)
