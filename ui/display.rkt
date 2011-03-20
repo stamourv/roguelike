@@ -71,10 +71,10 @@
 	     #:print-fun (visibility-show (player-view player)
                                           (player-map  player))))
 
-(define (quit)
-  (displayln "Do you really want to quit?")
+(define (quit #:force [force? #f])
+  (when (not force?) (displayln "Do you really want to quit?"))
   (cond
-   [(not (eq? (read-char) #\y))
+   [(and (not force?) (not (eq? (read-char) #\y)))
     (displayln "alright then")]
    [else
     (display "\nHall of fame:\n\n") ;; TODO have in a function
