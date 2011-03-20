@@ -19,6 +19,7 @@
 (define (encounter-points e)
   (apply + (map character-level (encounter-monsters e))))
 
+(define encounter-types '())
 (define (new-encounter-type
          rarity
          monsters
@@ -31,4 +32,5 @@
          [dummy-encounter (new-encounter encounter-type)])
     (set-encounter-type-points! encounter-type
                                 (encounter-points dummy-encounter))
+    (set! encounter-types (cons encounter-type encounter-types))
     encounter-type))
