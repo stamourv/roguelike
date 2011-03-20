@@ -1,9 +1,9 @@
 #lang racket
 
-(require "../utilities/cell.rkt"
-         "../utilities/grid.rkt"
-         "../utilities/random.rkt"
-         "../utilities/floor.rkt")
+(require "../engine/cell.rkt"
+         "../engine/floor.rkt")
+(require "../utilities/grid.rkt"
+         "../utilities/random.rkt")
 (provide (all-defined-out))
 
 (define-struct room

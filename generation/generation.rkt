@@ -1,6 +1,5 @@
 #lang racket
 
-(require "../utilities/floor.rkt")
 (require "dungeon.rkt"
          "encounters.rkt"
          "treasure.rkt")

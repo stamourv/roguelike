@@ -1,10 +1,10 @@
 #lang racket
 
-(require "../utilities/cell.rkt"
-         "../utilities/grid.rkt"
-         "../utilities/floor.rkt"
+(require "../utilities/grid.rkt"
          "../utilities/display.rkt")
-(require "character.rkt"
+(require "cell.rkt"
+         "floor.rkt"
+         "character.rkt"
          "monsters.rkt"
          "items.rkt"
          "visibility.rkt"

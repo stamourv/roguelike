@@ -4,10 +4,10 @@
 (require "../utilities/terminal.rkt"
          "../utilities/grid.rkt"
          "../utilities/display.rkt"
-         "../utilities/cell.rkt"
-         "../utilities/floor.rkt"
          "../utilities/descriptions.rkt")
-(require "../engine/character.rkt"
+(require "../engine/cell.rkt"
+         "../engine/floor.rkt"
+         "../engine/character.rkt"
          "../engine/player.rkt"
          "../engine/combat.rkt"
          "../engine/items.rkt"

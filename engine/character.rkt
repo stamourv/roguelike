@@ -2,9 +2,9 @@
 
 (require "../utilities/random.rkt"
          "../utilities/class.rkt"
-         "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "items.rkt"
+(require "cell.rkt"
+         "items.rkt"
          "scheduler.rkt")
 (provide (all-defined-out))
 

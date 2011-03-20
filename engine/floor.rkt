@@ -1,6 +1,8 @@
 #lang racket
 
-(require "cell.rkt" "grid.rkt" "random.rkt")
+(require "cell.rkt")
+(require "../utilities/grid.rkt"
+         "../utilities/random.rkt")
 (provide (all-defined-out))
 
 (define-struct floor ;; TODO also have a dungeon type ?

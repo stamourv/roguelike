@@ -3,10 +3,10 @@
 (require (only-in srfi/1 iota))
 (require "utilities.rkt")
 (require "../utilities/random.rkt"
-         "../utilities/floor.rkt"
-         "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "../engine/items.rkt")
+(require "../engine/cell.rkt"
+         "../engine/floor.rkt"
+         "../engine/items.rkt")
 (require "../data/items.rkt")
 (provide place-treasure show-treasure)
 

@@ -2,10 +2,10 @@
 
 (require "utilities.rkt")
 (require "../utilities/random.rkt"
-         "../utilities/floor.rkt"
-         "../utilities/cell.rkt"
          "../utilities/grid.rkt")
-(require "../engine/character.rkt"
+(require "../engine/cell.rkt"
+         "../engine/floor.rkt"
+         "../engine/character.rkt"
          "../engine/encounters.rkt")
 (require "../data/encounters.rkt")
 (provide place-encounters show-encounters)

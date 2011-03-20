@@ -3,10 +3,10 @@
 (require (only-in srfi/1 iota lset-difference)
          (rename-in racket/base [floor math-floor]))
 (require "utilities.rkt")
+(require "../engine/cell.rkt"
+         "../engine/floor.rkt")
 (require "../utilities/list.rkt"
          "../utilities/random.rkt"
-         "../utilities/floor.rkt"
-         "../utilities/cell.rkt"
          "../utilities/grid.rkt"
          (rename-in "../utilities/grid.rkt"
                     [up up-from]     [down down-from]

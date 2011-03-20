@@ -3,10 +3,10 @@
 (require (only-in racket/base [floor math-floor]))
 (require "../utilities/random.rkt"
          "../utilities/class.rkt"
-         "../utilities/grid.rkt"
-         "../utilities/cell.rkt"
-         "../utilities/floor.rkt")
-(require "character.rkt"
+         "../utilities/grid.rkt")
+(require "cell.rkt"
+         "floor.rkt"
+         "character.rkt"
          "player.rkt"
          "monsters.rkt"
          "common.rkt"

@@ -1,7 +1,7 @@
 #lang racket
 
-(require "../utilities/grid.rkt"
-         "../utilities/cell.rkt")
+(require "../utilities/grid.rkt")
+(require "cell.rkt")
 (provide find-path)
 
 ;; simple pathfinding using A*

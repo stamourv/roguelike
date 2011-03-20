@@ -1,12 +1,12 @@
 #lang racket
 
 (require "../utilities/class.rkt"
-         "../utilities/cell.rkt"
          "../utilities/grid.rkt"
-         "../utilities/floor.rkt"
          "../utilities/terminal.rkt"
          "../utilities/descriptions.rkt")
-(require "scheduler.rkt"
+(require "cell.rkt"
+         "floor.rkt"
+         "scheduler.rkt"
          "character.rkt"
          "items.rkt"
          "visibility.rkt"
