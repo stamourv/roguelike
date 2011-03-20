@@ -212,10 +212,13 @@
 ;; reads a character, and prints out the description
 (define (describe)
   (displayln "Type the character you want me to describe.")
+  (echo-on)
   (let* ([what (read-char)]
          [desc (dict-ref descriptions-table what
                          "I don't know what that is.")])
-    (displayln desc)))
+    (newline)
+    (displayln desc))
+  (echo-off))
 
 (define (info grid pos)
   ;; TODO show a message about the location, occupant first (unless player),

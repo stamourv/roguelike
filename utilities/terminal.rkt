@@ -48,3 +48,5 @@
 (define (restore-tty)
   (system "stty cooked echo")
   (cursor-on))
+(define (echo-on)  (system "stty echo"))
+(define (echo-off) (system "stty -echo"))

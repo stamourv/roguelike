@@ -73,11 +73,13 @@
 
 (define (quit #:force [force? #f])
   (when (not force?) (displayln "Do you really want to quit?"))
+  (echo-on)
   (cond
    [(and (not force?) (not (eq? (read-char) #\y)))
-    (displayln "alright then")]
+    (displayln "\nAlright then.")
+    (echo-off)]
    [else
-    (display "\nHall of fame:\n\n") ;; TODO have in a function
+    (display "\n\nHall of fame:\n\n") ;; TODO have in a function
     (let* ((name         (string->symbol (character-name player)))
            (xp           (player-character-experience player))
            (level        (character-level player))
