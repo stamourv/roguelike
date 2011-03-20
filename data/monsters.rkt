@@ -1,11 +1,11 @@
 #lang racket
 
 (require "../utilities/class.rkt"
-         "../utilities/display.rkt")
+         "../utilities/display.rkt"
+         "../utilities/descriptions.rkt")
 (require "../engine/character.rkt"
          "../engine/monsters.rkt"
-         "../engine/ai.rkt"
-         "../engine/descriptions.rkt")
+         "../engine/ai.rkt")
 (require "items.rkt")
 
 (provide (all-defined-out))

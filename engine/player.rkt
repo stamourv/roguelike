@@ -4,13 +4,13 @@
          "../utilities/cell.rkt"
          "../utilities/grid.rkt"
          "../utilities/floor.rkt"
-         "../utilities/terminal.rkt")
+         "../utilities/terminal.rkt"
+         "../utilities/descriptions.rkt")
 (require "scheduler.rkt"
          "character.rkt"
          "items.rkt"
          "visibility.rkt"
-         "common.rkt"
-         "descriptions.rkt")
+         "common.rkt")
 (require "../data/items.rkt")
 (require "../generation/generation.rkt")
 (provide (all-defined-out))

@@ -1,7 +1,6 @@
 #lang racket
 
-(require "../utilities/class.rkt"
-         "../utilities/display.rkt")
+(require "class.rkt" "display.rkt")
 
 (provide descriptions-table add-description! add-show-method)
 
