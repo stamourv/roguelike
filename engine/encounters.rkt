@@ -32,5 +32,4 @@
          [dummy-encounter (new-encounter encounter-type)])
     (set-encounter-type-points! encounter-type
                                 (encounter-points dummy-encounter))
-    (set! encounter-types (cons encounter-type encounter-types))
-    encounter-type))
+    (set! encounter-types (cons encounter-type encounter-types))))
