@@ -4,13 +4,13 @@
          "../utilities/cell.rkt"
          "../utilities/grid.rkt"
          "../utilities/floor.rkt"
-         "../utilities/terminal.rkt"
-         "../utilities/display.rkt")
+         "../utilities/terminal.rkt")
 (require "scheduler.rkt"
          "character.rkt"
          "items.rkt"
          "visibility.rkt"
-         "common.rkt")
+         "common.rkt"
+         "descriptions.rkt")
 (require "../data/items.rkt")
 (require "../generation/generation.rkt")
 (provide (all-defined-out))
@@ -39,7 +39,7 @@
     0 (list)))
   (init-hp player #t) ; the player gets maxed out hp
   (place-player player (new-player-floor (player-character-floor-no player))))
-(define-method (show (p struct:player-character)) #\@)
+(add-show-method struct:player-character 'player #\@ "You.")
 
 (define-struct player-floor
   (floor ; views are a grid of either visible, visited or unknown
