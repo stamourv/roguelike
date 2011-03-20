@@ -11,7 +11,8 @@
          "../engine/combat.rkt"
          "../engine/items.rkt"
          "../engine/common.rkt"
-         "../engine/visibility.rkt")
+         "../engine/visibility.rkt"
+         "../engine/descriptions.rkt")
 (require "utilities.rkt"
          "display.rkt")
 (provide (all-defined-out))
@@ -59,7 +60,7 @@
           ((#\s) (shoot) 'shoot)
 
           ;; help
-          ((#\?) (show-help)     'show-help)
+          ((#\?) (describe)      'describe)
           ((#\n) (info grid pos) 'info)
           ((#\l) (look grid pos) 'look)
 
@@ -207,6 +208,14 @@
   ;; TODO maybe generate commands with a macro and have help text that can be
   ;;  displayed by help, everything would be automatic
   'TODO)
+
+;; reads a character, and prints out the description
+(define (describe)
+  (displayln "Type the character you want me to describe.")
+  (let* ([what (read-char)]
+         [desc (dict-ref descriptions-table what
+                         "I don't know what that is.")])
+    (displayln desc)))
 
 (define (info grid pos)
   ;; TODO show a message about the location, occupant first (unless player),
