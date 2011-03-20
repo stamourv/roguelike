@@ -51,18 +51,18 @@
                                (map (lambda (i) (item-gp-value ((cdr i))))
                                     (apply append
                                            (map cdr possible))))))
-    (when (andmap (lambda (new) (null? (cdr new))) possible)
-      (generate-treasure (sub1 no)))
-    (let loop ((pts   treasure-points)
-	       (items '()))
-      (if (>= pts actual-bottom)
-	  (let* ((cat   (random-choice possible))
-		 (item  (and (not (null? cat)) ((random-choice cat))))
-		 (value (and item (item-gp-value item))))
-	    (if (and value (<= value pts))
-		(loop (- pts value) (cons item items))
-		(loop pts items))) ; try something else
-	  items))))
+    (if (andmap (lambda (new) (null? (cdr new))) possible)
+        (generate-treasure (sub1 no))
+        (let loop ([pts   treasure-points]
+                   [items '()])
+          (if (>= pts actual-bottom)
+              (let* ([cat   (random-choice possible)]
+                     [item  (and (not (null? cat)) ((random-choice cat)))]
+                     [value (and item (item-gp-value item))])
+                (if (and value (<= value pts))
+                    (loop (- pts value) (cons item items))
+                    (loop pts items))) ; try something else
+              items)))))
 
 (define (place-treasure floor no)
   ;; the number of chests is level number independent
