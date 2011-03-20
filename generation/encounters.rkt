@@ -86,7 +86,7 @@
                                           (map encounter-type-points
                                                possible-encounter-types))))
     (when (null? possible-encounter-types)
-      (error "no possible encounters for this level"))
+      (generate-encounters (sub1 no)))
     (let loop ((pts        (* no 5))
                (encounters '()))
       (if (and (>= pts actual-bottom))
