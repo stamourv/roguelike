@@ -49,7 +49,7 @@
 (define (new-longbow)  (make-ranged-weapon "longbow"  75 0.6  '(8) 'piercing))
 
 
-;; potion: name gp-value potion-thunk
+;; potion: name gp-value effect-thunk message-thunk
 (define (new-light-healing-potion)
   (make-potion "light healing potion" 50 0.8
                ;; TODO at this price, is oly seen on the 3rd level. might be
