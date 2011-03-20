@@ -5,7 +5,8 @@
          "../utilities/display.rkt")
 (provide (all-defined-out))
 
-(define-class <item> () name gp-value)
+;; rarity is in [0,1] with 1 being most likely
+(define-class <item> () name gp-value rarity)
 
 (define-generic item-info)
 (define-method (item-info o) (item-name o))
@@ -60,7 +61,7 @@
 ;;  maybe / or \
 (define-class <off-hand-placeholder> (item))
 (define (new-off-hand-placeholder)
-  (make-off-hand-placeholder "<two-handed weapon>" 0))
+  (make-off-hand-placeholder "<two-handed weapon>" 0 0))
 (define-method (removable? (o struct:off-hand-placeholder)) #f)
 
 (define-class <ranged-weapon> (two-handed-weapon))

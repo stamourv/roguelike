@@ -14,6 +14,10 @@
 (define (random-between x y) ; between x and y inclusively
   (+ x (random (+ 1 (- y x)))))
 
+(define (normalize-probability-table t)
+  (let ([total (apply + (map car t))])
+    (map (lambda (p) (cons (/ (car p) total) (cdr p))) t)))
+
 ;; returns a thunk that simulated the requested dice roll
 (define (dice . kinds)
   (lambda ()

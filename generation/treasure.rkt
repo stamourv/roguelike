@@ -10,39 +10,7 @@
 (require "../data/items.rkt")
 (provide place-treasure)
 
-;; contains the probability of each kind of item, and the probability of each
-;; item within each category
-;; TODO with a lot of items, this will end up being unmanageable
-(define treasure-table
-  `((0.43
-     ;; weapons
-     (0.2  . ,new-morningstar)
-     (0.1  . ,new-greataxe)
-     (0.3  . ,new-club)
-     (0.15 . ,new-shortspear)
-     (0.25 . ,new-shortbow))
-    (0.25
-     ;; shields
-     (1 . ,new-light-shield))
-    (0.22
-     ;; body armor
-     (0.7 . ,new-leather-armor)
-     (0.3 . ,new-studded-leather-armor))
-    (0.1
-     ;; potions
-     (0.5  . ,new-light-healing-potion)
-     (0.13 . ,new-bulls-strength-potion)
-     (0.13 . ,new-cats-grace-potion)
-     (0.13 . ,new-bears-endurance-potion)
-     (0.11 . ,new-barkskin-potion))))
-;; TODO maybe have these probabilities a function of the level ? something this
-;;  is rare early on might become common later on
-;; TODO also have gold, gems, potions, and other random items, not just
-;;  equipment (find a way to sell things ?)
-
 (define (possible-treasure no)
-  ;; TODO maybe be like nethack, and have the same item possibilities,
-  ;;  regardless of level ? if so, just use the DM's guide tables
   (let* ((treasure-cap    (* 10 (expt no 2)))
 	 (treasure-bottom (max (* 2 (expt no 2))
 			       (foldl
