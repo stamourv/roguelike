@@ -82,8 +82,8 @@
 	       (items '()))
       (if (>= pts actual-bottom)
 	  (let* ((cat   (random-choice possible))
-		 (item  (if (null? cat) #f ((random-choice cat))))
-		 (value (if item (item-gp-value item) #f)))
+		 (item  (and (not (null? cat)) ((random-choice cat))))
+		 (value (and item (item-gp-value item))))
 	    (if (and value (<= value pts))
 		(loop (- pts value) (cons item items))
 		(loop pts items))) ; try something else
