@@ -73,6 +73,11 @@
                                                 (if (visited? down-left)  1 0)
                                                 (if (visited? down-right) 1 0))
                                              3) ; at least 3 corners are seen
+                                         ;; or two opposed corners
+                                         (and (visited? up-left)
+                                              (visited? down-right))
+                                         (and (visited? down-left)
+                                              (visited? up-right))
                                          (andmap visited? ; or the 4 walls
                                                  (list up down left right)))
 				     make-four-corner-wall)
