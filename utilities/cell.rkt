@@ -1,6 +1,6 @@
 #lang racket
 
-(require "class.rkt" "display.rkt")
+(require "class.rkt" "display.rkt" "../engine/descriptions.rkt")
 (provide (all-defined-out))
 
 (define-class <cell> ()
@@ -39,6 +39,7 @@
 (define-class <empty-cell> (cell))
 (define (new-empty-cell) (make-empty-cell '() #f))
 (define-method (show (c struct:empty-cell)) (walkable-cell-show c #\space))
+(add-description! #\space 'terrain "Floor.")
 (define-method (walkable-cell? (c struct:empty-cell)) #t)
 
 
@@ -46,13 +47,15 @@
 (define-class <stairs-up>   (stairs))
 (define (new-stairs-up)   (make-stairs-up   '() #f))
 (define-method (show (c struct:stairs-up))   (walkable-cell-show c #\<))
+(add-description! #\< 'terrain "Stairs up.")
 (define-class <stairs-down> (stairs))
 (define (new-stairs-down) (make-stairs-down '() #f))
 (define-method (show (c struct:stairs-down)) (walkable-cell-show c #\>))
+(add-description! #\> 'terrain "Stairs down.")
 
 
 (define-class <wall> (cell))
-(define-method (show (c struct:wall)) #\+)
+(add-show-method struct:wall 'terrain #\+ "A pillar.") ; generally the case
 (define-method (opaque-cell? (c struct:wall) occupants-opaque?) #t)
 
 (define double-walls? #f)
@@ -126,6 +129,8 @@
   (if (door-open? c)
       (walkable-cell-show c #\_)
       #\$))
+(add-description! #\_ 'terrain "An open door.")
+(add-description! #\$ 'terrain "A closed door.")
 (define-method (open grid (door struct:door) opener)
   (if (door-open? door)
       (display "This door is already open.\n")
@@ -148,6 +153,8 @@
   (if (chest-open? c)
       (walkable-cell-show c #\=)
       #\#))
+(add-description! #\= 'terrain "An open chest.")
+(add-description! #\# 'terrain "A closed chest.")
 (define-method (open grid (chest struct:chest) opener)
   (if (chest-open? chest)
       (display "This chest is already open.\n")

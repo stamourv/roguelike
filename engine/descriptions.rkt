@@ -3,7 +3,7 @@
 (require "../utilities/class.rkt"
          "../utilities/display.rkt")
 
-(provide descriptions-table add-show-method)
+(provide descriptions-table add-description! add-show-method)
 
 ;; for in-game help
 ;; alist of characters and pairs of type symbols and description strings
