@@ -26,23 +26,27 @@
             encounter-types)))
 
 (define (generate-encounters no)
-  (let* ((possible-encounter-types (possible-encounters no))
-         (actual-bottom            (foldl min
+  (let* ([possible-encounter-types (possible-encounters no)]
+         [actual-bottom            (foldl min
                                           no ; generous upper bound
                                           (map encounter-type-points
-                                               possible-encounter-types))))
-    (when (null? possible-encounter-types)
-      (generate-encounters (sub1 no)))
-    (let loop ((pts        (* no 5))
-               (encounters '()))
-      (if (and (>= pts actual-bottom))
-          (let* ((type             (random-element possible-encounter-types))
-                 (encounter-points (encounter-type-points type)))
-            (if (<= encounter-points pts)
-		(loop (- pts encounter-points)
-		      (cons (new-encounter type) encounters))
-                (loop pts encounters))) ; try something else
-	  encounters))))
+                                               possible-encounter-types))]
+         [possible-types-table     (normalize-probability-table
+                                    (map (lambda (t)
+                                           (cons (encounter-type-rarity t) t))
+                                         possible-encounter-types))])
+    (if (null? possible-encounter-types)
+        (generate-encounters (sub1 no))
+        (let loop ([pts        (* no 5)]
+                   [encounters '()])
+          (if (and (>= pts actual-bottom))
+              (let* ([type             (random-choice possible-types-table)]
+                     [encounter-points (encounter-type-points type)])
+                (if (<= encounter-points pts)
+                    (loop (- pts encounter-points)
+                          (cons (new-encounter type) encounters))
+                    (loop pts encounters))) ; try something else
+              encounters)))))
 
 ;; encounters scale with the player's level, not the dungeon level
 (define (place-encounters floor level)

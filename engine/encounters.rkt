@@ -7,6 +7,7 @@
 
 (define-struct encounter-type
   (points
+   rarity ; [0,1], 1 being most common
    monsters ; list of functions that create monsters
    can-be-placed?) ; takes a room as parameter
   #:mutable #:transparent)
@@ -19,10 +20,12 @@
   (apply + (map character-level (encounter-monsters e))))
 
 (define (new-encounter-type
+         rarity
          monsters
          [restriction (lambda (x) #t)])
   (let* ([encounter-type  (make-encounter-type
                            #f
+                           rarity
                            monsters
                            restriction)]
          [dummy-encounter (new-encounter encounter-type)])
