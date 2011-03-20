@@ -7,7 +7,7 @@
 (define (random-choice l) ; list of pairs (prob . x)
   (let loop ((r (random))
 	     (l l))
-    (cond ((null? l)      #f) ; shouldn't happen
+    (cond ((null? l)      (error "invalid probability distribution"))
 	  ((< r (caar l)) (cdar l))
 	  (else           (loop (- r (caar l)) (cdr l))))))
 (define (random-boolean (p 0.5)) (< (random) p))
