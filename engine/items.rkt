@@ -1,8 +1,8 @@
 #lang racket
 
 (require "../utilities/random.rkt"
-         "../utilities/class.rkt"
-         "../utilities/display.rkt")
+         "../utilities/class.rkt")
+(require "descriptions.rkt")
 (provide (all-defined-out))
 
 ;; rarity is in [0,1] with 1 being most likely
@@ -32,10 +32,10 @@
 ;;  characters for each type of armor ?
 (define-method (max-dex-bonus (o struct:body-armor))
   (body-armor-max-dex-bonus o))
-(define-method (show (o struct:body-armor)) #\&)
+(add-show-method struct:body-armor #\& "A piece of body armor.")
 
 (define-class <shield> (armor))
-(define-method (show (o struct:shield)) #\0)
+(add-show-method struct:shield #\0 "A shield.")
 
 
 (define-generic get-damage-fun)
@@ -44,9 +44,7 @@
 (define-class <weapon> (equipable-item)
   damage-dice ; function that returns the damage
   damage-type)
-;; TODO maybe have subtypes for 1 and 2 handed (or weapon size), meelee
-;; and ranged, ...
-(define-method (show (o struct:weapon)) #\!)
+(add-show-method struct:weapon #\! "A melee weapon.")
 (define-method (get-damage-fun (o struct:weapon))
   (apply dice (weapon-damage-dice o)))
 (define-method (item-info (o struct:weapon))
@@ -65,12 +63,12 @@
 (define-method (removable? (o struct:off-hand-placeholder)) #f)
 
 (define-class <ranged-weapon> (two-handed-weapon))
-;; TODO what about slings, darts, shuriken, etc, whice are one handed
-(define-method (show (o struct:ranged-weapon)) #\))
+;; TODO what about slings, darts, shuriken, etc, which are one handed
+(add-show-method struct:ranged-weapon #\) "A ranged weapon.")
 
 
 (define-class <potion> (item) thunk message)
-(define-method (show (o struct:potion)) #\;)
+(add-show-method struct:potion #\; "A potion.")
 
 ;; important: make sure there is at least as many colors as potion types
 (define potion-colors
