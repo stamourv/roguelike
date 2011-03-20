@@ -8,7 +8,16 @@
          "../utilities/grid.rkt")
 (require "../engine/items.rkt")
 (require "../data/items.rkt")
-(provide place-treasure)
+(provide place-treasure show-treasure)
+
+;; contains the probability of each kind of item, and the probability of each
+;; item within each category
+(define treasure-table
+  (normalize-probability-table
+   `((0.43 ,@weapon-table)
+     (0.25 ,@shield-table)
+     (0.22 ,@body-armor-table)
+     (0.1  ,@potion-table))))
 
 (define (possible-treasure no)
   (let* ((treasure-cap    (* 10 (expt no 2)))
