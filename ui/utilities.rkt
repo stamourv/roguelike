@@ -10,7 +10,20 @@
 (require "display.rkt")
 (provide (all-defined-out))
 
+(define command-table '())
+(define (new-command char thunk category desc)
+  (set! command-table (cons (list char thunk category desc) command-table)))
+(define (reverse-command-table)
+  (set! command-table (reverse command-table)))
+
 (define (invalid-command) (display "Invalid command.\n"))
+
+(define (wait-after-long-output)
+  (newline)
+  (displayln "Use terminal scrollback to see everything.")
+  (displayln "Press any key to continue.")
+  (read-char)
+  (for ([i (in-range 30)]) (newline)))
 
 (define (choose-direction)
   (if (= (char->integer (read-char)) 27) ; escape

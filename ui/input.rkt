@@ -12,10 +12,6 @@
 (provide (all-defined-out))
 
 
-(define command-table '())
-(define (new-command char thunk category desc)
-  (set! command-table (cons (list char thunk desc) command-table)))
-
 ;; inventory
 (new-command #\p pick-up   'inventory "Pick up an item from the ground.")
 (new-command #\d cmd-drop  'inventory "Drop an item from the inventory.")
@@ -31,8 +27,9 @@
 (new-command #\s shoot     'combat "Shoot a target using a ranged weapon.")
 
 ;; help
-(new-command #\? describe     'help "Describe what a character represents.")
-(new-command #\/ describe-all 'help "List all characters known to the game.")
+(new-command #\? describe-commands 'help "List all commands.")
+(new-command #\/ describe     'help "Describe what a character represents.")
+(new-command #\& describe-all 'help "List all characters known to the game.")
 (new-command #\' info         'help "Get information about the current tile.")
 (new-command #\" look         'help "Information about a given tile.")
 
@@ -47,7 +44,7 @@
 (new-command #\q quit 'misc "Quit.")
 
 ;; for display
-(set! command-table (reverse command-table))
+(reverse-command-table)
 
 
 (define (read-command)
@@ -70,4 +67,4 @@
                ;; if it fails, stay where we were
                (move grid player pos)
                'move)
-        ((car (dict-ref command-table char invalid-command))))))
+        ((car (dict-ref command-table char (list invalid-command)))))))

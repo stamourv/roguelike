@@ -10,16 +10,28 @@
          "../engine/cell.rkt"
          "../engine/player.rkt"
          "../engine/character.rkt")
+(require "utilities.rkt")
 
 (provide (all-defined-out))
 
-;; help features
 (define (describe-commands)
-  ;; TODO show all commands, and have a version that waits for one command
-  ;;  and says what it is
-  ;; TODO explicitly say that arrows are for moving, since they won't be in
-  ;;  the list
-  'TODO)
+  ;; TODO have a version that waits for one command and says what it is
+  (displayln "Movement:\nArrow keys")
+  (let loop ([commands command-table]
+             [category (caddr (car command-table))])
+    (newline)
+    ;; capitalize category
+    (let ([cat (symbol->string category)])
+      (printf "~a:\n" (upcase-word cat)))
+    (let loop2 ([commands commands])
+      (when (not (null? commands))
+        (let* ([head (car commands)]
+               [cat  (caddr head)])
+          (if (eq? cat category) ; same category
+              (begin (printf "~a: ~a\n" (car head) (cadddr head))
+                     (loop2 (cdr commands)))
+              (loop commands (caddr head)))))))
+  (wait-after-long-output))
 
 (define (describe-one what)
   (let ([type+desc (dict-ref descriptions-table what
@@ -50,9 +62,7 @@
               (print-sprite (car x))
               (printf ": ~a\n"  (cddr x)))
          (newline)))
-  (displayln "\nPress any key.")
-  (read-char)
-  (for ([i (in-range 30)]) (newline)))
+  (wait-after-long-output))
 
 (define (info)
   (let* ([grid (player-map player)]
