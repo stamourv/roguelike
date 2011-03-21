@@ -1,5 +1,6 @@
 #lang racket
 
+(require "list.rkt")
 (provide (all-defined-out))
 
 (define (random-element l)
@@ -24,23 +25,8 @@
     (apply + (map (lambda (new) (+ (random new) 1)) kinds))))
 
 
-(define (group-by-identical l)
-  (let loop ((l   (sort l <))
-	     (acc '())
-	     (res '()))
-    (if (null? l)
-	(cons acc res)
-	(if (or (null? acc)
-		(equal? (car l) (car acc)))
-	    (loop (cdr l)
-		  (cons (car l) acc)
-		  res)
-	    (loop (cdr l)
-		  (list (car l))
-		  (cons acc res))))))
-
 (define (show-dice l)
-  (let loop ((l  (group-by-identical l))
+  (let loop ((l  (group-by-identical l <))
 	     (s  "")
 	     (+? #f))
     (if (null? l)

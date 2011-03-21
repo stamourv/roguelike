@@ -3,6 +3,7 @@
 (require (only-in srfi/1 iota))
 (require "../utilities/terminal.rkt"
          "../utilities/grid.rkt"
+         "../utilities/list.rkt"
          "../utilities/display.rkt"
          "../utilities/descriptions.rkt")
 (require "../engine/cell.rkt"
@@ -61,6 +62,7 @@
 
           ;; help
           ((#\?) (describe)      'describe)
+          ((#\/) (describe-all)  'describe-all)
           ((#\n) (info grid pos) 'info)
           ((#\l) (look grid pos) 'look)
 
@@ -221,6 +223,25 @@
                    (format "~a (~a)" (cdr type+desc) (car type+desc))
                    type+desc)))
   (echo-off))
+
+(define (describe-all)
+  (let ([grouped (group-by-identical
+                  descriptions-table string<?
+                  ;; sort by category
+                  #:key (lambda (x) (symbol->string (cadr x))))])
+    (for ([g grouped])
+         ;; capitalize category
+         (let ([cat (symbol->string (cadar g))])
+           (printf "~a~as:\n"
+                   (char-upcase (string-ref cat 0))
+                   (substring cat 1)))
+         (for ([x g])
+              (print-sprite (car x))
+              (printf ": ~a\n"  (cddr x)))
+         (newline)))
+  (displayln "\nPress any key.")
+  (read-char)
+  (for ([i (in-range 30)]) (newline)))
 
 (define (info grid pos)
   ;; TODO show a message about the location, occupant first (unless player),
