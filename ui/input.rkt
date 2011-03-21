@@ -211,17 +211,20 @@
   ;;  displayed by help, everything would be automatic
   'TODO)
 
+(define (describe-one what)
+  (let ([type+desc (dict-ref descriptions-table what
+                             "I don't know what that is.")])
+    (if (pair? type+desc)
+        (format "~a" (cdr type+desc))
+        type+desc)))
+
 ;; reads a character, and prints out the description
 (define (describe)
   (displayln "Type the character you want me to describe.")
   (echo-on)
-  (let* ([what      (read-char)]
-         [type+desc (dict-ref descriptions-table what
-                              "I don't know what that is.")])
+  (let ([what (read-char)])
     (newline)
-    (displayln (if (pair? type+desc)
-                   (format "~a (~a)" (cdr type+desc) (car type+desc))
-                   type+desc)))
+    (displayln (describe-one what)))
   (echo-off))
 
 (define (describe-all)
@@ -244,19 +247,12 @@
   (for ([i (in-range 30)]) (newline)))
 
 (define (info grid pos)
-  ;; TODO show a message about the location, occupant first (unless player),
-  ;;  items then, finally terrain
-  (let ((cell (grid-ref grid pos)))
-    (cond ((let ((occ (cell-occupant cell)))
-             (and occ (not (player-character? occ)) occ))
-           => (lambda (occ) (display (character-name occ))))
-          ;;        ((car (cell-items cell))
-          ;;         => (lambda (obj) (display (item-name obj))))
-          ;; TODO broken. + add monsters
-          (else
-           (display "Nothing to see here.")))))
-;; TODO describe the terrain, have a description for each type, ideally
-;;  define with the type
+  (let* ([cell (grid-ref grid pos)]
+         [occ  (cell-occupant cell)])
+    ;; temporarily remove occupant, so see beyond the player itself
+    (set-cell-occupant! cell #f)
+    (displayln (describe-one (show cell)))
+    (set-cell-occupant! cell occ)))
 
 (define (look grid pos)
   ;; TODO have a moveable cursor, and when enter is pressed, display the info
