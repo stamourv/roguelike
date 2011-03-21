@@ -2,4 +2,6 @@ Simple Roguelike
 
 Combat system and data mostly stolen from DND 3E.
 
+To run: racket game.rkt
+
 For help, type ? while in game.
