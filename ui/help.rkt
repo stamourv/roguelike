@@ -2,6 +2,7 @@
 
 (require "../utilities/terminal.rkt"
          "../utilities/list.rkt"
+         "../utilities/string.rkt"
          "../utilities/grid.rkt"
          "../utilities/display.rkt"
          "../utilities/descriptions.rkt")
@@ -16,6 +17,8 @@
 (define (describe-commands)
   ;; TODO show all commands, and have a version that waits for one command
   ;;  and says what it is
+  ;; TODO explicitly say that arrows are for moving, since they won't be in
+  ;;  the list
   'TODO)
 
 (define (describe-one what)
@@ -42,9 +45,7 @@
     (for ([g grouped])
          ;; capitalize category
          (let ([cat (symbol->string (cadar g))])
-           (printf "~a~as:\n"
-                   (char-upcase (string-ref cat 0))
-                   (substring cat 1)))
+           (printf "~as:\n" (upcase-word cat)))
          (for ([x g])
               (print-sprite (car x))
               (printf ": ~a\n"  (cddr x)))
