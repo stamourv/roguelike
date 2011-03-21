@@ -12,36 +12,43 @@
 (provide (all-defined-out))
 
 
-(define command-table
-  (list
-   ;; inventory
-   (cons #\p pick-up)
-   (cons #\d cmd-drop)
-   (cons #\i inventory)
-   (cons #\e equip)
-   (cons #\r take-off)
-   (cons #\D cmd-drink)
-   
-   (cons #\o cmd-open)
-   (cons #\c cmd-close)
-   (cons #\t climb-stairs)
-   
-   (cons #\s shoot)
-   
-   ;; help
-   (cons #\? describe)
-   (cons #\/ describe-all)
-   (cons #\' info)
-   (cons #\" look)
-   
-   ;; debugging
-   (cons #\k kill)
-   (cons #\R reveal-map)
-   (cons #\G god-mode)
-   (cons #\: console)
-   
-   (cons #\space (lambda () display "Nothing happen\n"))
-   (cons #\q quit)))
+(define command-table '())
+(define (new-command char thunk category desc)
+  (set! command-table (cons (list char thunk desc) command-table)))
+
+;; inventory
+(new-command #\p pick-up   'inventory "Pick up an item from the ground.")
+(new-command #\d cmd-drop  'inventory "Drop an item from the inventory.")
+(new-command #\i inventory 'inventory "Display inventory.")
+(new-command #\e equip     'inventory "Equip an item from inventory.")
+(new-command #\r take-off  'inventory "Take off an equipped item.")
+
+(new-command #\o cmd-open     'exploration "Open a door or a chest.")
+(new-command #\c cmd-close    'exploration "Close a door or a chest.")
+(new-command #\t climb-stairs 'exploration "Climb stairs.")
+
+(new-command #\D cmd-drink 'combat "Drink a potion from inventory.")
+(new-command #\s shoot     'combat "Shoot a target using a ranged weapon.")
+
+;; help
+(new-command #\? describe     'help "Describe what a character represents.")
+(new-command #\/ describe-all 'help "List all characters known to the game.")
+(new-command #\' info         'help "Get information about the current tile.")
+(new-command #\" look         'help "Information about a given tile.")
+
+;; debugging
+(new-command #\k kill       'debugging "Insta-kill.")
+(new-command #\R reveal-map 'debugging "Reaveal map.")
+(new-command #\G god-mode   'debugging "God mode.")
+(new-command #\: console    'debugging "Console.")
+
+(new-command #\space (lambda () display "Nothing happen\n")
+             'misc "Wait.")
+(new-command #\q quit 'misc "Quit.")
+
+;; for display
+(set! command-table (reverse command-table))
+
 
 (define (read-command)
   (let* ((pos   (copy-point (character-pos player)))
@@ -63,4 +70,4 @@
                ;; if it fails, stay where we were
                (move grid player pos)
                'move)
-        ((dict-ref command-table char invalid-command)))))
+        ((car (dict-ref command-table char invalid-command))))))
