@@ -28,6 +28,7 @@
 
 ;; help
 (new-command #\? describe-commands 'help "List all commands.")
+(new-command #\^ describe-command  'help "Describe what a keybinding does.")
 (new-command #\/ describe     'help "Describe what a character represents.")
 (new-command #\& describe-all 'help "List all characters known to the game.")
 (new-command #\' info         'help "Get information about the current tile.")

@@ -14,8 +14,16 @@
 
 (provide (all-defined-out))
 
+(define (describe-command)
+  (displayln "Type the keybinding you want me to describe.")
+  (echo-on)
+  (let* ([what (read-char)]
+         [cmd  (dict-ref command-table what "This keybinding is unused.")])
+    (newline)
+    (displayln (if (pair? cmd) (caddr cmd) cmd)))
+  (echo-off))
+
 (define (describe-commands)
-  ;; TODO have a version that waits for one command and says what it is
   (displayln "Movement:\nArrow keys")
   (let loop ([commands command-table]
              [category (caddr (car command-table))])
