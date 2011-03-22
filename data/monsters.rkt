@@ -27,10 +27,10 @@
 (define (new-goblin-archer)
   (new-monster make-goblin-archer
 	       "goblin archer"
-	       11 13 12 10 9 6 ;; TODO abstract with goblin
+	       11 13 12 10 9 6
 	       0 1/2 '(4)
 	       1 1 1 6
-	       (new-equipment ;; TODO maybe also have a melee weapon
+	       (new-equipment
 		#:main-hand (new-shortbow)) ; no armor to compensate for the bow
 	       (ranged-behavior)))
 (add-show-method struct:goblin-archer 'monster (new-sprite #\g #:fg 'magenta)
@@ -71,7 +71,7 @@
 	       "bat"
 	       1 15 10 2 14 4
 	       0 1/10 '(2)
-	       0 0 1 6 ;; TODO make faster, and raise the challenge rating
+	       0 0 1 6
 	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
 	       (flee-behavior)))
 (add-show-method struct:bat 'monster #\b "A bat.")
@@ -84,9 +84,8 @@
 	       0 1/8 '(2)
 	       0 0 1 6
 	       (new-equipment) ; also unarmed strike
-               ;; TODO have a way to represent natural weapons
 	       (rush-behavior)))
 (add-show-method struct:rat 'monster #\r "A rat.")
 
 
-(define-class <undead> (monster)) ;; TODO add some
+(define-class <undead> (monster))

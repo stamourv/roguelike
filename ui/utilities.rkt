@@ -76,7 +76,7 @@
 (define (direction-command name f)
   (clear-to-bottom)
   (printf "~a in which direction? " name)
-  (flush-output) ;; TODO may be necessary elsewhere
+  (flush-output)
   (let ((dir (choose-direction))) ; evaluates to a function, or #f
     (when dir
       (let* ((grid (player-map player))
@@ -87,6 +87,7 @@
 (define (console)
   (restore-tty)
   (display ": ")
-  (display (eval (read))) ;; TODO not sure this is going to work...
+  ;; untouched from the Gambit version. unlikely to work
+  (display (eval (read)))
   (read-char)
   (intercept-tty))

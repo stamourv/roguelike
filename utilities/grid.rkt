@@ -87,9 +87,6 @@
 
 
 (define (octant c p)
-  ;; TODO might have bugs, an algorithm built on top of it (the old shadow
-  ;;  casting) failed, so it might be because of this (algorithm now in
-  ;;  garbage) (not used for now)
   ;; returns in which octant p is with c as the center
   ;; octants are n, ne, e, se, s, sw, w, nw (or c if we are on the center)
   (let ((c-x (point-x c))
@@ -104,7 +101,5 @@
 	(let ((slope (/ (- p-x c-x) (- p-y c-y))))
 	  (cond ((< (abs slope) 1/2) (if (> c-y p-y) 'w  'e))
 		((> (abs slope) 2)   (if (> c-x p-x) 'n  's))
-                ;; TODO really not sure for the last 2 lines, the right
-                ;;  theoretical result gives wrong practical results
 		((> slope 0)         (if (> c-x p-x) 'ne 'sw))
 		(else                (if (> c-x p-x) 'nw 'se)))))))

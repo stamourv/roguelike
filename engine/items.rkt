@@ -28,8 +28,6 @@
   (format "~a (ac: ~a)" (item-name o) (armor-ac o)))
 
 (define-class <body-armor> (armor) max-dex-bonus)
-;; TODO have light, medium and heavy armor and have different display
-;;  characters for each type of armor ?
 (define-method (max-dex-bonus (o struct:body-armor))
   (body-armor-max-dex-bonus o))
 (add-show-method struct:body-armor 'item #\& "A piece of body armor.")
@@ -51,19 +49,14 @@
   (format "~a (damage: ~a ~a)"
           (item-name o) (show-dice (weapon-damage-dice o))
           (symbol->string (weapon-damage-type o))))
-;; TODO have small version of items ? (small weapons do less damage) goblins
-;;  now have clubs instead of small morningstars
 
 (define-class <two-handed-weapon> (weapon))
-;; TODO have a different character to display two-handed weapons ?
-;;  maybe / or \
 (define-class <off-hand-placeholder> (item))
 (define (new-off-hand-placeholder)
   (make-off-hand-placeholder "<two-handed weapon>" 0 0))
 (define-method (removable? (o struct:off-hand-placeholder)) #f)
 
 (define-class <ranged-weapon> (two-handed-weapon))
-;; TODO what about slings, darts, shuriken, etc, which are one handed
 (add-show-method struct:ranged-weapon 'item #\) "A ranged weapon.")
 
 
@@ -73,8 +66,6 @@
 ;; important: make sure there is at least as many colors as potion types
 (define potion-colors
   (let ((types
-         ;; TODO keep this up to date, maybe have a macro that generates the
-         ;;  potion type, and adds it to the list ?
 	 '("light healing potion"
 	   "bull's strength potion"
 	   "cat's grace potion"
@@ -85,7 +76,7 @@
 	   "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
 	   "milky")))
     (map cons types (take (shuffle colors) (length types)))))
-;; potion types that have been identified ;; TODO put this with the player ?
+;; potion types that have been identified
 (define identified-potions '())
 
 (define-method (item-info (o struct:potion))
@@ -105,4 +96,3 @@
 
 
 (define-class <food> (item) thunk)
-;; TODO add some, should be cheaper than potions, but should heal less

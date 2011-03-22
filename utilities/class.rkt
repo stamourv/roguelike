@@ -9,7 +9,6 @@
   (defgeneric name))
 (define-syntax-rule (define-method (name args ...) body ...)
   (defmethod (name args ...) body ...))
-;; TODO get rid of the struct: in specifiers
 
 ;; I want defstructs, but want to keep the old name from class.scm
 (define-syntax-rule (define-class x ...)

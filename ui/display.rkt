@@ -16,7 +16,7 @@
   (printf-notification "~a xp pts\n" (player-character-experience player))
   (printf-notification "")
   (when (altered-attr? player 'hp)
-    (terminal-colors 'white 'black)) ;; TODO abstract that
+    (terminal-colors 'white 'black))
   (display (character-hp player))
   (terminal-reset)
   (printf "/~a hp\n" (character-max-hp player))
@@ -79,7 +79,7 @@
     (displayln "\nAlright then.")
     (echo-off)]
    [else
-    (display "\n\nHall of fame:\n\n") ;; TODO have in a function
+    (display "\n\nHall of fame:\n\n")
     (let* ((name         (string->symbol (character-name player)))
            (xp           (player-character-experience player))
            (level        (character-level player))
@@ -92,7 +92,6 @@
                                 (if (file-exists? filename)
                                     (with-input-from-file filename read)
                                     '()))
-                          ;; TODO if same score, sort with the other factors
                           > #:key cadr))
                (new (take l (min (length l) 10)))); we keep the 10 best
           (display new (open-output-file filename #:exists 'replace))

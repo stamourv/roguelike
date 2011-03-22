@@ -24,7 +24,7 @@
 (define (rush-behavior)
   (new-behavior
    (lambda (b)
-     (lambda (monster player-pos) ;; TODO have a macro for all that ?
+     (lambda (monster player-pos)
        (let ((pos (character-pos monster))
 	     (map (floor-map (character-floor monster))))
 	 (when (line-of-sight? map pos player-pos)
@@ -58,8 +58,6 @@
 	     (map (floor-map (character-floor monster))))
 	 (cond ((member player-pos (four-directions pos))
 		;; we are next to the player, attack
-                ;; TODO have another that flees even if next to the player, and
-                ;;  one that flees when wounded
 		=> (lambda (pl)
 		     (move-or-increment-idle map monster player-pos)))
 	       ((line-of-sight? map pos player-pos)
@@ -91,7 +89,6 @@
        (when (not (ranged-weapon? (equipment-main-hand
                                    (character-equipment monster))))
          (error "monster " monster " has no ranged weapon"))
-       ;; TODO have these monsters move a bit, esp. if they saw the player
        (let ([targets (available-targets monster)])
          (when (not (null? targets))
            (ranged-attack monster (car targets))))))))

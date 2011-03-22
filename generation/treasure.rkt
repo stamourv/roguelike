@@ -39,12 +39,11 @@
 		  (factor (apply + (map car new-items))))
 	     ;; recalculate the probabilities
 	     ;; note: the probability of each category remains unchanged
-             ;; TODO change it ?
 	     (cons (car cat) (normalize-probability-table new-items))))
 	 treasure-table)))
 
 (define (generate-treasure no)
-  (let* ((treasure-points (* 30 (expt no 1.5))) ; in gp TODO tweak
+  (let* ((treasure-points (* 30 (expt no 1.5))) ; in gp
 	 (possible        (possible-treasure no))
 	 (actual-bottom (foldl min ; lowest value of the possible treasure
                                treasure-points ; generous upper bound

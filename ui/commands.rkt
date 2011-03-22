@@ -91,7 +91,7 @@
      (else
       (let ((grid (let ((grid (grid-copy grid)))
                     (for-each
-                     (lambda (m n) ;; TODO like choice, won't scale over 10
+                     (lambda (m n)
                        (grid-set!
                         grid
                         (character-pos m)
@@ -101,7 +101,7 @@
                      (iota n))
                     grid)))
         ;; show which monsters are which numbers
-        (cursor-home) ;; TODO taken from show-state
+        (cursor-home)
         (clear-to-bottom)
         (cursor-notification-head)
         (for-each (lambda (m n)

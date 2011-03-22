@@ -11,11 +11,8 @@
   ;; function that takes the monster, the floor, and the position of the
   ;; player as parameters and makes the monster act
   behavior)
-;; TODO have different speeds (maybe even initiative?) to determine which
-;;  monster moves first
 
 ;; to handle the repetitive part of generating the hp
-;; TODO could be done with a constructor ?
 (define (new-monster f . args)
   (match args
     [(list-rest name
@@ -37,7 +34,7 @@
              (eq? (character-floor m) (character-floor player)))
     ((behavior-fun (monster-behavior m))
      m (character-pos player))
-    (when reschedule? (reschedule m)))) ;; TODO call-next-method
+    (when reschedule? (reschedule m))))
 
 
 (define-struct behavior (fun nb-turns-idle) #:mutable #:transparent)

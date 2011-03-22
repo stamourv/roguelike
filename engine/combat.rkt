@@ -19,7 +19,6 @@
   (printf "~a attacks the ~a"
           (character-name attacker)
           (character-name defender))
-  ;; TODO instead of check-if-hit, use call-next-method?
   (check-if-hit attacker defender))
 (define-method (ranged-attack (attacker struct:player-character) defender)
   (printf "~a shoots at the ~a"
@@ -31,7 +30,7 @@
 (define-method (attack (attacker struct:monster) defender)
   (printf "The ~a attacks ~a"
           (character-name attacker) (character-name defender))
-  (check-if-hit attacker defender)) ;; TODO good for call-next-method too
+  (check-if-hit attacker defender))
 (define-method (ranged-attack (attacker struct:monster) defender)
   (printf "The ~a shoots at ~a"
           (character-name attacker) (character-name defender))
@@ -57,26 +56,21 @@
 
 (define (check-if-hit attacker defender
 		      (bonus-fun get-melee-attack-bonus))
-  ;; TODO ranged weapons can currently be used in melee with no penalty, and
-  ;;  use the strength bonus to hit
   (let ((roll ((dice 20))))
     (if (>= (+ roll (bonus-fun attacker))
 	    (get-armor-class defender))
 	(damage attacker defender)
 	(display " and misses.\n"))))
-;; TODO depending on by how much it missed, say different things
 
 
 (define-generic damage)
 (define-method (damage attacker defender)
-  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
+  (let ((dmg (max (get-damage attacker) 1)))
     (printf " and deals ~a damage.\n" dmg)
     (set-character-hp! defender (- (character-hp defender) dmg))))
 (define-method (damage (attacker struct:player-character)
                        (defender struct:monster))
-  (let ((dmg (max (get-damage attacker) 1))) ;; TODO could deal 0 damage ?
-    ;; TODO copied from character.scm, the fallback method, call-next-method?
-    ;;  (but would mess up with the .\n at the end)
+  (let ((dmg (max (get-damage attacker) 1)))
     (printf " and deals ~a damage" dmg)
     (set-character-hp! defender (- (character-hp defender) dmg))
     (if (<= (character-hp defender) 0)
@@ -93,20 +87,15 @@
                               (display "Attack of opportunity: ")
                               ;; give a turn, but don't reschedule
                               (turn occ #f)))))))
-            ;; TODO for now, we just give them a turn, which means they could
-            ;;  walk away instead of attacking
 	    (four-directions (character-pos char))))
 
 
-;; TODO not all that clean to have it here, but it's the only place where it
-;;  would not lead to circular dependencies
-;;  -> parameter?
 ;; removes a monster, usually when killed
 (define (remove-monster monster)
   (printf ", which kills the ~a.\n" (character-name monster))
   (let* ((floor (character-floor monster))
 	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
-    ;; drop equipment with a certain probability TODO TWEAK
+    ;; drop equipment with a certain probability
     (for-each-equipped (lambda (obj where)
 			 (when (and obj (removable? obj) (random-boolean 0.3))
                            (add-item cell obj)))

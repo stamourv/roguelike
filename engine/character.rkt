@@ -17,15 +17,10 @@
   ;; differently
   altered-attrs
   natural-ac
-  ;; TODO have natural weapons too, which are used when no weapon is equipped
-  ;;  (change get-damage-fun)
   level
   hit-dice max-hp hp
   base-attack-bonus
   current-attack-bonus ; for multiple attacks
-  ;; TODO have a constructor that sets it at base, when monsters handle
-  ;;  multiple attacks (which sets this), won't be needed (and monsters
-  ;;  can have it as #f)
   nb-attacks
   speed ; number of seconds needed to do a turn
   equipment)
@@ -44,7 +39,7 @@
 (define (attribute-getter attr)
   (lambda (char)
     (case attr
-      ((str)        (character-str char)) ;; TODO macro
+      ((str)        (character-str char))
       ((dex)        (character-dex char))
       ((con)        (character-con char))
       ((int)        (character-int char))
@@ -101,8 +96,8 @@
 
 (define-struct equipment
   (main-hand
-   off-hand ; shield or 2nd weapon ;; TODO no second weapon for now
-   torso) ;; TODO add more
+   off-hand ; shield or 2nd weapon
+   torso)
   #:mutable #:transparent)
 (define (new-equipment #:main-hand (main-hand #f)
                        #:off-hand (off-hand #f)
@@ -124,12 +119,12 @@
        (character-natural-ac c)
        (get-attribute-bonus 'dex c)
        (get-ac (equipment-torso    e))
-       (get-ac (equipment-off-hand e))))) ;; TODO add more
+       (get-ac (equipment-off-hand e)))))
 
 (define-method (reschedule (char struct:character))
   (schedule (lambda () (turn char #t)) (character-speed char)))
 
-(define-generic attack) ;; TODO call-next-method
+(define-generic attack)
 (define-generic ranged-attack)
 ;; for ranged attacks. returns a list of characters
 (define-generic available-targets)
@@ -149,8 +144,4 @@
             ((walkable-cell? new-cell)
              (attack occ (cell-occupant (grid-ref g new-pos)))
              #f)
-            ;; TODO return #f ? the character did not move, but its turn is
-            ;;  likely lost (except in the case where a monster moves over a
-            ;;  monster, and then tries to move around it, like in
-            ;;  flee-behavior)
             (else #f)))))

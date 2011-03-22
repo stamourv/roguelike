@@ -47,7 +47,6 @@
 ;; weapon: name gp-value rarity damage-dice damage-type
 (new-weapon new-club        "club"        1  0.9 '(6)  'bludgeoning)
 (new-weapon new-shortspear  "shortspear"  1  0.3 '(6)  'piercing)
-;; TODO also piercing
 (new-weapon new-morningstar "morningstar" 8  0.5 '(8)  'bludgeoning)
 (new-weapon new-short-sword "short sword" 10 0.8 '(6)  'slashing)
 (new-weapon new-battleaxe   "battleaxe"   10 0.6 '(8)  'slashing)
@@ -67,12 +66,10 @@
             (lambda ()
               (set-character-hp! player
                                  (min (+ (character-hp player) ((dice 8 1)))
-                                      ;; TODO have this in a "heal" function
                                       (character-max-hp player))))
             (lambda ()
               (if (= (character-hp player) (character-max-hp player))
                   "You feel nothing.\n"
-                  ;; TODO also, don't identify the potion kind in that case
                   "You feel healthier.\n")))
 (new-potion new-bulls-strength-potion
             "bull's strength potion" 300 0.3
@@ -93,12 +90,9 @@
               (alter-attr player 'hp  (* (character-level player) 2) 180))
             (lambda ()
               "You could run a thousand miles.\n"))
-;; TODO add others for int, wis, cha once they get useful
 (new-potion new-barkskin-potion
             "potion of barkskin" 300 0.25
             (lambda ()
               (alter-attr player 'natural-ac 2 180))
             (lambda ()
               "Your skin becomes thick and rough.\n"))
-;; TODO have some bad potions (with the same price as the good ones, to avoid
-;;  running only into bad potions early on) to make it riskier

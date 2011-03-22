@@ -32,12 +32,14 @@
 (new-command #\/ describe     'help "Describe what a character represents.")
 (new-command #\& describe-all 'help "List all characters known to the game.")
 (new-command #\' info         'help "Get information about the current tile.")
+;; currently not working
 ;; (new-command #\" look         'help "Information about a given tile.")
 
 ;; debugging
 (new-command #\k kill       'debugging "Insta-kill.")
 (new-command #\R reveal-map 'debugging "Reaveal map.")
 (new-command #\G god-mode   'debugging "God mode.")
+;; currently not working
 ;; (new-command #\: console    'debugging "Console.")
 
 (new-command #\space (lambda () display "Nothing happen\n")
@@ -59,7 +61,6 @@
     (if (= (char->integer char) 27)
         ;; movement
         (begin (case (which-direction?)
-                 ;; TODO abstract with other arrow reading code
                  ((up)    (set-point-x! pos (- x 1)))
                  ((down)  (set-point-x! pos (+ x 1)))
                  ((right) (set-point-y! pos (+ y 1)))

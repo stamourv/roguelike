@@ -17,7 +17,6 @@
   (if (and (= (point-x a) (point-x b))
 	   (= (point-y a) (point-y b)))
       #t ; same point, trivial solution
-      ;; TODO maybe have a generic bresenham, could be used for other things
       (let* ((x0 (point-x a)) (y0 (point-y a))
 	     (x1 (point-x b)) (y1 (point-y b))
 	     (steep (> (abs (- y1 y0)) (abs (- x1 x0)))))
@@ -40,8 +39,6 @@
 		   
 		   (error (+ error delta-err))
 		   (cell  (grid-ref g pos)))
-	      ;; TODO if we want it generic, it would be at this point that a
-              ;;  user function would be called, I suppose
 	      (cond ((equal? pos dest)          #t) ; we see it
 		    ((and (opaque-cell? cell monsters-opaque?)
 			  (not (equal? pos start))) #f) ; we hit an obstacle

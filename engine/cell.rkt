@@ -132,7 +132,7 @@
 (define-method (walkable-cell? (c struct:door)) (door-open? c))
 (define-method (opaque-cell?   (c struct:door) occupants-opaque?)
   (or (not (door-open? c))
-      (and occupants-opaque? (cell-occupant c)))) ;; TODO call-next-method?
+      (and occupants-opaque? (cell-occupant c))))
 
 
 (define-class <chest> (cell) open?)

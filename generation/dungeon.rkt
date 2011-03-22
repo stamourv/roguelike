@@ -13,8 +13,6 @@
                     [left left-from] [right right-from]))
 (provide generate-dungeon-floor)
 
-;; TODO take internal definitions out and have parameters + parameterize to
-;;  keep floor-local state?
 (define (generate-dungeon-floor (stairs-up-pos #f) (place-stairs-down? #t))
   ;; for now, levels are grids of 20 rows and 60 columns, to fit in a 80x25
   ;; terminal
@@ -84,10 +82,6 @@
       (let* ((height (random-between 8 12))
 	     (width  (random-between 8 12))
 	     (room   (add-rectangle pos height width direction 'large-room)))
-        ;; TODO maybe have even bigger rooms, or longer ones, that can have
-        ;;  rows of columns, maybe just a hallway type of room, with width 6
-        ;;  (or maybe 7 possible too) with 2 rows of columns, handle like a
-        ;;  corridor
 	;; large rooms may have pillars
 	(when (and room (< (random) 0.6))
           (let* ((cells       (room-cells room))
@@ -118,7 +112,6 @@
 	room))
     (define (add-corridor pos direction)
       ;; width: 3, length: 5-17 (including walls)
-      ;; TODO maybe wider corridors ?
       (let* ([len    (random-between 5 17)]
              [horiz? (memq direction '(east west))]
              [h      (if horiz? 3 len)]
@@ -363,8 +356,8 @@
                               'corridor))
                        (wall-perpendicular level pos))
                       ;; a doorway is more likely between 2 corridors
-                      (random-boolean 0.7)] ;; TODO tweak prob.
-                     [else (random-boolean)]) ;; TODO tweak prob.
+                      (random-boolean 0.7)]
+                     [else (random-boolean)])
            (grid-set! level pos (new-empty-cell)))))
      level)
     ;; to avoid "phantom doors"

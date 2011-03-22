@@ -22,12 +22,10 @@
   floors-after
   experience
   inventory) ; list of items
-(define (new-player name) ;; TODO constructor ?
+(define (new-player name)
   (set-player!
    (make-player-character
     name #f #f
-    ;; TODO have a way to select (and also display, maybe press r
-    ;;  for roster, c for character)
     16 14 14 10 10 10 (make-hash) 0
     1 '(10) ; hit dice
     #f #f
@@ -77,8 +75,6 @@
 
 
 (define (update-visibility)
-  ;; TODO maybe show visible parts in dark yellow instead of white background?
-  ;;  to simulate a lantern
   ;; set the fog of war
   (let ((view (player-view player))
 	(pos  (character-pos player)))
@@ -116,8 +112,6 @@
             (when (and (inside-grid? view new)
                        (not (eq? (grid-ref view new)
                                  'visible)) ; already seen
-                       ;; TODO have range in a variable, maybe a player trait
-                       ;;  (elves see farther?)
                        (<= (distance pos new) 7) ; within range
                        ;; do we have line of sight ? helps restrict the
                        ;; visibility down to a reasonable level
@@ -164,7 +158,7 @@
       ;; 1000, 3000, 6000, ...
       (level-up))))
 
-(define (level-up) ;; TODO have attribute upgrades, etc
+(define (level-up)
   (display "Level up!\n")
   (let* ((old-level (character-level player))
 	 (new-level (+ old-level 1)))
@@ -191,7 +185,6 @@
   (add-item (grid-ref (player-map player) (character-pos player))
             item))
 (define (inventory-equip item)
-  ;; TODO macro?
   (let* ([place (cond ((weapon?     item) 'main-hand)
                       ((shield?     item) 'off-hand)
                       ((body-armor? item) 'torso))]
@@ -212,7 +205,6 @@
        ((off-hand)  set-equipment-off-hand!)
        ((torso)     set-equipment-torso!))
      e item)
-    ;; TODO generalize with all non-removable items
     (cond ((and old (not (off-hand-placeholder? old)))
            (back-in-inventory old))
           ((two-handed-weapon? old)
