@@ -32,13 +32,13 @@
 (new-command #\/ describe     'help "Describe what a character represents.")
 (new-command #\& describe-all 'help "List all characters known to the game.")
 (new-command #\' info         'help "Get information about the current tile.")
-(new-command #\" look         'help "Information about a given tile.")
+;; (new-command #\" look         'help "Information about a given tile.")
 
 ;; debugging
 (new-command #\k kill       'debugging "Insta-kill.")
 (new-command #\R reveal-map 'debugging "Reaveal map.")
 (new-command #\G god-mode   'debugging "God mode.")
-(new-command #\: console    'debugging "Console.")
+;; (new-command #\: console    'debugging "Console.")
 
 (new-command #\space (lambda () display "Nothing happen\n")
              'misc "Wait.")
