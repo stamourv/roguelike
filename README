@@ -4,4 +4,10 @@ Combat system and data mostly stolen from DND 3E.
 
 To run: racket game.rkt
 
+You are the @ character.
+Letters are enemies.
+You move with the arrow keys.
+Move into enemies to attack them.
+
 For help, type ? while in game.
+To know what a character means, type /.
