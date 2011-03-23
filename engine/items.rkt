@@ -42,7 +42,7 @@
 (define-class <weapon> (equipable-item)
   damage-dice ; function that returns the damage
   damage-type)
-(add-show-method struct:weapon 'item #\! "A melee weapon.")
+(add-show-method struct:weapon 'item #\! "A one-handed melee weapon.")
 (define-method (get-damage-fun (o struct:weapon))
   (apply dice (weapon-damage-dice o)))
 (define-method (item-info (o struct:weapon))
@@ -51,6 +51,8 @@
           (symbol->string (weapon-damage-type o))))
 
 (define-class <two-handed-weapon> (weapon))
+(add-show-method struct:two-handed-weapon 'item #\/
+                 "A two-handed melee weapon.")
 (define-class <off-hand-placeholder> (item))
 (define (new-off-hand-placeholder)
   (make-off-hand-placeholder "<two-handed weapon>" 0 0))
