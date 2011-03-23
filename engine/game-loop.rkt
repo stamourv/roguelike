@@ -41,7 +41,7 @@
 		(set-character-current-attack-bonus! player attack-bonus)
                 ;; if we didn't move, we can keep attacking
                 (update-visibility)
-                (show-state)
+                (print-state)
                 (when (not (eq? (read-command) 'move))
                   (loop (- n 1) (- attack-bonus 5))))))
 	(when reschedule? (reschedule player)))))

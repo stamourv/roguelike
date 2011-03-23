@@ -7,23 +7,28 @@
          "../engine/items.rkt"
          "../engine/common.rkt"
          "../engine/visibility.rkt")
-(provide show-state quit print-floor-banner)
+(provide print-state quit print-floor-banner)
+
+(define (print-state)
+  (print-sidebar)
+  (print-floor-banner)
+  (show-grid (player-map player)
+	     #:print-fun (visibility-show (player-view player)
+                                          (player-map  player))))
 
 (define (print-floor-banner)
   (cursor-home)
   (clear-line)
   (printf "Floor ~a\n" (player-character-floor-no player)))
 
-(define (show-state)
+(define (print-sidebar)
   (cursor-notification-head)
   (printf-notification "~a\n" (character-name player))
   (printf-notification "level ~a\n" (character-level player))
   (printf-notification "~a xp pts\n" (player-character-experience player))
-  (printf-notification "")
-  (when (altered-attr? player 'hp)
-    (terminal-colors 'white 'black))
-  (display (character-hp player))
-  (terminal-reset)
+  (printf-notification "") ; for alignment
+
+  (print-altered 'hp)
   (printf "/~a hp\n" (character-max-hp player))
   
   (printf-notification "AC: ")
@@ -33,26 +38,27 @@
   (terminal-reset)
   (newline)
 
-  ;; display attributes
+  (print-attributes))
+
+(define (print-altered a)
+  (when (altered-attr? player a)
+    (terminal-colors 'white 'black))
+  (display ((attribute-getter a) player))
+  (terminal-reset))
+
+(define (print-attributes)
   (for-each
    (lambda (l)
      (define (display-attr a)
        (printf "~a: " a)
-       (when (altered-attr? player a)
-         (terminal-colors 'white 'black))
-       (display ((attribute-getter a) player))
-       (terminal-reset))
+       (print-altered a))
      (printf-notification "") ; for alignment
      (display-attr (first l))
      (display "\t")
      (display-attr (second l))
      (newline))
-   '((str int) (dex wis) (con cha)))
+   '((str int) (dex wis) (con cha))))
 
-  (print-floor-banner)
-  (show-grid (player-map player)
-	     #:print-fun (visibility-show (player-view player)
-                                          (player-map  player))))
 
 (define (quit #:force [force? #f])
   (when (not force?) (displayln "Do you really want to quit?"))

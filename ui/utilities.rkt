@@ -69,7 +69,7 @@
                (let ((nb (read-number (length items))))
                  (when nb
                    (let ((item (list-ref items nb)))
-                     (show-state)
+                     (print-state)
                      (f item)
                      (printf "~a~a.\n" feedback (item-info item))))))))
 
