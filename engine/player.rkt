@@ -66,9 +66,7 @@
     (set-character-pos!                  player start-pos)
     (set-player-character-current-floor! player player-floor)
     (set-character-floor!                player floor)
-    (reset-turn-no)
-    (reset-turn-id)
-    (reset-turn-queue)
+    (flush-turn-queue)
     ;; no need to reschedule the player, since he will get rescheduled at the
     ;; end of his turn
     (for-each reschedule (floor-monsters floor))))

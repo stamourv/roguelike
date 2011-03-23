@@ -2,8 +2,8 @@
 
 (require "../utilities/class.rkt")
 (provide turn schedule reschedule
-         reset-turn-no increment-turn-no
-         reset-turn-id reset-turn-queue
+         increment-turn-no
+         flush-turn-queue
          find-next-active)
 
 (define-generic turn)
@@ -14,13 +14,15 @@
 (define turn-id    0)
 (define turn-queue '())
 
-(define (reset-turn-no)     (set! turn-no 0))
 (define (increment-turn-no) (set! turn-no (add1 turn-no)))
-(define (reset-turn-id)     (set! turn-id 0))
-(define (reset-turn-queue)  (set! turn-queue '()))
 
-(define (schedule thunk duration)
-  (set! turn-queue (cons (list (+ turn-no duration) turn-id thunk) turn-queue))
+;; called when we change level. keep cross-level events (temp. effects and co)
+(define (flush-turn-queue) (filter fourth turn-queue))
+
+(define (schedule thunk duration #:cross-level [cross-level? #f])
+  (set! turn-queue
+        (cons (list (+ turn-no duration) turn-id thunk cross-level?)
+              turn-queue))
   (set! turn-id (+ turn-id 1)))
 
 (define-generic reschedule)
