@@ -72,6 +72,15 @@
                10)
             2))
 
+(define (show-attr attr) ; bleh
+  (case attr
+    [(str) "strength"]
+    [(dex) "dexterity"]
+    [(con) "constitution"]
+    [(int) "intelligence"]
+    [(wis) "wisdom"]
+    [(cha) "charisma"]))
+
 ;; to note that an attribute is altered by a temporary effect
 (define (alter-attr    char attr n duration)
   (let ((alt    (character-altered-attrs char))
@@ -82,7 +91,8 @@
     (schedule
      (lambda ()
        (setter char (- (getter char) n))
-       (hash-set! alt attr (- (hash-ref alt attr) 1)))
+       (hash-set! alt attr (- (hash-ref alt attr) 1))
+       (printf "Your ~a goes back to normal.\n" (show-attr attr)))
      duration)))
 (define (altered-attr? char attr)
   (> (hash-ref (character-altered-attrs char) attr 0) 0))
