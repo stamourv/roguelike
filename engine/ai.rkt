@@ -85,13 +85,19 @@
 (define (ranged-behavior)
   (new-behavior
    (lambda (b)
-     (lambda (monster player-pos)
-       (when (not (ranged-weapon? (equipment-main-hand
-                                   (character-equipment monster))))
-         (error "monster " monster " has no ranged weapon"))
-       (let ([targets (available-targets monster)])
-         (when (not (null? targets))
-           (ranged-attack monster (car targets))))))))
+     (let ([reloading? #f]) ; AI state
+       (lambda (monster player-pos)
+         (when (not (ranged-weapon? (equipment-main-hand
+                                     (character-equipment monster))))
+           (error "monster " monster " has no ranged weapon"))
+         (if reloading?
+             (begin (printf "The ~a reloads.\n"
+                            (character-name monster))
+                    (set! reloading? #f))
+             (let ([targets (available-targets monster)])
+               (when (not (null? targets))
+                 (ranged-attack monster (car targets))
+                 (set! reloading? #t))))))))) ; can shoot every other turn
 
 
 (define (move-or-increment-idle map monster dest)
