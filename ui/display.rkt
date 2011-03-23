@@ -36,9 +36,7 @@
     (terminal-colors 'white 'black))
   (display (get-armor-class player))
   (terminal-reset)
-  (newline)
-
-  (print-attributes))
+  (newline))
 
 (define (print-altered a)
   (when (altered-attr? player a)
