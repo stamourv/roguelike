@@ -139,6 +139,7 @@
 ;; for ranged attacks. returns a list of characters
 (define-generic available-targets)
 
+(define-generic hostile-towards?)
 
 (define (move g occ new-pos)
   ;; moves the occupant of pos to new-pos, and returns #t if it actually moved

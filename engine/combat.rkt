@@ -77,17 +77,25 @@
 	(remove-monster defender)
 	(display ".\n"))))
 
+(define-method (hostile-towards? a b)
+  #t)
+(define-method (hostile-towards? (a struct:monster) (b struct:monster))
+  #f)
+
 (define (attacks-of-opportunity char)
-  (for-each (lambda (pos)
-	      (cond ((grid-ref-check
-		      (floor-map (character-floor char)) pos)
-		     => (lambda (cell)
-			  (let ((occ (cell-occupant cell)))
-			    (when occ
-                              (display "Attack of opportunity: ")
-                              ;; give a turn, but don't reschedule
-                              (turn occ #f)))))))
-	    (four-directions (character-pos char))))
+  (for-each
+   (lambda (pos)
+     (cond ((grid-ref-check
+             (floor-map (character-floor char)) pos)
+            => (lambda (cell)
+                 (let ((occ (cell-occupant cell)))
+                   (when (and occ (hostile-towards? occ char))
+                     (if (monster? occ)
+                         (display "Attack of opportunity: ")
+                         (displayln "You get an attack of opportunity!"))
+                     ;; give a turn, but don't reschedule
+                     (turn occ #f)))))))
+   (four-directions (character-pos char))))
 
 
 ;; removes a monster, usually when killed
