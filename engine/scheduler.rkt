@@ -2,14 +2,14 @@
 
 (require "../utilities/class.rkt")
 (provide turn schedule reschedule
-         increment-turn-no
+         increment-turn-no turn-no
          flush-turn-queue
          find-next-active)
 
 (define-generic turn)
 (define-method (turn x reschedule?) #f)
 
-(define turn-no    0) ; in seconds, reset when the level is changed
+(define turn-no    0) ; in seconds
 ;; to preserve the ordering from turn to turn, in case of identical speeds
 (define turn-id    0)
 (define turn-queue '())

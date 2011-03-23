@@ -6,7 +6,8 @@
          "../engine/player.rkt"
          "../engine/items.rkt"
          "../engine/common.rkt"
-         "../engine/visibility.rkt")
+         "../engine/visibility.rkt"
+         "../engine/scheduler.rkt")
 (provide print-state quit print-floor-banner)
 
 (define (print-state)
@@ -71,16 +72,16 @@
            (xp           (player-character-experience player))
            (level        (character-level player))
            (floor-no     (player-character-floor-no player))
-           (current-game (list name xp level floor-no))
+           (current-game (list name xp level floor-no turn-no))
            (filename     "hall-of-fame"))
       (define (update-hall-of-fame)
         ;; list of pairs (name . score), sorted by descending order of score
-        (let* ((l   (sort (cons current-game
+        (let* ([l   (sort (cons current-game
                                 (if (file-exists? filename)
                                     (with-input-from-file filename read)
                                     '()))
-                          > #:key cadr))
-               (new (take l (min (length l) 10)))); we keep the 10 best
+                          > #:key second)]
+               [new (take l (min (length l) 10))]); we keep the 10 best
           (display new (open-output-file filename #:exists 'replace))
           new))
       (let loop ((hall (update-hall-of-fame))
@@ -88,8 +89,7 @@
         (when (not (null? hall))
           (let ((head (car hall)))
             (terminal-print
-             (format "~a:\t~a\tlevel ~a\tfloor ~a\n"
-                     (car head) (cadr head) (caddr head) (cadddr head))
+             (apply format "~a:\t~a\tlevel ~a\tfloor ~a\t~a turns\n" head)
              #:bg (if (and highlight? (equal? (car hall) current-game))
                       'white
                       'black)
