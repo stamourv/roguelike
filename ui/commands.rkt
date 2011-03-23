@@ -11,7 +11,8 @@
          "../engine/items.rkt"
          "../engine/common.rkt"
          "../engine/visibility.rkt")
-(require "utilities.rkt")
+(require "utilities.rkt"
+         "display.rkt")
 
 (provide (all-defined-out))
 
@@ -112,8 +113,7 @@
         (newline)
         (printf-notification "q: Cancel\n")
         ;; show the map with the target numbers
-        (cursor-home)
-        (printf "Floor ~a\n" (player-character-floor-no player))
+        (print-floor-banner)
         (show-grid grid
                    #:print-fun (visibility-show (player-view player)
                                                 (player-map  player)))

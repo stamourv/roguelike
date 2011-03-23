@@ -7,7 +7,12 @@
          "../engine/items.rkt"
          "../engine/common.rkt"
          "../engine/visibility.rkt")
-(provide show-state quit)
+(provide show-state quit print-floor-banner)
+
+(define (print-floor-banner)
+  (cursor-home)
+  (clear-line)
+  (printf "Floor ~a\n" (player-character-floor-no player)))
 
 (define (show-state)
   (cursor-notification-head)
@@ -43,10 +48,8 @@
      (display-attr (second l))
      (newline))
    '((str int) (dex wis) (con cha)))
-  
-  (cursor-home)
-  (clear-line)
-  (printf "Floor ~a\n" (player-character-floor-no player))
+
+  (print-floor-banner)
   (show-grid (player-map player)
 	     #:print-fun (visibility-show (player-view player)
                                           (player-map  player))))
