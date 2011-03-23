@@ -96,3 +96,7 @@
               (alter-attr player 'natural-ac 2 180))
             (lambda ()
               "Your skin becomes thick and rough.\n"))
+
+;; register potion types, to assign them a color
+(for-each (lambda (p) (register-potion-type (item-name ((cdr p)))))
+          potion-table)

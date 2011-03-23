@@ -64,18 +64,15 @@
 (add-show-method struct:potion 'item #\; "A potion.")
 
 ;; important: make sure there is at least as many colors as potion types
-(define potion-colors
-  (let ((types
-	 '("light healing potion"
-	   "bull's strength potion"
-	   "cat's grace potion"
-	   "bear's endurance potion"
-	   "potion of barkskin"))
-	(colors
-	 '("red" "blue" "green" "yellow" "white" "black" "pink" "teal" "purple"
-	   "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
-	   "milky")))
-    (map cons types (take (shuffle colors) (length types)))))
+(define all-colors
+  (shuffle
+   '("red" "blue" "green" "yellow" "white" "black" "pink" "teal" "purple"
+     "brown" "amber" "grey" "silver" "beige" "cloudy" "shimmering" "gold"
+     "milky")))
+(define potion-colors '()) ; filled up as potion types are defined
+(define (register-potion-type name)
+  (set! potion-colors (cons (cons name (car all-colors)) potion-colors))
+  (set! all-colors (cdr all-colors)))
 ;; potion types that have been identified
 (define identified-potions '())
 
@@ -86,7 +83,7 @@
 	  (else (format "~a potion" (cdr (assoc name potion-colors)))))))
 
 (define-generic drink)
-(define-method (drink o)          (display "I can't drink that."))
+(define-method (drink o) (display "I can't drink that."))
 (define-method (drink (o struct:potion))
   ((potion-thunk o))
   (display ((potion-message o)))
