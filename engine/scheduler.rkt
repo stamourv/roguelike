@@ -20,7 +20,7 @@
 (define (reset-turn-queue)  (set! turn-queue '()))
 
 (define (schedule thunk duration)
-  (set! turn-queue (cons (list (+ turn-id duration) turn-id thunk) turn-queue))
+  (set! turn-queue (cons (list (+ turn-no duration) turn-id thunk) turn-queue))
   (set! turn-id (+ turn-id 1)))
 
 (define-generic reschedule)
