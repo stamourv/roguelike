@@ -27,18 +27,20 @@
   (displayln "Movement:\nArrow keys")
   (let loop ([commands command-table]
              [category (caddr (car command-table))])
-    (newline)
-    ;; capitalize category
-    (let ([cat (symbol->string category)])
-      (printf "~a:\n" (upcase-word cat)))
-    (let loop2 ([commands commands])
-      (when (not (null? commands))
-        (let* ([head (car commands)]
-               [cat  (caddr head)])
-          (if (eq? cat category) ; same category
-              (begin (printf "~a: ~a\n" (car head) (cadddr head))
-                     (loop2 (cdr commands)))
-              (loop commands (caddr head)))))))
+    (if (eq? category 'debugging) ; don't show debug commands
+        (loop (cdr commands) (caddr (cadr commands)))
+        (let ([cat (symbol->string category)])
+          (newline)
+          ;; capitalize category
+          (printf "~a:\n" (upcase-word cat))
+          (let loop2 ([commands commands])
+            (when (not (null? commands))
+              (let* ([head (car commands)]
+                     [cat  (caddr head)])
+                (if (eq? cat category) ; same category
+                    (begin (printf "~a: ~a\n" (car head) (cadddr head))
+                           (loop2 (cdr commands)))
+                    (loop commands (caddr head)))))))))
   (wait-after-long-output))
 
 (define (describe-one what)
