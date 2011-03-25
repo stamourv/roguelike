@@ -5,6 +5,7 @@
 (require "common.rkt"
          "character.rkt"
          "player.rkt"
+         "visibility.rkt"
          "scheduler.rkt")
 (require "../ui/utilities.rkt"
          "../ui/input.rkt"
@@ -39,9 +40,11 @@
 		     (attack-bonus bab))
 	    (when (and (> n 0) (equal? (character-pos player) pos))
 		(set-character-current-attack-bonus! player attack-bonus)
-                ;; if we didn't move, we can keep attacking
-                (update-visibility)
+                (update-visibility! (player-view player)
+                                    (player-map player)
+                                    (character-pos player))
                 (print-state)
+                ;; if we didn't move, we can keep attacking
                 (when (not (eq? (read-command) 'move))
                   (loop (- n 1) (- attack-bonus 5))))))
 	(when reschedule? (reschedule player)))))
