@@ -1,6 +1,5 @@
 #lang racket
 
-(require (rename-in racket/base [floor math-floor]))
 (require "../utilities/grid.rkt"
          "../utilities/display.rkt")
 (require "cell.rkt")
@@ -45,7 +44,7 @@
 		    (else (let ((error (if (>= error 1/2)
 					   (- error 1)  error))
 				(y     (if (>= error 1/2)
-					   (math-floor (+ y y-step)) y)))
+					   (+ y y-step) y)))
 			    (loop error (+ x 1) y))))))))))
 
 (define (clear-shot? grid a b) (line-of-sight? grid a b #t))
