@@ -103,3 +103,37 @@
 		((> (abs slope) 2)   (if (> c-x p-x) 'n  's))
 		((> slope 0)         (if (> c-x p-x) 'ne 'sw))
 		(else                (if (> c-x p-x) 'nw 'se)))))))
+
+
+;; generic Bresenham to draw a line between a and b
+;; see: http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+;; f gets called on each point of the line. it could be used to store them
+(define (trace-line f a b)
+  (if (and (= (point-x a) (point-x b))
+	   (= (point-y a) (point-y b)))
+      #t ; same point, trivial solution
+      (let* ((x0 (point-x a)) (y0 (point-y a))
+	     (x1 (point-x b)) (y1 (point-y b))
+	     (steep (> (abs (- y1 y0)) (abs (- x1 x0)))))
+	(when steep
+          (let ((tmp x0))    (set! x0 y0) (set! y0 tmp)
+               (set! tmp x1) (set! x1 y1) (set! y1 tmp)))
+	(let* ((delta-x   (abs (- x1 x0)))
+	       (delta-y   (abs (- y1 y0)))
+	       (delta-err (/ delta-y delta-x))
+               (x-step    (if (< x0 x1) 1 -1))
+	       (y-step    (if (< y0 y1) 1 -1))
+	       (start     (if steep (new-point y0 x0) (new-point x0 y0)))
+	       (dest      (if steep (new-point y1 x1) (new-point x1 y1))))
+	  (let loop ((error        0)
+		     (x            x0)
+		     (y            y0))
+	    (let ((pos   (if steep (new-point y x) (new-point x y)))
+                  (error (+ error delta-err)))
+              (f pos) ; let the user function do its work
+              (unless (equal? pos dest) ; done
+                (let ((error (if (>= error 1/2)
+                                 (- error 1)  error))
+                      (y     (if (>= error 1/2)
+                                 (+ y y-step) y)))
+                  (loop error (+ x x-step) y)))))))))

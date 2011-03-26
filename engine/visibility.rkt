@@ -9,41 +9,17 @@
   (empty-grid (grid-height g) (grid-width g)
 	      #:cell-fun (lambda (pos) 'unknown)))
 
-(define (line-of-sight? g a b (monsters-opaque? #f))
-  ;; using Bresenham's algorithm to draw a line between a and b, see if we
-  ;; hit any opaque objects
-  ;; see: http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-  (if (and (= (point-x a) (point-x b))
-	   (= (point-y a) (point-y b)))
-      #t ; same point, trivial solution
-      (let* ((x0 (point-x a)) (y0 (point-y a))
-	     (x1 (point-x b)) (y1 (point-y b))
-	     (steep (> (abs (- y1 y0)) (abs (- x1 x0)))))
-	(when steep
-          (let ((tmp x0))    (set! x0 y0) (set! y0 tmp)
-               (set! tmp x1) (set! x1 y1) (set! y1 tmp)))
-	(let* ((delta-x   (abs (- x1 x0)))
-	       (delta-y   (abs (- y1 y0)))
-	       (delta-err (/ delta-y delta-x))
-               (x-step    (if (< x0 x1) 1 -1))
-	       (y-step    (if (< y0 y1) 1 -1))
-	       (start     (if steep (new-point y0 x0) (new-point x0 y0)))
-	       (dest      (if steep (new-point y1 x1) (new-point x1 y1))))
-	  (let loop ((error        0)
-		     (x            x0)
-		     (y            y0))
-	    (let* ((pos   (if steep (new-point y x) (new-point x y)))
-		   
-		   (error (+ error delta-err))
-		   (cell  (grid-ref g pos)))
-	      (cond ((equal? pos dest)          #t) ; we see it
-		    ((and (opaque-cell? cell monsters-opaque?)
-			  (not (equal? pos start))) #f) ; we hit an obstacle
-		    (else (let ((error (if (>= error 1/2)
-					   (- error 1)  error))
-				(y     (if (>= error 1/2)
-					   (+ y y-step) y)))
-			    (loop error (+ x x-step) y))))))))))
+;; draw a line between a and b, see if we hit any opaque objects
+(define (line-of-sight? g a b [monsters-opaque? #f])
+  (let ([los? #t])
+    (trace-line (lambda (pos)
+                  (let ([cell (grid-ref g pos)])
+                    (when (and (not (equal? pos a)) ; not ourselves
+                               (not (equal? pos b)) ; not the target
+                               (opaque-cell? cell monsters-opaque?)) ; obstacle
+                      (set! los? #f))))
+                a b)
+    los?))
 
 (define (clear-shot? grid a b) (line-of-sight? grid a b #t))
 
