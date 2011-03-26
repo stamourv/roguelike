@@ -22,12 +22,10 @@
 	(when steep
           (let ((tmp x0))    (set! x0 y0) (set! y0 tmp)
                (set! tmp x1) (set! x1 y1) (set! y1 tmp)))
-	(when (> x0 x1)
-          (let ((tmp x0))    (set! x0 x1) (set! x1 tmp)
-               (set! tmp y0) (set! y0 y1) (set! y1 tmp)))
-	(let* ((delta-x   (- x1 x0))
+	(let* ((delta-x   (abs (- x1 x0)))
 	       (delta-y   (abs (- y1 y0)))
 	       (delta-err (/ delta-y delta-x))
+               (x-step    (if (< x0 x1) 1 -1))
 	       (y-step    (if (< y0 y1) 1 -1))
 	       (start     (if steep (new-point y0 x0) (new-point x0 y0)))
 	       (dest      (if steep (new-point y1 x1) (new-point x1 y1))))
@@ -45,7 +43,7 @@
 					   (- error 1)  error))
 				(y     (if (>= error 1/2)
 					   (+ y y-step) y)))
-			    (loop error (+ x 1) y))))))))))
+			    (loop error (+ x x-step) y))))))))))
 
 (define (clear-shot? grid a b) (line-of-sight? grid a b #t))
 
