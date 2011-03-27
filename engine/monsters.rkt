@@ -35,16 +35,21 @@
 
 (define (new-monster f name
                      str dex con int wis cha
-                     level hit-dice
-                     #:natural-ac [natural-ac 0]
-                     . rest)
-  (let ((m (apply f name
-                  #f #f            ; pos, floor
-                  str dex con int wis cha
-                  (make-hash)      ; altered-attrs
-                  natural-ac level hit-dice
-                  #f #f            ; hp, max-hp
-                  rest)))
+                     challenge-rating hit-dice
+                     behavior
+                     #:natural-ac        [natural-ac 0]
+                     #:base-attack-bonus [bab        0]
+                     #:nb-attacks        [nb-attacks 1]
+                     #:speed             [speed      6]
+                     #:equipment         [equipment  (new-equipment)])
+  (let ((m (f name
+              #f #f       ; pos, floor
+              str dex con int wis cha
+              (make-hash) ; altered-attrs
+              natural-ac challenge-rating hit-dice
+              #f #f       ; hp, max-hp
+              bab bab     ; base-attack-bonus, current-attack-bonus
+              nb-attacks speed equipment behavior)))
     (init-hp m)
     m))
 
