@@ -351,6 +351,28 @@
                (else
                 new-pillar))))))))
 
+;; reachability test with a flood fill that goes through doors
+;; takes multiple destinations, to avoid having to call this repeatedly
+(define (points-reachable-from? from points)
+  (let loop ([queue   (list from)]
+             [visited '()]
+             [targets points])
+    (cond [(null? queue) ; some points are unreachable
+           #f]
+          [else
+           (let* ([head    (car queue)]
+                  [at-head (grid-ref-check level head)]
+                  [tail    (cdr queue)])
+             (cond [(null? targets) #t] ; done
+                   [(member head visited) (loop tail visited targets)]
+                   [(wall? at-head) (loop tail (cons head visited) targets)]
+                   [(or (empty-cell? at-head) (door? at-head))
+                    (loop (append tail (four-directions head))
+                          (cons head visited)
+                          (remove head targets))]
+                   [else ; something bad happened to the flood fill, abort
+                    #f]))])))
+
 
 (define (generate-dungeon-floor (stairs-up-pos #f) (place-stairs-down? #t))
 
@@ -513,25 +535,15 @@
        new-floor (remove pos (floor-walkable-cells new-floor)))
       (set-floor-stairs-down! new-floor pos)))
 
-  ;; make sure the exit is reachable from the entrance. otherwise start again
-  ;; done with simple flood-fill that goes through doors
-  (let loop ([queue (list (floor-stairs-up new-floor))]
-             [visited '()])
-    (cond [(null? queue) ; exit unreachable, reset generation
-           (set! new-floor
-                 (generate-dungeon-floor stairs-up-pos place-stairs-down?))]
-          [else
-           (let* ([head    (car queue)]
-                  [at-head (grid-ref-check level head)]
-                  [tail    (cdr queue)])
-             (cond [(stairs-down? at-head) #t] ; done
-                   [(member head visited) (loop tail visited)]
-                   [(wall? at-head) (loop tail (cons head visited))]
-                   [(or (empty-cell? at-head) (door? at-head))
-                    (loop (append tail (four-directions head))
-                          (cons head visited))]
-                   [else ; something bad happened to the flood fill
-                    ;; better start again
-                    (loop '() '())]))]))
+  ;; make sure that the exit and all rooms are reachable from the entrance
+  ;; otherwise start again
+  ;; this shouldn't happen, but just in case
+  (unless (points-reachable-from?
+           (floor-stairs-up new-floor)
+           (cons (floor-stairs-down new-floor)
+                 (map (lambda (x) (car (room-cells x)))
+                      (floor-rooms new-floor))))
+    (set! new-floor
+          (generate-dungeon-floor stairs-up-pos place-stairs-down?)))
 
   new-floor)
