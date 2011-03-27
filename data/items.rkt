@@ -63,10 +63,7 @@
 ;; potion: name gp-value effect-thunk message-thunk
 (new-potion new-light-healing-potion
             "light healing potion" 50 0.8
-            (lambda ()
-              (set-character-hp! player
-                                 (min (+ (character-hp player) ((dice 8 1)))
-                                      (character-max-hp player))))
+            (lambda () (heal player ((dice 8 1))))
             (lambda ()
               (if (= (character-hp player) (character-max-hp player))
                   "You feel nothing.\n"

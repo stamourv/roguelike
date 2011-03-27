@@ -156,3 +156,8 @@
              (attack occ (cell-occupant (grid-ref g new-pos)))
              #f)
             (else #f)))))
+
+
+(define (heal c amount)
+  (set-character-hp! c (min (+ (character-hp c) amount)
+                            (character-max-hp c))))
