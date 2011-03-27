@@ -5,7 +5,7 @@
 (require "../engine/common.rkt"
          "../engine/items.rkt"
          "../engine/character.rkt")
-(provide (all-defined-out))
+(provide (all-defined-out) new-natural-weapon)
 
 (define body-armor-table '())
 (define shield-table     '())

@@ -61,6 +61,11 @@
 (define-class <ranged-weapon> (two-handed-weapon))
 (add-show-method struct:ranged-weapon 'item #\) "A ranged weapon.")
 
+(define-class <natural-weapon> (weapon))
+(define (new-natural-weapon damage-dice damage-type)
+  (make-natural-weapon "<natural weapon>" 0 0 damage-dice damage-type))
+(define-method (removable? (o struct:natural-weapon)) #f)
+
 
 (define-class <potion> (item) thunk message)
 (add-show-method struct:potion 'item #\; "A potion.")

@@ -57,7 +57,8 @@
 (define-monster wolf (animal) #\w "A wolf."
   (13 15 15 2 12 6) 1 (8 8)
   #:base-attack-bonus 1
-  ;; also unarmed strike
+  #:equipment (new-equipment
+               #:main-hand (new-natural-weapon '(6) 'piercing)) ; bite
   (pursue-behavior))
 
 
