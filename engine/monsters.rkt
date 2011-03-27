@@ -38,7 +38,4 @@
 
 
 (define-struct behavior (fun nb-turns-idle) #:mutable #:transparent)
-(define (new-behavior fun)
-  (let ((b (make-behavior #f 0)))
-    (set-behavior-fun! b (fun b))
-    b))
+(define (new-behavior fun) (make-behavior fun 0))
