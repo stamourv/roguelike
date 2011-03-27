@@ -64,35 +64,26 @@
 (new-potion new-light-healing-potion
             "light healing potion" 50 0.8
             (lambda () (heal player ((dice 8 1))))
-            (lambda ()
-              (if (= (character-hp player) (character-max-hp player))
-                  "You feel nothing.\n"
-                  "You feel healthier.\n")))
+            (lambda () "You feel healthier.\n"))
 (new-potion new-bulls-strength-potion
             "bull's strength potion" 300 0.3
             (lambda ()
               (alter-attr player 'str 4 180)) ; 3 minutes/level @ level 3
-            (lambda ()
-              "You could lift boulders.\n"))
+            (lambda () "You could lift boulders.\n"))
 (new-potion new-cats-grace-potion
             "cat's grace potion" 300 0.3
-            (lambda ()
-              (alter-attr player 'dex 4 180))
-            (lambda ()
-              "You feel lighter.\n"))
+            (lambda () (alter-attr player 'dex 4 180))
+            (lambda () "You feel lighter.\n"))
 (new-potion new-bears-endurance-potion
             "bear's endurance potion" 300 0.3
             (lambda ()
               (alter-attr player 'con 4 180)
               (alter-attr player 'hp  (* (character-level player) 2) 180))
-            (lambda ()
-              "You could run a thousand miles.\n"))
+            (lambda () "You could run a thousand miles.\n"))
 (new-potion new-barkskin-potion
             "potion of barkskin" 300 0.25
-            (lambda ()
-              (alter-attr player 'natural-ac 2 180))
-            (lambda ()
-              "Your skin becomes thick and rough.\n"))
+            (lambda () (alter-attr player 'natural-ac 2 180))
+            (lambda () "Your skin becomes thick and rough.\n"))
 
 ;; register potion types, to assign them a color
 (for-each (lambda (p) (register-potion-type (item-name ((cdr p)))))
