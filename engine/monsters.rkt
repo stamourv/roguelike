@@ -1,6 +1,9 @@
 #lang racket
 
-(require "../utilities/class.rkt")
+(require (for-syntax (except-in syntax/parse character)
+                     unstable/syntax))
+(require "../utilities/class.rkt"
+         "../utilities/descriptions.rkt")
 (require "../data/items.rkt")
 (require "character.rkt"
          "scheduler.rkt"
@@ -12,7 +15,20 @@
   ;; player as parameters and makes the monster act
   behavior)
 
-;; to handle the repetitive part of generating the hp
+;; to handle the repetitive parts
+(define-syntax (define-monster stx)
+  (syntax-parse
+   stx
+   [(_ name (parent) sprite desc rest ...)
+    #`(begin
+        (define-class #,(format-id #'name "<~a>" (syntax-e #'name)) (parent))
+        (add-show-method #,(format-id #'name "struct:~a" (syntax-e #'name))
+                         'monster sprite desc)
+        (define (#,(format-id #'name "new-~a" (syntax-e #'name)))
+          (new-monster #,(format-id #'name "make-~a" (syntax-e #'name))
+                       #,(symbol->string (syntax-e #'name))
+                       rest ...)))]))
+
 (define (new-monster f . args)
   (match args
     [(list-rest name

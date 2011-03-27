@@ -1,8 +1,7 @@
 #lang racket
 
 (require "../utilities/class.rkt"
-         "../utilities/display.rkt"
-         "../utilities/descriptions.rkt")
+         "../utilities/display.rkt")
 (require "../engine/character.rkt"
          "../engine/monsters.rkt"
          "../engine/ai.rkt")
@@ -10,93 +9,65 @@
 
 (provide (all-defined-out))
 
-(define-class <goblin> (monster))
-(define (new-goblin)
-  (new-monster make-goblin
-	       "goblin"
-	       11 13 12 10 9 6
-	       0 1/3 '(6)
-	       1 1 1 6
-	       (new-equipment
-		#:main-hand (new-club)
-		#:off-hand  (new-light-shield)
-		#:torso     (new-leather-armor))
-	       (rush-behavior)))
-(add-show-method struct:goblin 'monster #\g "A goblin.")
-(define-class <goblin-archer> (goblin))
-(define (new-goblin-archer)
-  (new-monster make-goblin-archer
-	       "goblin archer"
-	       11 13 12 10 9 6
-	       0 1/2 '(4)
-	       1 1 1 6
-	       (new-equipment
-		#:main-hand (new-shortbow)) ; no armor to compensate for the bow
-	       (ranged-behavior)))
-(add-show-method struct:goblin-archer 'monster (new-sprite #\g #:fg 'magenta)
-                 "A goblin archer.")
+(define-monster goblin (monster) #\g "A goblin."
+  11 13 12 10 9 6
+  0 1/3 '(6)
+  1 1 1 6
+  (new-equipment
+   #:main-hand (new-club)
+   #:off-hand  (new-light-shield)
+   #:torso     (new-leather-armor))
+  (rush-behavior))
+(define-monster goblin-archer (goblin)
+  (new-sprite #\g #:fg 'magenta) "A goblin archer."
+  11 13 12 10 9 6
+  0 1/2 '(4)
+  1 1 1 6
+  (new-equipment
+   #:main-hand (new-shortbow)) ; no armor to compensate for the bow
+  (ranged-behavior))
 
-(define-class <kobold> (monster))
-(define (new-kobold)
-  (new-monster make-kobold
-	       "kobold"
-	       9 13 10 10 9 8
-	       0 1/4 '(4)
-	       1 1 1 6
-	       (new-equipment
-		#:main-hand (new-shortspear)
-		#:torso     (new-leather-armor))
-	       (rush-behavior)))
-(add-show-method struct:kobold 'monster #\k "A kobold.")
+(define-monster kobold (monster) #\k "A kobold."
+  9 13 10 10 9 8
+  0 1/4 '(4)
+  1 1 1 6
+  (new-equipment
+   #:main-hand (new-shortspear)
+   #:torso     (new-leather-armor))
+  (rush-behavior))
 
-(define-class <orc> (monster))
-(define (new-orc)
-  (new-monster make-orc
-	       "orc"
-	       17 11 12 8 7 6
-	       0 1/2 '(8)
-	       1 1 1 6
-	       (new-equipment
-		#:main-hand (new-greataxe)
-		#:torso     (new-studded-leather-armor))
-	       (pursue-behavior)))
-(add-show-method struct:orc 'monster #\o "An orc.")
+(define-monster orc (monster) #\o "An orc."
+  17 11 12 8 7 6
+  0 1/2 '(8)
+  1 1 1 6
+  (new-equipment
+   #:main-hand (new-greataxe)
+   #:torso     (new-studded-leather-armor))
+  (pursue-behavior))
 
 
 (define-class <animal> (monster))
 
-(define-class <bat> (animal))
-(define (new-bat)
-  (new-monster make-bat
-	       "bat"
-	       1 15 10 2 14 4
-	       0 1/10 '(2)
-	       0 0 1 6
-	       (new-equipment) ; will attack with unarmed strike (1d4 - str)
-	       (flee-behavior)))
-(add-show-method struct:bat 'monster #\b "A bat.")
+(define-monster bat (animal) #\b "A bat."
+  1 15 10 2 14 4
+  0 1/10 '(2)
+  0 0 1 6
+  (new-equipment) ; will attack with unarmed strike (1d4 - str)
+  (flee-behavior))
 
-(define-class <rat> (animal))
-(define (new-rat)
-  (new-monster make-rat
-	       "rat"
-	       2 15 10 2 12 2
-	       0 1/8 '(2)
-	       0 0 1 6
-	       (new-equipment) ; also unarmed strike
-	       (rush-behavior)))
-(add-show-method struct:rat 'monster #\r "A rat.")
+(define-monster rat (animal) #\r "A rat."
+  2 15 10 2 12 2
+  0 1/8 '(2)
+  0 0 1 6
+  (new-equipment) ; also unarmed strike
+  (rush-behavior))
 
-(define-class <wolf> (animal))
-(define (new-wolf)
-  (new-monster make-wolf
-	       "wolf"
-	       13 15 15 2 12 6
-	       0 1 '(8 8)
-	       0 0 1 6
-	       (new-equipment) ; also unarmed strike
-	       (pursue-behavior)))
-(add-show-method struct:wolf 'monster #\w "A wolf.")
+(define-monster wolf (animal) #\w "A wolf."
+  13 15 15 2 12 6
+  0 1 '(8 8)
+  0 0 1 6
+  (new-equipment) ; also unarmed strike
+  (pursue-behavior))
 
 
 (define-class <undead> (monster))
