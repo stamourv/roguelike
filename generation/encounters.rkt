@@ -10,15 +10,21 @@
 (require "../data/encounters.rkt")
 (provide place-encounters show-encounters)
 
+;; knobs
+
+(define (encounter-level-cap    level) (/ level 2.5))
+(define (encounter-level-bottom level) (/ level 4))
+(define (total-encounter-level  level) (* level 5))
+
 
 (define (possible-encounters no)
-  (let* ((encounter-level-cap (/ no 2.5))
-         (encounter-level-bottom
-          (max (/ no 4)
+  (let* ([encounter-level-cap (encounter-level-cap no)]
+         [encounter-level-bottom
+          (max (encounter-level-bottom no)
                (foldl min
                       encounter-level-cap
                       (map encounter-type-points
-                           encounter-types)))))
+                           encounter-types)))])
     (filter (lambda (e)
               (let ((pts (encounter-type-points e)))
                 (and (>= pts encounter-level-bottom)
@@ -37,7 +43,7 @@
                                          possible-encounter-types))])
     (if (null? possible-encounter-types)
         (generate-encounters (sub1 no))
-        (let loop ([pts        (* no 5)]
+        (let loop ([pts        (total-encounter-level no)]
                    [encounters '()])
           (if (and (>= pts actual-bottom))
               (let* ([type             (random-choice possible-types-table)]
