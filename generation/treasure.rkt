@@ -10,18 +10,29 @@
 (require "../data/items.rkt")
 (provide place-treasure show-treasure)
 
+;; knobs
+
+(define treasure-class-probs
+  `((0.43 ,@weapon-table)
+    (0.25 ,@shield-table)
+    (0.22 ,@body-armor-table)
+    (0.1  ,@potion-table)))
+
+(define (individual-gp-cap    level) (* 10 (expt level 2)))
+(define (individual-gp-bottom level) (* 2  (expt level 2)))
+(define (total-gp             level) (* 30 (expt level 1.5)))
+
+(define min-nb-chests 4)
+(define max-nb-chests 8)
+
+
 ;; contains the probability of each kind of item, and the probability of each
 ;; item within each category
-(define treasure-table
-  (normalize-probability-table
-   `((0.43 ,@weapon-table)
-     (0.25 ,@shield-table)
-     (0.22 ,@body-armor-table)
-     (0.1  ,@potion-table))))
+(define treasure-table (normalize-probability-table treasure-class-probs))
 
 (define (possible-treasure no)
-  (let* ((treasure-cap    (* 10 (expt no 2)))
-	 (treasure-bottom (max (* 2 (expt no 2))
+  (let* ((treasure-cap    (individual-gp-cap no))
+	 (treasure-bottom (max (individual-gp-bottom no)
 			       (foldl
 				min
 				treasure-cap
@@ -43,7 +54,7 @@
 	 treasure-table)))
 
 (define (generate-treasure no)
-  (let* ((treasure-points (* 30 (expt no 1.5))) ; in gp
+  (let* ((treasure-points (total-gp no))
 	 (possible        (possible-treasure no))
 	 (actual-bottom (foldl min ; lowest value of the possible treasure
                                treasure-points ; generous upper bound
@@ -66,7 +77,7 @@
 (define (place-treasure floor no)
   ;; the number of chests is level number independent
   (let ((chests (map (lambda (x) (new-chest '())) ; will be filled later
-		     (iota (random-between 4 8)))))
+		     (iota (random-between min-nb-chests max-nb-chests)))))
     ;; place the chests randomly on the map
     (let loop ((chests chests))
       (when (not (null? chests))
