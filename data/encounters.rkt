@@ -17,3 +17,5 @@
 (new-encounter-type 0.8  `(,new-goblin ,new-goblin ,new-goblin-archer))
 (new-encounter-type 0.9  `(,new-orc ,new-orc))
 (new-encounter-type 0.8  `(,new-orc ,new-goblin ,new-goblin))
+(new-encounter-type 0.8  `(,new-wolf ,new-wolf ,new-wolf))
+(new-encounter-type 0.7  `(,new-wolf ,new-wolf ,new-wolf))

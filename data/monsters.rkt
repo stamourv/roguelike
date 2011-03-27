@@ -87,5 +87,16 @@
 	       (rush-behavior)))
 (add-show-method struct:rat 'monster #\r "A rat.")
 
+(define-class <wolf> (animal))
+(define (new-wolf)
+  (new-monster make-wolf
+	       "wolf"
+	       13 15 15 2 12 6
+	       0 1 '(8 8)
+	       0 0 1 6
+	       (new-equipment) ; also unarmed strike
+	       (pursue-behavior)))
+(add-show-method struct:wolf 'monster #\w "A wolf.")
+
 
 (define-class <undead> (monster))
