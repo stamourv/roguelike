@@ -26,21 +26,26 @@
 (define (describe-commands)
   (displayln "Movement:\nArrow keys")
   (let loop ([commands command-table]
-             [category (caddr (car command-table))])
+             [category (caddr (car command-table))]
+             [line-no  0])
     (if (eq? category 'debugging) ; don't show debug commands
-        (loop (cdr commands) (caddr (cadr commands)))
+        (loop (cdr commands) (caddr (cadr commands)) line-no)
         (let ([cat (symbol->string category)])
           (newline)
-          ;; capitalize category
-          (printf "~a:\n" (upcase-word cat))
-          (let loop2 ([commands commands])
-            (when (not (null? commands))
-              (let* ([head (car commands)]
+          (let loop2 ([cs   commands]
+                      [para ;; capitalize category
+                       (format "~a:\n" (upcase-word cat))])
+            (when (not (null? cs))
+              (let* ([head (car cs)]
                      [cat  (caddr head)])
                 (if (eq? cat category) ; same category
-                    (begin (printf "~a: ~a\n" (car head) (cadddr head))
-                           (loop2 (cdr commands)))
-                    (loop commands (caddr head)))))))))
+                    (loop2 (cdr cs)
+                           (string-append para
+                                          (format "~a: ~a\n"
+                                                  (car head) (cadddr head))))
+                    ;; print paragraph and go on
+                    (loop cs (caddr head)
+                          (print-paragraph para line-no)))))))))
   (wait-after-long-output))
 
 (define (describe-one what)
@@ -64,14 +69,24 @@
                   descriptions-table string<?
                   ;; sort by category
                   #:key (lambda (x) (symbol->string (cadr x))))])
-    (for ([g grouped])
-         ;; capitalize category
-         (let ([cat (symbol->string (cadar g))])
-           (printf "~as:\n" (upcase-word cat)))
-         (for ([x g])
-              (print-sprite (car x))
-              (printf ": ~a\n"  (cddr x)))
-         (newline)))
+    (let loop ([grouped grouped]
+               [line-no 0])
+      (when (not (null? grouped))
+        (newline)
+        (let loop2 ([g    (car grouped)]
+                    [para ;; capitalize category
+                     (let ([cat (symbol->string (cadr (caar grouped)))])
+                       (format "~as:\n" (upcase-word cat)))])
+          (if (not (null? g))
+              (loop2 (cdr g)
+                     (string-append para
+                                    (with-output-to-string
+                                      (lambda ()
+                                        (let ([x (car g)])
+                                          (print-sprite (car x))
+                                          (printf ": ~a\n" (cddr x)))))))
+              (loop (cdr grouped)
+                    (print-paragraph para line-no)))))))
   (wait-after-long-output))
 
 (define (info)

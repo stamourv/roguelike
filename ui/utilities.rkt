@@ -18,9 +18,22 @@
 
 (define (invalid-command) (display "Invalid command.\n"))
 
+;; print a large block of text
+;; if it doesn't fit, ask to continue, then display
+;; returns new line number
+(define (print-paragraph s line-at)
+  (let ([n-lines (length (regexp-split "\n" s))])
+    (cond [(> (+ line-at n-lines) 22) ; to leave space for scroll message
+           (display "There's more.")
+           (wait-after-long-output)
+           (display s)
+           n-lines] ; we had to wrap around
+          [else
+           (display s)
+           (+ line-at n-lines)])))
+
 (define (wait-after-long-output)
   (newline)
-  (displayln "Use terminal scrollback to see everything.")
   (displayln "Press any key to continue.")
   (read-char)
   (for ([i (in-range 30)]) (newline)))
