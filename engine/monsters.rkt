@@ -1,7 +1,7 @@
 #lang racket
 
 (require (for-syntax (except-in syntax/parse character)
-                     unstable/syntax))
+                     racket/syntax))
 (require "../utilities/class.rkt"
          "../utilities/descriptions.rkt")
 (require "../data/items.rkt")
