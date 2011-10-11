@@ -60,7 +60,7 @@
 
 
 (define (quit #:force [force? #f])
-  (when (not force?) (displayln "Do you really want to quit?"))
+  (when (not force?) (displayln "Do you really want to quit? (y/n)"))
   (echo-on)
   (cond
    [(and (not force?) (not (eq? (read-char) #\y)))
