@@ -1,13 +1,10 @@
 #lang racket
 
-(require (only-in srfi/1 iota))
-(require "utilities.rkt")
-(require "../utilities/random.rkt"
-         "../utilities/grid.rkt")
-(require "../engine/cell.rkt"
-         "../engine/floor.rkt"
-         "../engine/items.rkt")
-(require "../data/items.rkt")
+(require (only-in srfi/1 iota) racket/require)
+(require "utilities.rkt"
+         (multi-in "../utilities" ("random.rkt" "grid.rkt"))
+         (multi-in "../engine"    ("cell.rkt" "floor.rkt" "items.rkt"))
+         "../data/items.rkt")
 (provide place-treasure show-treasure)
 
 ;; knobs

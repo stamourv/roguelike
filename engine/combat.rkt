@@ -1,10 +1,8 @@
 #lang racket
 
-(require (only-in racket/base [floor math-floor]))
-(require "../utilities/random.rkt"
-         "../utilities/class.rkt"
-         "../utilities/grid.rkt")
-(require "cell.rkt"
+(require (only-in racket/base [floor math-floor]) racket/require)
+(require (multi-in "../utilities" ("random.rkt" "class.rkt" "grid.rkt"))
+         "cell.rkt"
          "floor.rkt"
          "character.rkt"
          "player.rkt"

@@ -1,9 +1,8 @@
 #lang racket
 
-(require "../utilities/random.rkt"
-         "../utilities/class.rkt"
-         "../utilities/grid.rkt")
-(require "cell.rkt"
+(require racket/require)
+(require (multi-in "../utilities" ("random.rkt" "class.rkt" "grid.rkt"))
+         "cell.rkt"
          "items.rkt"
          "scheduler.rkt")
 (provide (all-defined-out))

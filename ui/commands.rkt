@@ -1,17 +1,11 @@
 #lang racket
 
-(require (only-in srfi/1 iota))
-(require "../utilities/terminal.rkt"
-         "../utilities/display.rkt"
-         "../utilities/grid.rkt")
-(require "../engine/cell.rkt"
-         "../engine/character.rkt"
-         "../engine/player.rkt"
-         "../engine/combat.rkt"
-         "../engine/items.rkt"
-         "../engine/common.rkt"
-         "../engine/visibility.rkt")
-(require "utilities.rkt"
+(require (only-in srfi/1 iota) racket/require)
+(require (multi-in "../utilities" ("terminal.rkt" "display.rkt" "grid.rkt"))
+         (multi-in "../engine"    ("cell.rkt" "character.rkt" "player.rkt"
+                                   "combat.rkt" "items.rkt" "common.rkt"
+                                   "visibility.rkt"))
+         "utilities.rkt"
          "display.rkt")
 
 (provide (all-defined-out))

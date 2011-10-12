@@ -1,11 +1,9 @@
 #lang racket
 
-(require "../utilities/terminal.rkt"
-         "../utilities/grid.rkt")
-(require "../engine/character.rkt"
-         "../engine/common.rkt"
-         "../engine/floor.rkt")
-(require "utilities.rkt"
+(require racket/require)
+(require (multi-in "../utilities" ("terminal.rkt" "grid.rkt"))
+         (multi-in "../engine"    ("character.rkt" "common.rkt" "floor.rkt"))
+         "utilities.rkt"
          "commands.rkt"
          "help.rkt"
          "display.rkt")

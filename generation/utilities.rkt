@@ -1,9 +1,8 @@
 #lang racket
 
-(require "../engine/cell.rkt"
-         "../engine/floor.rkt")
-(require "../utilities/grid.rkt"
-         "../utilities/random.rkt")
+(require racket/require)
+(require (multi-in "../engine"    ("cell.rkt" "floor.rkt"))
+         (multi-in "../utilities" ("grid.rkt" "random.rkt")))
 (provide (all-defined-out))
 
 (define-struct room

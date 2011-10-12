@@ -1,8 +1,8 @@
 #lang racket
 
-(require "../utilities/grid.rkt"
-         "../utilities/display.rkt")
-(require "cell.rkt"
+(require racket/require)
+(require (multi-in "../utilities" ("grid.rkt" "display.rkt"))
+         "cell.rkt"
          "floor.rkt"
          "character.rkt"
          "monsters.rkt"

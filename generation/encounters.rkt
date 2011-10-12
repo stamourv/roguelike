@@ -1,13 +1,11 @@
 #lang racket
 
-(require "utilities.rkt")
-(require "../utilities/random.rkt"
-         "../utilities/grid.rkt")
-(require "../engine/cell.rkt"
-         "../engine/floor.rkt"
-         "../engine/character.rkt"
-         "../engine/encounters.rkt")
-(require "../data/encounters.rkt")
+(require racket/require)
+(require "utilities.rkt"
+         (multi-in "../utilities" ("random.rkt" "grid.rkt"))
+         (multi-in "../engine"    ("cell.rkt" "floor.rkt" "character.rkt"
+                                   "encounters.rkt"))
+         "../data/encounters.rkt")
 (provide place-encounters show-encounters)
 
 ;; knobs

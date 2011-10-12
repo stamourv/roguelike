@@ -1,11 +1,9 @@
 #lang racket
 
-(require "../utilities/class.rkt"
-         "../utilities/display.rkt")
-(require "../engine/character.rkt"
-         "../engine/monsters.rkt"
-         "../engine/ai.rkt")
-(require "items.rkt")
+(require racket/require)
+(require (multi-in "../utilities" ("class.rkt" "display.rkt"))
+         (multi-in "../engine"    ("character.rkt" "monsters.rkt" "ai.rkt"))
+         "items.rkt")
 
 (provide (all-defined-out))
 

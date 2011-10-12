@@ -1,17 +1,11 @@
 #lang racket
 
-(require "../utilities/terminal.rkt"
-         "../utilities/list.rkt"
-         "../utilities/string.rkt"
-         "../utilities/grid.rkt"
-         "../utilities/display.rkt"
-         "../utilities/descriptions.rkt")
-(require "../engine/common.rkt"
-         "../engine/cell.rkt"
-         "../engine/player.rkt"
-         "../engine/character.rkt")
-(require "utilities.rkt")
-
+(require racket/require)
+(require (multi-in "../utilities" ("terminal.rkt" "list.rkt" "descriptions.rkt"
+                                   "grid.rkt" "display.rkt" "string.rkt"))
+         (multi-in "../engine"    ("common.rkt" "cell.rkt" "player.rkt"
+                                   "character.rkt"))
+         "utilities.rkt")
 (provide (all-defined-out))
 
 (define (describe-command)

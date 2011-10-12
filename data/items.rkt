@@ -1,10 +1,8 @@
 #lang racket
 
-(require "../utilities/random.rkt"
-         "../utilities/display.rkt")
-(require "../engine/common.rkt"
-         "../engine/items.rkt"
-         "../engine/character.rkt")
+(require racket/require)
+(require (multi-in "../utilities" ("random.rkt" "display.rkt"))
+         (multi-in "../engine"    ("common.rkt" "items.rkt" "character.rkt")))
 (provide (all-defined-out) new-natural-weapon)
 
 (define body-armor-table '())

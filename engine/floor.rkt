@@ -1,8 +1,8 @@
 #lang racket
 
-(require "cell.rkt")
-(require "../utilities/grid.rkt"
-         "../utilities/random.rkt")
+(require racket/require)
+(require "cell.rkt"
+         (multi-in "../utilities" ("grid.rkt" "random.rkt")))
 (provide (all-defined-out))
 
 (define-struct floor

@@ -1,15 +1,13 @@
 #lang racket
 
-(require unstable/function)
-(require "../utilities/class.rkt")
-(require "common.rkt"
+(require unstable/function racket/require)
+(require "../utilities/class.rkt"
+         "common.rkt"
          "character.rkt"
          "player.rkt"
          "visibility.rkt"
-         "scheduler.rkt")
-(require "../ui/utilities.rkt"
-         "../ui/input.rkt"
-         "../ui/display.rkt")
+         "scheduler.rkt"
+         (multi-in "../ui" ("utilities.rkt" "input.rkt" "display.rkt")))
 (provide new-game)
 
 (define (new-game player-name)

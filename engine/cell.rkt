@@ -1,8 +1,7 @@
 #lang racket
 
-(require "../utilities/class.rkt"
-         "../utilities/display.rkt"
-         "../utilities/descriptions.rkt")
+(require racket/require)
+(require (multi-in "../utilities" ("class.rkt" "display.rkt" "descriptions.rkt")))
 (provide (all-defined-out))
 
 (define-class <cell> ()

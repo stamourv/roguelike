@@ -1,13 +1,9 @@
 #lang racket
 
-(require "../utilities/display.rkt"
-         "../utilities/terminal.rkt")
-(require "../engine/character.rkt"
-         "../engine/player.rkt"
-         "../engine/items.rkt"
-         "../engine/common.rkt"
-         "../engine/visibility.rkt"
-         "../engine/scheduler.rkt")
+(require racket/require)
+(require (multi-in "../utilities" ("display.rkt" "terminal.rkt"))
+         (multi-in "../engine"    ("character.rkt" "player.rkt" "scheduler.rkt"
+                                   "common.rkt" "visibility.rkt" "items.rkt")))
 (provide print-state quit print-floor-banner)
 
 (define (print-state)

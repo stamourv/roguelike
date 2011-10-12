@@ -1,8 +1,7 @@
 #lang racket
 
-(require "../utilities/random.rkt"
-         "../utilities/class.rkt"
-         "../utilities/descriptions.rkt")
+(require racket/require)
+(require (multi-in "../utilities" ("random.rkt" "class.rkt" "descriptions.rkt")))
 (provide (all-defined-out))
 
 ;; rarity is in [0,1] with 1 being most likely

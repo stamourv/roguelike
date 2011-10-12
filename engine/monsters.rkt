@@ -1,11 +1,11 @@
 #lang racket
 
 (require (for-syntax (except-in syntax/parse character)
-                     racket/syntax))
-(require "../utilities/class.rkt"
-         "../utilities/descriptions.rkt")
-(require "../data/items.rkt")
-(require "character.rkt"
+                     racket/syntax)
+         racket/require)
+(require (multi-in "../utilities" ("class.rkt" "descriptions.rkt"))
+         "../data/items.rkt"
+         "character.rkt"
          "scheduler.rkt"
          "common.rkt")
 (provide (all-defined-out))

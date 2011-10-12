@@ -1,13 +1,11 @@
 #lang racket
 
 (require (only-in srfi/1 iota lset-difference)
-         (rename-in racket/base [floor math-floor]))
-(require "utilities.rkt")
-(require "../engine/cell.rkt"
-         "../engine/floor.rkt")
-(require "../utilities/list.rkt"
-         "../utilities/random.rkt"
-         "../utilities/grid.rkt"
+         (rename-in racket/base [floor math-floor])
+         racket/require)
+(require "utilities.rkt"
+         (multi-in "../engine"    ("cell.rkt" "floor.rkt"))
+         (multi-in "../utilities" ("list.rkt" "random.rkt" "grid.rkt"))
          (rename-in "../utilities/grid.rkt"
                     [up up-from]     [down down-from]
                     [left left-from] [right right-from]))
