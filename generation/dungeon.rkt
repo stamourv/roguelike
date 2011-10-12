@@ -380,28 +380,25 @@
   (set! new-floor (make-floor level '() #f #f '() #f))
 
   ;; generate features
-  (let loop ((n nb-feature-attempts) ;; TODO for
-             (walls (let loop ((res #f)) ; we place the first feature
-                      (if res
-                          res
-                          (loop (add-random-feature
-                                 ;; if this is not the first floor, the
-                                 ;; stairs up should be at the same
-                                 ;; coordinates as the previous floor's
-                                 ;; stairs down
-                                 (cons (or stairs-up-pos
-                                           (random-position level))
-                                       #f)))))))
-    ;; although unlikely, we might run out of walls (happened once, no
-    ;; idea how)
-    (when (and (> n 0) (not (null? walls)))
-      (let* ((i     (random (length walls)))
-             (start (list-ref walls i)))
-        (loop (- n 1)
-              (cond ((add-random-feature start)
-                     => (lambda (more)
-                          (append (remove-at-index walls i) more)))
-                    (else walls))))))
+  (define (init-walls) ; we place the first feature
+    (or (add-random-feature
+         ;; if this is not the first floor, the stairs up should be at
+         ;; the same coordinates as the previous floor's stairs down
+         (cons (or stairs-up-pos
+                   (random-position level))
+               #f))
+        (init-walls)))
+  (for/fold ([walls (init-walls)])
+      ([n (in-range nb-feature-attempts)]
+       ;; although unlikely, we might run out of walls (happened once, no
+       ;; idea how)
+       #:when (not (null? walls)))
+    (define i     (random (length walls)))
+    (define start (list-ref walls i))
+    (cond ((add-random-feature start)
+           => (lambda (more)
+                (append (remove-at-index walls i) more)))
+          (else walls)))
 
   ;; add walls around the stairs up
   (let ([stairs (floor-stairs-up new-floor)])
