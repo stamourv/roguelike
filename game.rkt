@@ -1,6 +1,5 @@
 #lang racket
 
-(require (only-in srfi/1 iota))
 (require "utilities/terminal.rkt")
 (require "engine/game-loop.rkt")
 

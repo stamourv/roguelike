@@ -1,6 +1,6 @@
 #lang racket
 
-(require (only-in srfi/1 iota lset-difference)
+(require (only-in srfi/1 iota)
          (rename-in racket/base [floor math-floor])
          racket/require)
 (require "utilities.rkt"
