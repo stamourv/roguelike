@@ -1,6 +1,6 @@
 #lang racket
 
-(require unstable/function racket/require)
+(require racket/require)
 (require "../utilities/class.rkt"
          "common.rkt"
          "character.rkt"
@@ -17,7 +17,7 @@
 (define (game-loop)
   (reschedule player)
   (let loop ()
-    (for-each call (find-next-active))
+    (for-each (lambda (x) (x)) (find-next-active))
     (increment-turn-no)
     (loop)))
 

@@ -1,6 +1,5 @@
 #lang racket
 
-(require unstable/function)
 (require "character.rkt")
 
 (provide (all-defined-out))
@@ -15,7 +14,8 @@
 (define-struct encounter (encounter-type monsters) #:transparent)
 (define (new-encounter encounter-type) ; actually creates the monsters
   (make-encounter encounter-type
-		  (map call (encounter-type-monsters encounter-type))))
+		  (map (lambda (x) (x))
+                       (encounter-type-monsters encounter-type))))
 (define (encounter-points e)
   (apply + (map character-level (encounter-monsters e))))
 
