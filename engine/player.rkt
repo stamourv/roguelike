@@ -16,9 +16,9 @@
 
 (define-class <player-character> (character)
   floor-no
-  floors-before ; pairs (map . view)
-  current-floor
-  floors-after
+  floors-before ; listof player-floor
+  current-floor ; player-floor
+  floors-after  ; listof player-floor
   experience
   inventory) ; list of items
 (define (new-player name)
