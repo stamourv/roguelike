@@ -131,5 +131,4 @@
   (let ((view (player-view player)))
     (grid-for-each (lambda (p) (grid-set! view p 'visited)) view)))
 (define (god-mode)
-  (reveal-map)
   (set-box! god-mode? #t))
