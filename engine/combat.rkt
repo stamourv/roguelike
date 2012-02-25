@@ -69,11 +69,10 @@
 (define-method (damage (attacker struct:player-character)
                        (defender struct:monster))
   (let ((dmg (max (get-damage attacker) 1)))
-    (printf " and deals ~a damage" dmg)
+    (printf " and deals ~a damage.\n" dmg)
     (set-character-hp! defender (- (character-hp defender) dmg))
-    (if (<= (character-hp defender) 0)
-	(remove-monster defender)
-	(display ".\n"))))
+    (when (<= (character-hp defender) 0)
+      (remove-monster defender))))
 
 (define-method (hostile-towards? a b)
   #t)
@@ -98,7 +97,7 @@
 
 ;; removes a monster, usually when killed
 (define (remove-monster monster)
-  (printf ", which kills the ~a.\n" (character-name monster))
+  (printf "The ~a dies.\n" (character-name monster))
   (let* ((floor (character-floor monster))
 	 (cell  (grid-ref (floor-map floor) (character-pos monster))))
     ;; drop equipment with a certain probability
