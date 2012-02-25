@@ -44,35 +44,53 @@
   #f)
 
 (define (get-damage c)
-  (let ((weapon (equipment-main-hand (character-equipment c))))
-    (+ ((get-damage-fun weapon))
-       (math-floor (* (get-attribute-bonus 'str c)
-                      (cond ((ranged-weapon?     weapon) 0)
-                            ((two-handed-weapon? weapon) 3/2)
-                            (else                        1)))))))
+  (define weapon (get-weapon c))
+  (+ ((get-damage-fun weapon))
+     (math-floor (* (get-attribute-bonus 'str c)
+                    (cond [(ranged-weapon?     weapon) 0]
+                          [(two-handed-weapon? weapon) 3/2]
+                          [else                        1])))))
+
+(define (critical? roll attacker) ; returns the critical multiplier or #f
+  (define weapon (get-weapon attacker))
+  (and weapon ; can't crit with unarmed strike
+       (<= (weapon-critical-range weapon) roll)
+       (weapon-critical-multiplier weapon)))
 
 
 (define (check-if-hit attacker defender
 		      (bonus-fun get-melee-attack-bonus))
+  (define (hits? roll)
+    (>= (+ roll (bonus-fun attacker))
+        (get-armor-class defender)))
   (let ((roll ((dice 20))))
-    (if (>= (+ roll (bonus-fun attacker))
-	    (get-armor-class defender))
-	(damage attacker defender)
-	(display " and misses.\n"))))
+    (cond [(and (hits? ((dice 20))) ; needs to hit again to get a critical
+                ;; done last since it returns the critical multiplier
+                (critical? roll attacker))
+           => (lambda (multiplier)
+                (display ", does a CRITICAL HIT")
+                (damage attacker defender multiplier))]
+          [(hits? roll) ; regular hit
+           (damage attacker defender 1)]
+          [else
+           (display " and misses.\n")])))
 
 
 (define-generic damage)
-(define-method (damage attacker defender)
-  (let ((dmg (max (get-damage attacker) 1)))
-    (printf " and deals ~a damage.\n" dmg)
-    (set-character-hp! defender (- (character-hp defender) dmg))))
+(define (compute-damage attacker multiplier)
+  (* multiplier (max (get-damage attacker) 1)))
+(define-method (damage attacker defender multiplier)
+  (define dmg (compute-damage attacker multiplier))
+  (printf " and deals ~a damage.\n" dmg)
+  (set-character-hp! defender (- (character-hp defender) dmg)))
 (define-method (damage (attacker struct:player-character)
-                       (defender struct:monster))
-  (let ((dmg (max (get-damage attacker) 1)))
-    (printf " and deals ~a damage.\n" dmg)
-    (set-character-hp! defender (- (character-hp defender) dmg))
-    (when (<= (character-hp defender) 0)
-      (remove-monster defender))))
+                       (defender struct:monster)
+                       multiplier)
+  (define dmg (compute-damage attacker multiplier))
+  (printf " and deals ~a damage.\n" dmg)
+  (set-character-hp! defender (- (character-hp defender) dmg))
+  (when (<= (character-hp defender) 0)
+    (remove-monster defender)))
 
 (define-method (hostile-towards? a b)
   #t)

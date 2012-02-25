@@ -40,15 +40,28 @@
 (define-method (get-damage-fun o) (dice 4)) ; unarmed strike
 
 (define-class <weapon> (equipable-item)
-  damage-dice ; function that returns the damage
-  damage-type)
+  damage-dice    ; function that returns the damage
+  damage-type
+  critical-range ; min die roll that triggers a critical hit
+  critical-multiplier)
 (add-show-method struct:weapon 'item #\! "A one-handed melee weapon.")
 (define-method (get-damage-fun (o struct:weapon))
   (apply dice (weapon-damage-dice o)))
 (define-method (item-info (o struct:weapon))
-  (format "~a (damage: ~a ~a)"
+  (format "~a (damage: ~a ~a~a)"
           (item-name o) (show-dice (weapon-damage-dice o))
-          (symbol->string (weapon-damage-type o))))
+          (symbol->string (weapon-damage-type o))
+          (let ([critical-range      (weapon-critical-range      o)]
+                [critical-multiplier (weapon-critical-multiplier o)])
+            (define default-range      (= critical-range      20))
+            (define default-multiplier (= critical-multiplier 2))
+            (if (and default-range default-multiplier) ; nothing to show
+                ""
+                (format ", critical:~a~a"
+                        (if default-range ""
+                            (format " ~a-20" critical-range))
+                        (if default-multiplier ""
+                            (format " x~a" critical-multiplier)))))))
 
 (define-class <two-handed-weapon> (weapon))
 (add-show-method struct:two-handed-weapon 'item #\/
@@ -63,7 +76,7 @@
 
 (define-class <natural-weapon> (weapon))
 (define (new-natural-weapon damage-dice damage-type)
-  (make-natural-weapon "<natural weapon>" 0 0 damage-dice damage-type))
+  (make-natural-weapon "<natural weapon>" 0 0 damage-dice damage-type 20 2))
 (define-method (removable? (o struct:natural-weapon)) #f)
 
 

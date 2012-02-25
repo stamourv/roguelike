@@ -16,12 +16,22 @@
     (macro-name constructor name gp rarity args (... ...))
     (begin (define (constructor) (kind name gp rarity args (... ...)))
            (set! table (cons (cons rarity constructor) table)))))
-(new-item-macro new-body-armor        make-body-armor        body-armor-table)
-(new-item-macro new-shield            make-shield            shield-table)
-(new-item-macro new-weapon            make-weapon            weapon-table)
-(new-item-macro new-two-handed-weapon make-two-handed-weapon weapon-table)
-(new-item-macro new-ranged-weapon     make-ranged-weapon     weapon-table)
-(new-item-macro new-potion            make-potion            potion-table)
+(new-item-macro new-body-armor        make-body-armor       body-armor-table)
+(new-item-macro new-shield            make-shield               shield-table)
+(new-item-macro new-weapon            make-weapon-kw            weapon-table)
+(new-item-macro new-two-handed-weapon make-two-handed-weapon-kw weapon-table)
+(new-item-macro new-ranged-weapon     make-ranged-weapon-kw     weapon-table)
+(new-item-macro new-potion            make-potion               potion-table)
+(define-values (make-weapon-kw make-two-handed-weapon-kw make-ranged-weapon-kw)
+  (let ([mk (lambda (maker)
+              (lambda (#:critical-range      [critical-range      20]
+                       #:critical-multiplier [critical-multiplier 2]
+                       . args)
+                (apply maker
+                       `(,@args ,critical-range ,critical-multiplier))))])
+    (values (mk make-weapon)
+            (mk make-two-handed-weapon)
+            (mk make-ranged-weapon))))
 
 
 ;; item definitions
@@ -43,19 +53,28 @@
 
 
 ;; weapon: name gp-value rarity damage-dice damage-type
+;;         [#:critical critical] [#:critical-multiplier critical-multiplier]
 (new-weapon new-club        "club"        1  0.9 '(6)  'bludgeoning)
 (new-weapon new-shortspear  "shortspear"  1  0.3 '(6)  'piercing)
 (new-weapon new-morningstar "morningstar" 8  0.5 '(8)  'bludgeoning)
-(new-weapon new-short-sword "short sword" 10 0.8 '(6)  'slashing)
-(new-weapon new-battleaxe   "battleaxe"   10 0.6 '(8)  'slashing)
-(new-weapon new-warhammer   "warhammer"   12 0.5 '(8)  'bludgeoning)
-(new-weapon new-long-sword  "long sword"  15 0.6 '(8)  'slashing)
+(new-weapon new-short-sword "short sword" 10 0.8 '(6)  'slashing
+            #:critical-range 19)
+(new-weapon new-battleaxe   "battleaxe"   10 0.6 '(8)  'slashing
+            #:critical-multiplier 3)
+(new-weapon new-warhammer   "warhammer"   12 0.5 '(8)  'bludgeoning
+            #:critical-multiplier 3)
+(new-weapon new-long-sword  "long sword"  15 0.6 '(8)  'slashing
+            #:critical-range 19)
 
-(new-two-handed-weapon new-greataxe    "greataxe"    20 0.3 '(12)  'slashing)
-(new-two-handed-weapon new-great-sword "great sword" 50 0.3 '(6 6) 'slashing)
+(new-two-handed-weapon new-greataxe    "greataxe"    20 0.3 '(12)  'slashing
+                       #:critical-multiplier 3)
+(new-two-handed-weapon new-great-sword "great sword" 50 0.3 '(6 6) 'slashing
+                       #:critical-range 19)
 
-(new-ranged-weapon new-shortbow "shortbow" 30 0.75 '(6) 'piercing)
-(new-ranged-weapon new-longbow  "longbow"  75 0.6  '(8) 'piercing)
+(new-ranged-weapon new-shortbow "shortbow" 30 0.75 '(6) 'piercing
+                   #:critical-multiplier 3)
+(new-ranged-weapon new-longbow  "longbow"  75 0.6  '(8) 'piercing
+                   #:critical-multiplier 3)
 
 
 ;; potion: name gp-value effect-thunk message-thunk
