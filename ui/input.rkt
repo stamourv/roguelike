@@ -2,7 +2,8 @@
 
 (require racket/require)
 (require (multi-in "../utilities" ("terminal.rkt" "grid.rkt"))
-         (multi-in "../engine"    ("character.rkt" "common.rkt" "floor.rkt"))
+         (multi-in "../engine"
+                   ("character.rkt" "common.rkt" "floor.rkt" "player.rkt"))
          "utilities.rkt"
          "commands.rkt"
          "help.rkt"
@@ -20,6 +21,7 @@
 (new-command #\o cmd-open     'exploration "Open a door or a chest.")
 (new-command #\c cmd-close    'exploration "Close a door or a chest.")
 (new-command #\t climb-stairs 'exploration "Climb stairs.")
+(new-command #\z rest         'exploration "Rest.")
 
 (new-command #\D cmd-drink 'combat "Drink a potion from inventory.")
 (new-command #\s shoot     'combat "Shoot a target using a ranged weapon.")

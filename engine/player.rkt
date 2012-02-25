@@ -197,3 +197,11 @@
         (begin (place-player player (car after))
                (set-player-character-floors-after!
                 player (cdr after))))))
+
+
+(define (rest)
+  (cond [(not (null? (floor-monsters (character-floor player))))
+         (displayln "There are still monsters nearby.")]
+        [else
+         (set-character-hp! player (character-max-hp player))
+         (displayln "You have rested for 8 hours.")]))
