@@ -52,10 +52,11 @@
                           [else                        1])))))
 
 (define (critical? roll attacker) ; returns the critical multiplier or #f
-  (define weapon (get-weapon attacker))
-  (and weapon ; can't crit with unarmed strike
-       (<= (weapon-critical-range weapon) roll)
-       (weapon-critical-multiplier weapon)))
+  (define weapon     (get-weapon attacker))
+  ;; if weapon is #f, unarmed strike
+  (define range      (if weapon (weapon-critical-range weapon)      20))
+  (define multiplier (if weapon (weapon-critical-multiplier weapon) 2))
+  (and (<= range roll) multiplier))
 
 
 (define (check-if-hit attacker defender
