@@ -75,7 +75,7 @@
 
 (define (shoot)
   (let* ((grid    (player-map player))
-         (weapon  (equipment-main-hand (character-equipment player)))
+         (weapon  (get-weapon player))
          (targets (available-targets player))
          (n       (length targets)))
     (cond

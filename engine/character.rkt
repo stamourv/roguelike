@@ -130,6 +130,10 @@
        (get-ac (equipment-torso    e))
        (get-ac (equipment-off-hand e)))))
 
+(define (get-weapon c)
+  (equipment-main-hand (character-equipment c)))
+
+
 (define-method (reschedule (char struct:character))
   (schedule (lambda () (turn char #t)) (character-speed char)))
 

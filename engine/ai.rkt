@@ -93,8 +93,7 @@
 
 (define-behavior (ranged-behavior monster pos player-pos map)
   ([reloading? #f])
-  (when (not (ranged-weapon? (equipment-main-hand
-                              (character-equipment monster))))
+  (when (not (ranged-weapon? (get-weapon monster)))
     (error "monster " monster " has no ranged weapon"))
   (if reloading?
       (begin (printf "The ~a reloads.\n"
