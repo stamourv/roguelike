@@ -18,7 +18,8 @@
   (echo-off))
 
 (define (describe-commands)
-  (displayln "Movement:\nArrow keys")
+  (displayln "Arrow keys: Movement")
+  (displayln "Space bar:  Wait")
   (let loop ([commands command-table]
              [category (caddr (car command-table))]
              [line-no  0])
