@@ -184,7 +184,7 @@
               player (cdr before)))]
           [(endgame?) ; we get out with the endgame item
            (display "You win!\n")
-           (quit #:force #t #:victory #t)]
+           (quit 'victory)]
           [else
            (printf "You can't leave without the ~a!\n"
                    (item-name endgame-amulet))])))
@@ -215,11 +215,12 @@
 (define (endgame?) ; do we have the endgame item?
   (ormap endgame-item? (player-character-inventory player)))
 
-(define (quit #:force [force? #f] #:victory [victory? #f])
-  (when (not force?) (displayln "Do you really want to quit? (y/n)"))
+(define (quit [reason 'cowardice])
+  (when (eq? reason 'cowardice)
+    (displayln "Do you really want to quit? (y/n)"))
   (echo-on)
   (cond
-   [(and (not force?) (not (eq? (read-char) #\y)))
+   [(and (eq? reason 'cowardice) (not (eq? (read-char) #\y)))
     (displayln "\nAlright then.")
     (echo-off)]
    [else
@@ -229,7 +230,7 @@
     (define level        (character-level player))
     (define floor-no     (player-character-floor-no player))
     (define current-game (list name xp level floor-no (quotient turn-no 6)
-                               (if victory? 'victory 'death)))
+                               reason))
     (define filename     "hall-of-fame")
     ;; update hall of fame
     (define new-hall-of-fame

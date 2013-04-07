@@ -4,7 +4,7 @@
 (require (multi-in "../utilities" ("display.rkt" "terminal.rkt"))
          (multi-in "../engine"    ("character.rkt" "player.rkt" "scheduler.rkt"
                                    "common.rkt" "visibility.rkt" "items.rkt")))
-(provide print-state quit print-floor-banner)
+(provide print-state print-floor-banner)
 
 (define (print-state)
   (print-sidebar)

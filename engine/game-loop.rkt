@@ -27,7 +27,7 @@
    [(and (<= (character-hp player) 0)
          (not (unbox god-mode?))) ; for debugging
     (display "You die.\n")
-    (quit #:force #t)]
+    (quit 'death)]
    [else
     ;; if we don't move, we can get multiple attacks (if we have more
     ;; than one attack). these "attacks" can also be used to drink
