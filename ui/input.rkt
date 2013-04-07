@@ -57,16 +57,17 @@
          (y     (point-y pos))
          (char  (read-char)))
     (clear-to-bottom)
-    ;; escape. bizarrely unrecognizable with case...
-    (if (= (char->integer char) 27)
-        ;; movement
-        (begin (case (which-direction?)
-                 ((up)    (set-point-x! pos (- x 1)))
-                 ((down)  (set-point-x! pos (+ x 1)))
-                 ((right) (set-point-y! pos (+ y 1)))
-                 ((left)  (set-point-y! pos (- y 1))))
-               ;; tries to move to the new position
-               ;; if it fails, stay where we were
-               (move grid player pos)
-               'move)
-        ((car (dict-ref command-table char (list invalid-command)))))))
+    ;; escape
+    (cond [(= (char->integer char) 27)
+           ;; movement
+           (case (which-direction?)
+             ((up)    (set-point-x! pos (- x 1)))
+             ((down)  (set-point-x! pos (+ x 1)))
+             ((right) (set-point-y! pos (+ y 1)))
+             ((left)  (set-point-y! pos (- y 1))))
+           ;; tries to move to the new position
+           ;; if it fails, stay where we were
+           (move grid player pos)
+           'move]
+          [else
+           ((car (dict-ref command-table char (list invalid-command))))])))

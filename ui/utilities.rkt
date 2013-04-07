@@ -46,7 +46,9 @@
              #f)))
 
 (define (which-direction?)
-  (when (not (eq? (read-char) #\[))
+  (define char (read-char))
+  (when (not (or (eq? char #\[)
+                 (eq? char #\O))) ; emacs's ansi-term uses this
     (invalid-command))
   (case (read-char)
     ((#\A) 'up)
