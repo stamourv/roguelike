@@ -1,7 +1,6 @@
 #lang racket
 
-(require (only-in srfi/1 iota)
-         (rename-in racket/base [floor math-floor])
+(require (rename-in racket/base [floor math-floor])
          racket/require)
 (require "utilities.rkt"
          (multi-in "../engine"    ("cell.rkt" "floor.rkt"))
@@ -68,54 +67,51 @@
 
 (define (add-rectangle pos height width direction room-type)
   ;; height and width consider a wall of one cell wide on each side
-  (let* ((x     (point-x pos))
-         (y     (point-y pos))
-         (pos-x (case direction
-                  ((south) x)
+  (define x     (point-x pos))
+  (define y     (point-y pos))
+  (define pos-x (case direction
+                  [(south) x]
                   ;; expanding north, we have to move the top of the room
                   ;; up so the bottom reaches the starting point
-                  ((north) (+ (- x height) 1))
+                  [(north) (+ (- x height) 1)]
                   ;; expanding east or west, position ourselves so the
                   ;; middle of the wall of the new room starts here
-                  (else    (- x (math-floor (/ height 2))))))
-         (pos-y (case direction
+                  [else    (- x (math-floor (/ height 2)))]))
+  (define pos-y (case direction
                   ;; same idea as for x
-                  ((east) y)
-                  ((west) (+ (- y width) 1))
-                  (else   (- y (math-floor (/ width 2)))))))
-    (if (andmap ; can this new feature fit ?
-         (lambda (x)
-           (andmap (lambda (y)
-                     (let* ((p (new-point (+ x pos-x) (+ y pos-y)))
-                            (c (grid-ref-check level p)))
-                       (or (void-cell? c) ; unused yet
-                           (wall?      c)))) ; neghboring room
-                   (iota width)))
-         (iota height))
-        
-        (let ((new-walls '()) ; yes it can, add it
-              (inside    '()))
-          (grid-for-each
-           (lambda (p)
-             (let ((x (- (point-x p) pos-x)) (y (- (point-y p) pos-y)))
-               (grid-set!
-                level p
-                ;; find out the appropriate cell type
-                ((cond [(or (= x 0) (= x (- height 1))
-                            (= y 0) (= y (- width 1)))
-                        ;; wall
-                        (set! new-walls (cons p new-walls))
-                        new-four-corner-wall]
-                       ;; inside of the room
-                       [else (set! inside (cons p inside))
-                             new-empty-cell])))))
-           level
-           #:start-x  pos-x  #:start-y  pos-y
-           #:length-x height #:length-y width)
-
-          (make-room room-type inside new-walls '() '() #f))
-        
-        #f))) ; no it can't, give up
+                  [(east) y]
+                  [(west) (+ (- y width) 1)]
+                  [else   (- y (math-floor (/ width 2)))]))
+  (cond [(for*/and ([x (in-range height)] ; can this new feature fit ?
+                    [y (in-range width)])
+           (define p (new-point (+ x pos-x) (+ y pos-y)))
+           (define c (grid-ref-check level p))
+           (or (void-cell? c)   ; unused yet
+               (wall?      c))) ; neighboring room
+         ;; yes it can, add it
+         (define new-walls '())
+         (define inside    '())
+         (grid-for-each
+          (lambda (p)
+            (define x (- (point-x p) pos-x))
+            (define y (- (point-y p) pos-y))
+            (grid-set!
+             level p
+             ;; find out the appropriate cell type
+             ((cond [(or (= x 0) (= x (- height 1))
+                         (= y 0) (= y (- width 1)))
+                     ;; wall
+                     (set! new-walls (cons p new-walls))
+                     new-four-corner-wall]
+                    ;; inside of the room
+                    [else (set! inside (cons p inside))
+                          new-empty-cell]))))
+          level
+          #:start-x  pos-x  #:start-y  pos-y
+          #:length-x height #:length-y width)
+         (make-room room-type inside new-walls '() '() #f)]
+        [else
+         #f])) ; no it can't, give up
 
 (define (add-small-room pos direction)
   (add-rectangle pos
@@ -512,7 +508,7 @@
 
   ;; to avoid "phantom doors"
   (smooth-walls level)
-  
+
   ;; register all walkable cells
   (set-floor-walkable-cells!
    new-floor
@@ -520,7 +516,7 @@
              (walkable-cell? (grid-ref-check (floor-map new-floor) pos)))
            (apply append
                   (map room-cells (floor-rooms new-floor)))))
-  
+
   ;; if needed, add the stairs down on a random free square in a room
   ;; (not a corridor)
   (when place-stairs-down?
