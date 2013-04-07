@@ -1,6 +1,6 @@
 #lang racket
 
-(require (only-in srfi/1 iota) racket/require)
+(require racket/require)
 (require (multi-in "../utilities" ("terminal.rkt" "display.rkt" "grid.rkt"))
          (multi-in "../engine"    ("cell.rkt" "character.rkt" "player.rkt"
                                    "combat.rkt" "items.rkt" "common.rkt"
@@ -74,46 +74,40 @@
 
 
 (define (shoot)
-  (let* ((grid    (player-map player))
-         (weapon  (get-weapon player))
-         (targets (available-targets player))
-         (n       (length targets)))
-    (cond
-     ((not (ranged-weapon? weapon))
-      (display "I can't shoot with that.\n"))
-     ((null? targets)
-      (display "There is nothing to shoot.\n"))
-     (else
-      (let ((grid (let ((grid (grid-copy grid)))
-                    (for-each
-                     (lambda (m n)
-                       (grid-set!
-                        grid
-                        (character-pos m)
-                        (new-display-cell
-                         (string-ref (number->string (+ n 1)) 0))))
-                     targets
-                     (iota n))
-                    grid)))
-        ;; show which monsters are which numbers
-        (cursor-home)
-        (clear-to-bottom)
-        (cursor-notification-head)
-        (for-each (lambda (m n)
-                    (printf-notification "~a: ~a\n"
-                                         (+ n 1) (character-name m)))
-                  targets
-                  (iota n))
-        (newline)
-        (printf-notification "q: Cancel\n")
-        ;; show the map with the target numbers
-        (print-floor-banner)
-        (show-grid grid
-                   #:print-fun (visibility-show (player-view player)
-                                                (player-map  player)))
-        ;; choose a target
-        (let ((nb (read-number n)))
-          (when nb (ranged-attack player (list-ref targets nb)))))))))
+  (define orig-grid (player-map player))
+  (define weapon    (get-weapon player))
+  (define targets   (available-targets player))
+  (define n         (length targets))
+  (cond
+   [(not (ranged-weapon? weapon))
+    (display "I can't shoot with that.\n")]
+   [(null? targets)
+    (display "There is nothing to shoot.\n")]
+   [else
+    ;; show targets
+    (define grid (grid-copy orig-grid))
+    (for ([m (in-list targets)]
+          [i (in-naturals 1)])
+      (grid-set! grid
+                 (character-pos m)
+                 (new-display-cell (string-ref (number->string i) 0))))
+    ;; show which monsters are which numbers
+    (cursor-home)
+    (clear-to-bottom)
+    (cursor-notification-head)
+    (for ([m (in-list targets)]
+          [i (in-naturals 1)])
+      (printf-notification "~a: ~a\n" i (character-name m)))
+    (newline)
+    (printf-notification "q: Cancel\n")
+    ;; show the map with the target numbers
+    (print-floor-banner)
+    (show-grid grid
+               #:print-fun (visibility-show (player-view player)
+                                            (player-map  player)))
+    ;; choose a target
+    (define nb (read-number n))
+    (when nb (ranged-attack player (list-ref targets nb)))]))
 
 
 ;; for debugging purposes
