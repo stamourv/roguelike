@@ -1,6 +1,5 @@
 #lang racket
 
-(require (only-in srfi/1 iota))
 (provide (all-defined-out))
 
 (define-struct point (x y) #:mutable #:transparent)
@@ -16,10 +15,10 @@
 		    ;; function that takes the position, and returns the content
 		    #:cell-fun [cell-fun (lambda (pos) #f)])
   (make-grid height width
-	     (list->vector
-	      (map (lambda (p) (cell-fun (new-point (quotient p width)
-						    (modulo   p width))))
-		   (iota (* height width))))))
+             (for*/vector #:length (* height width)
+                          ([x (in-range height)]
+                           [y (in-range width)])
+               (cell-fun (new-point x y)))))
 ;; in all cases, x is the row, y is the column
 (define (pos->index     g pos)
   (+ (* (point-x pos) (grid-width g)) (point-y pos)))
@@ -45,11 +44,9 @@
 		       #:start-x (start-x 0) #:start-y (start-y 0)
 		       #:length-x (length-x (grid-height g))
                        #:length-y (length-y (grid-width g)))
-  (for-each (lambda (x)
-	      (for-each (lambda (y)
-			  (f (new-point (+ x start-x) (+ y start-y))))
-			(iota length-y)))
-	    (iota length-x)))
+  (for* ([x (in-range length-x)]
+         [y (in-range length-y)])
+    (f (new-point (+ x start-x) (+ y start-y)))))
 
 (define (distance a b)
   (let ((x (abs (- (point-x b) (point-x a))))

@@ -1,6 +1,5 @@
 #lang racket
 
-(require (only-in srfi/1 iota))
 (require "class.rkt" "terminal.rkt" "grid.rkt")
 (provide (all-defined-out))
 
@@ -48,9 +47,7 @@
 	 #:border? (border? #f))
   (define (draw-border-line)
     (when border?
-      (display "+")
-      (for-each (lambda (x) (display "-")) (iota (grid-width g)))
-      (display "+\n")))
+      (printf "+~a+\n" (make-string (grid-width g) #\-))))
   (draw-border-line)
   (grid-for-each
    (lambda (pos)
