@@ -1,6 +1,6 @@
 #lang racket
 
-(require (only-in srfi/1 iota) racket/require)
+(require racket/require)
 (require (multi-in "../utilities" ("grid.rkt" "terminal.rkt"))
          (multi-in "../engine"    ("character.rkt" "player.rkt" "common.rkt"
                                    "items.rkt"))
@@ -69,21 +69,21 @@
               (char->integer #\0) 1)))))
 
 (define (choice items f null-message question feedback)
-  (if (null? items)
-      (printf "~a\n" null-message)
-      (begin   (cursor-home)
-               (clear-to-bottom)
-               (printf "~a\nq: Cancel\n" question)
-               (for-each (lambda (o i)
-                           (printf "~a: ~a\n" (+ i 1) (item-info o)))
-                         items
-                         (iota (length items)))
-               (let ((nb (read-number (length items))))
-                 (when nb
-                   (let ((item (list-ref items nb)))
-                     (print-state)
-                     (f item)
-                     (printf "~a~a.\n" feedback (item-info item))))))))
+  (cond [(null? items)
+         (printf "~a\n" null-message)]
+        [else
+         (cursor-home)
+         (clear-to-bottom)
+         (printf "~a\nq: Cancel\n" question)
+         (for ([o (in-list items)]
+               [i (in-naturals)])
+           (printf "~a: ~a\n" (+ i 1) (item-info o)))
+         (define nb (read-number (length items)))
+         (when nb
+           (define item (list-ref items nb))
+           (print-state)
+           (f item)
+           (printf "~a~a.\n" feedback (item-info item)))]))
 
 (define (direction-command name f)
   (clear-to-bottom)
