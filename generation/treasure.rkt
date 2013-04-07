@@ -22,8 +22,12 @@
 (define min-nb-chests 4)
 (define max-nb-chests 8)
 
-(define endgame-level 1) ; level at which the endgame may be triggered ;; TODO higher
-(define endgame-prob  1) ; chance the endgame is triggers on a given floor ;; TODO lower
+;; level at which the endgame may be triggered
+;; for now, should coincide with when we start to see really though monsters
+;; (e.g. orcs and goblin archers)
+(define endgame-level 3)
+;; chance the endgame is triggered on a given floor
+(define endgame-prob  1/3)
 
 
 ;; contains the probability of each kind of item, and the probability of each
