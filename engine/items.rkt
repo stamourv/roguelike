@@ -2,7 +2,7 @@
 
 (require racket/require)
 (require (multi-in "../utilities" ("random.rkt" "class.rkt"
-                                   "descriptions.rkt")))
+                                   "descriptions.rkt" "display.rkt")))
 (provide (all-defined-out))
 
 ;; rarity is in [0,1] with 1 being most likely
@@ -113,3 +113,9 @@
 
 
 (define-class <food> (item) thunk)
+
+(define-class <endgame-item> (item))
+
+(define endgame-amulet (make-endgame-item "Amulet of Endgame" 0 0))
+(add-show-method struct:endgame-item 'item
+                 (new-sprite #\8 #:fg 'green) "The Amulet of Endgame.")

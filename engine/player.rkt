@@ -1,6 +1,6 @@
 #lang racket
 
-(require racket/require)
+(require racket/require racket/format)
 (require (multi-in "../utilities" ("class.rkt" "grid.rkt" "terminal.rkt"
                                    "descriptions.rkt"))
          "cell.rkt"
@@ -182,7 +182,12 @@
               player (cons current after))
              (set-player-character-floors-before!
               player (cdr before)))]
-          [else (display "This would lead to the surface.\n")])))
+          [(endgame?) ; we get out with the endgame item
+           (display "You win!\n")
+           (quit #:force #t #:victory #t)]
+          [else
+           (printf "You can't leave without the ~a!\n"
+                   (item-name endgame-amulet))])))
 (define (go-down-stairs)
   (let ([current (player-character-current-floor player)]
         [before  (player-character-floors-before player)]
@@ -205,3 +210,52 @@
         [else
          (set-character-hp! player (character-max-hp player))
          (displayln "You have rested for 8 hours.")]))
+
+
+(define (endgame?) ; do we have the endgame item?
+  (ormap endgame-item? (player-character-inventory player)))
+
+(define (quit #:force [force? #f] #:victory [victory? #f])
+  (when (not force?) (displayln "Do you really want to quit? (y/n)"))
+  (echo-on)
+  (cond
+   [(and (not force?) (not (eq? (read-char) #\y)))
+    (displayln "\nAlright then.")
+    (echo-off)]
+   [else
+    (display "\n\nHall of fame:\n\n")
+    (define name         (string->symbol (character-name player)))
+    (define xp           (player-character-experience player))
+    (define level        (character-level player))
+    (define floor-no     (player-character-floor-no player))
+    (define current-game (list name xp level floor-no (quotient turn-no 6)
+                               (if victory? 'victory 'death)))
+    (define filename     "hall-of-fame")
+    ;; update hall of fame
+    (define new-hall-of-fame
+      (for/list ([_     (in-range 10)] ; keep at most 10
+                 [entry (sort (cons current-game ; sort by score
+                                    (if (file-exists? filename)
+                                        (with-input-from-file filename read)
+                                        '()))
+                              > #:key second)])
+        entry))
+    ;; update the hall of fame file file
+    (displayln new-hall-of-fame (open-output-file filename #:exists 'replace))
+    ;; print hall of fame as a table
+    (define max-field-widths ; pointwise max of printed widths of fields
+      ;; transpose the table
+      (for/list ([field (in-list (apply map list new-hall-of-fame))])
+        (apply max (for/list ([f (in-list field)]) (string-length (~a f))))))
+    (for ([entry (in-list new-hall-of-fame)])
+      (terminal-print
+       (apply format
+              "~a    ~a pts, lvl ~a, floor ~a, ~a turns    ~a\n"
+              (for/list ([field (in-list entry)]
+                         [width (in-list max-field-widths)])
+                (~a field #:width width #:align 'right)))
+       #:bg (if (equal? entry current-game) 'white 'black)
+       #:fg (if (equal? entry current-game) 'black 'white)))
+    (newline)
+    (restore-tty)
+    (exit)]))

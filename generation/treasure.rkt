@@ -22,6 +22,9 @@
 (define min-nb-chests 4)
 (define max-nb-chests 8)
 
+(define endgame-level 1) ; level at which the endgame may be triggered ;; TODO higher
+(define endgame-prob  1) ; chance the endgame is triggers on a given floor ;; TODO lower
+
 
 ;; contains the probability of each kind of item, and the probability of each
 ;; item within each category
@@ -70,7 +73,7 @@
               [else ; try something else
                items]))))
 
-(define (place-treasure floor no)
+(define (place-treasure floor no level)
   ;; the number of chests is level number independent
   (define chests
     (for/list ([_ (range (random-between min-nb-chests max-nb-chests))])
@@ -88,7 +91,10 @@
              (loop (cdr chests))])))
   ;; fill the chests
   (for ([item (in-list (generate-treasure no))])
-    (add-item (random-element chests) item)))
+    (add-item (random-element chests) item))
+  ;; if the player is high-level enough, maybe generate endgame item
+  (when (and (>= level endgame-level) (random-boolean endgame-prob))
+    (add-item (random-element chests) endgame-amulet)))
 
 ;; for debugging purposes
 (define (show-treasure no) (map item-name (generate-treasure no)))
